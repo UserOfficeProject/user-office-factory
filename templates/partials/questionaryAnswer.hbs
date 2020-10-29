@@ -1,0 +1,54 @@
+<div class="mb-2">
+  {{#if ($eq this.question.dataType 'EMBELLISHMENT') }}
+    {{#unless this.question.config.omitFromPdf }}
+      <span class="bold">{{this.question.config.plain}}</span><br />
+    {{/unless}}
+  {{else if ($eq this.question.dataType 'FILE_UPLOAD') }}
+    <span class="bold">{{this.question.question}}</span><br />
+    {{#if this.value}}
+      <em>See appendix</em>
+    {{else}}
+      Left blank
+    {{/if}}
+    <br />
+  {{else if ($eq this.question.dataType 'DATE') }}
+    <span class="bold">{{this.question.question}}</span><br />
+    {{#if this.value}}
+      {{ $utcDate this.value}}
+    {{else}}
+      Left blank
+    {{/if}}
+    <br />
+  {{else if ($eq this.question.dataType 'BOOLEAN')}}
+    <span class="bold">{{this.question.question}}</span><br />
+    {{#if this.value}}
+      Yes
+    {{else}}
+      No
+    {{/if}}
+    <br />
+  {{else if ($eq this.question.dataType 'SUBTEMPLATE')}}
+    <span class="bold">{{this.question.question}}</span><br />
+    <br />
+    {{#each this.value}}
+      <span class="bold">Entry {{ $sum @index 1 }} of {{ ../this.value.length }}</span><br />
+      {{#each this.fields}}
+        {{> questionaryAnswer}}
+      {{/each}}
+
+      <br />
+    {{/each}}
+    {{#unless this.value}}
+      <div class="mb-2">&nbsp;</div>
+    {{/unless}}
+
+  {{else}}
+    <span class="bold">{{this.question.question}}</span><br />
+    {{#if this.value}}
+      {{ this.value}}
+    {{else}}
+      Left blank
+    {{/if}}
+  {{/if}}
+
+</div>
