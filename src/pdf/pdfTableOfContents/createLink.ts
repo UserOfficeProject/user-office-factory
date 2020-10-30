@@ -1,4 +1,10 @@
-module.exports = (objCtx, pageRef, [x1, y1, x2, y2], linkToTop = true) => {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default function createLink(
+  objCtx: any,
+  pageRef: any,
+  [x1, y1, x2, y2]: Array<any>,
+  linkToTop = true
+) {
   const annotationObj = objCtx.startNewIndirectObject();
   const dictionaryContext = objCtx.startDictionary();
 
@@ -36,4 +42,4 @@ module.exports = (objCtx, pageRef, [x1, y1, x2, y2], linkToTop = true) => {
   objCtx.endDictionary(dictionaryContext).endIndirectObject();
 
   return annotationObj;
-};
+}

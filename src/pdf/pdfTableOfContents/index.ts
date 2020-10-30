@@ -1,12 +1,16 @@
 // import countOutline from './countOutline';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
+import hummus from 'hummus';
+
 import getTOCText from './getTOCText';
 import translatePageNumbers from './translatePageNumbers';
+import writeLinks from './writeLinks';
 import writeOutline from './writeOutline';
 
 /* eslint-disable @typescript-eslint/no-var-requires */
-const hummus = require('hummus');
 
-const writeLinks = require('./writeLinks');
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 export function createToC(inFile: string, outFile: string, origOutline: any[]) {

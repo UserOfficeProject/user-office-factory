@@ -1,6 +1,6 @@
 import path from 'path';
 
-export = {
+export default {
   fontPath: path.join(__dirname, 'src', 'data', 'monkey.ttf'),
   leftMarginEnd: 78,
   horizontalMax: 595,
