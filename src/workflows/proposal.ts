@@ -345,7 +345,7 @@ export default async function generateProposalPdf(
   const proposalIds = proposalPdfDataList.map(({ proposal }) => proposal.id);
 
   const finalizePDF = () => {
-    logger.logDebug('[ProposalPdfEmitter] PDF created', { proposalIds });
+    logger.logDebug('[generateProposalPdf] PDF created', { proposalIds });
 
     const filePaths: string[] = [];
 
@@ -414,7 +414,7 @@ export default async function generateProposalPdf(
     const mergedPdfPath = mergePDF(filePaths);
     const pdfPath = writeToC(mergedPdfPath, rootToC);
 
-    logger.logDebug('[ProposalPdfEmitter] PDF merged', {
+    logger.logDebug('[generateProposalPdf] PDF merged', {
       pdfPath,
       proposalIds,
     });
@@ -430,6 +430,9 @@ export default async function generateProposalPdf(
 
   ee.on('pdfCreated', () => {
     if (overallMeta.length === proposalPdfDataList.length) {
+      logger.logDebug('[generateProposalPdf] PDF creation done, finalizing', {
+        overallMeta,
+      });
       finalizePDF();
     }
   });
