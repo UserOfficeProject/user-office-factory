@@ -4,6 +4,7 @@ import request from 'supertest';
 
 import extractPDFText from '../../scripts/text-extraction';
 import app from '../app';
+import { getTotalPages } from '../pdf';
 import { generateTmpPath } from '../util/fileSystem';
 import testPayloads from './payloads.json';
 
@@ -40,6 +41,11 @@ describe('Proposal PDF', () => {
             expect(resp.status).toBe(200);
 
             const pdfPath = resp.body;
+
+            const totalPages = getTotalPages(pdfPath);
+
+            expect(totalPages).toBe(6);
+
             const text = extractPDFText(pdfPath);
 
             // first proposal
