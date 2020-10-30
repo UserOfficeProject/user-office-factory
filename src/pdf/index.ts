@@ -19,7 +19,7 @@ let browser: Browser;
 
 export async function generatePdfFromHtml(html: string) {
   if (!browser) {
-    browser = await puppeteer.launch();
+    browser = await puppeteer.launch({ args: ['--disable-dev-shm-usage'] });
   }
 
   const name = generateTmpPath();
