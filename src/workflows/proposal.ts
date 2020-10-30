@@ -345,89 +345,87 @@ export default async function generateProposalPdf(
   const proposalIds = proposalPdfDataList.map(({ proposal }) => proposal.id);
 
   const finalizePDF = () => {
-    if (overallMeta.length === proposalPdfDataList.length) {
-      logger.logDebug('[ProposalPdfEmitter] PDF created', { proposalIds });
+    logger.logDebug('[ProposalPdfEmitter] PDF created', { proposalIds });
 
-      const filePaths: string[] = [];
+    const filePaths: string[] = [];
 
-      const rootToC: TableOfContents[] = [];
-      let pageNumber = 0;
+    const rootToC: TableOfContents[] = [];
+    let pageNumber = 0;
 
-      overallMeta.forEach(({ meta, pdfPageGroup }, rootIdx) => {
-        const toc: TableOfContents = {
-          title: `Proposal number: ${proposalPdfDataList[rootIdx].proposal.shortCode}`,
+    overallMeta.forEach(({ meta, pdfPageGroup }, rootIdx) => {
+      const toc: TableOfContents = {
+        title: `Proposal number: ${proposalPdfDataList[rootIdx].proposal.shortCode}`,
+        page: pageNumber,
+        children: [],
+      };
+
+      pageNumber += pdfPageGroup.proposal.pdfPages[meta.files.proposal];
+
+      filePaths.push(meta.files.proposal);
+
+      meta.files.questionnaires.forEach((questionary, qIdx) => {
+        filePaths.push(questionary);
+        toc.children.push({
+          title:
+            proposalPdfDataList[rootIdx].questionarySteps[qIdx].topic.title,
           page: pageNumber,
           children: [],
-        };
-
-        pageNumber += pdfPageGroup.proposal.pdfPages[meta.files.proposal];
-
-        filePaths.push(meta.files.proposal);
-
-        meta.files.questionnaires.forEach((questionary, qIdx) => {
-          filePaths.push(questionary);
-          toc.children.push({
-            title:
-              proposalPdfDataList[rootIdx].questionarySteps[qIdx].topic.title,
-            page: pageNumber,
-            children: [],
-          });
-
-          pageNumber += pdfPageGroup.questionnaires.pdfPages[questionary];
         });
 
-        if (meta.files.attachments.length > 0) {
-          const attachmentToC: TableOfContents[] = [];
+        pageNumber += pdfPageGroup.questionnaires.pdfPages[questionary];
+      });
 
-          meta.files.attachments.forEach((attachment, aIdx) => {
-            filePaths.push(attachment);
-            attachmentToC.push({
-              title: meta.attachmentsMeta[aIdx].originalFileName,
-              page: pageNumber,
-              children: [],
-            });
+      if (meta.files.attachments.length > 0) {
+        const attachmentToC: TableOfContents[] = [];
 
-            pageNumber += pdfPageGroup.attachments.pdfPages[attachment];
-          });
-
-          toc.children.push({
-            title: 'Attachments',
-            page: pageNumber,
-            children: attachmentToC,
-          });
-        }
-
-        if (meta.files.technicalReview) {
-          filePaths.push(meta.files.technicalReview);
-          toc.children.push({
-            title: 'Technical Review',
+        meta.files.attachments.forEach((attachment, aIdx) => {
+          filePaths.push(attachment);
+          attachmentToC.push({
+            title: meta.attachmentsMeta[aIdx].originalFileName,
             page: pageNumber,
             children: [],
           });
 
-          pageNumber +=
-            pdfPageGroup.technicalReview.pdfPages[meta.files.technicalReview];
-        }
+          pageNumber += pdfPageGroup.attachments.pdfPages[attachment];
+        });
 
-        rootToC.push(toc);
-      });
+        toc.children.push({
+          title: 'Attachments',
+          page: pageNumber,
+          children: attachmentToC,
+        });
+      }
 
-      const mergedPdfPath = mergePDF(filePaths);
-      const pdfPath = writeToC(mergedPdfPath, rootToC);
+      if (meta.files.technicalReview) {
+        filePaths.push(meta.files.technicalReview);
+        toc.children.push({
+          title: 'Technical Review',
+          page: pageNumber,
+          children: [],
+        });
 
-      logger.logDebug('[ProposalPdfEmitter] PDF merged', {
-        pdfPath,
-        proposalIds,
-      });
+        pageNumber +=
+          pdfPageGroup.technicalReview.pdfPages[meta.files.technicalReview];
+      }
 
-      const rs = createReadStream(pdfPath).once('close', () =>
-        // after the steam is closed clean up all files
-        failSafeDeleteFiles([mergedPdfPath, pdfPath])
-      );
+      rootToC.push(toc);
+    });
 
-      ee.emit('cleanup');
-      ee.emit('finished', rs);
-    }
+    const mergedPdfPath = mergePDF(filePaths);
+    const pdfPath = writeToC(mergedPdfPath, rootToC);
+
+    logger.logDebug('[ProposalPdfEmitter] PDF merged', {
+      pdfPath,
+      proposalIds,
+    });
+
+    const rs = createReadStream(pdfPath).once('close', () =>
+      // after the steam is closed clean up all files
+      failSafeDeleteFiles([mergedPdfPath, pdfPath])
+    );
+
+    ee.emit('cleanup');
+    ee.emit('finished', rs);
   };
 
   ee.on('pdfCreated', () => {
