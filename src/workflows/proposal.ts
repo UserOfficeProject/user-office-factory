@@ -320,10 +320,13 @@ class ProposalPdfEmitter extends EventEmitter {
 export default async function generateProposalPdf(
   proposalPdfDataList: ProposalPDFData[]
 ) {
-  const overallMeta: Array<{
-    meta: ProposalPDFMeta;
-    pdfPageGroup: ProposalPDFPagesMeta;
-  }> = [];
+  const overallMeta: Map<
+    number,
+    {
+      meta: ProposalPDFMeta;
+      pdfPageGroup: ProposalPDFPagesMeta;
+    }
+  > = new Map();
 
   const ee = new EventEmitter();
 
@@ -332,7 +335,7 @@ export default async function generateProposalPdf(
 
     proposalPdfEmitter.once('error', err => ee.emit('error', err));
     proposalPdfEmitter.once('done', (meta, pdfPageGroup) => {
-      overallMeta[i] = { meta, pdfPageGroup };
+      overallMeta.set(i, { meta, pdfPageGroup });
       ee.emit('pdfCreated');
     });
 
@@ -352,7 +355,16 @@ export default async function generateProposalPdf(
     const rootToC: TableOfContents[] = [];
     let pageNumber = 0;
 
-    overallMeta.forEach(({ meta, pdfPageGroup }, rootIdx) => {
+    for (let rootIdx = 0; rootIdx < proposalPdfDataList.length; rootIdx++) {
+      if (!overallMeta.has(rootIdx)) {
+        logger.logError(`'${rootIdx}' is missing from overallMeta`, {
+          overallMeta,
+        });
+        throw new Error(`'${rootIdx}' is missing from overallMeta`);
+      }
+
+      const { meta, pdfPageGroup } = overallMeta.get(rootIdx)!;
+
       const toc: TableOfContents = {
         title: `Proposal number: ${proposalPdfDataList[rootIdx].proposal.shortCode}`,
         page: pageNumber,
@@ -409,7 +421,7 @@ export default async function generateProposalPdf(
       }
 
       rootToC.push(toc);
-    });
+    }
 
     const mergedPdfPath = mergePDF(filePaths);
     const pdfPath = writeToC(mergedPdfPath, rootToC);
@@ -429,10 +441,7 @@ export default async function generateProposalPdf(
   };
 
   ee.on('pdfCreated', () => {
-    if (overallMeta.length === proposalPdfDataList.length) {
-      logger.logDebug('[generateProposalPdf] PDF creation done, finalizing', {
-        overallMeta,
-      });
+    if (overallMeta.size === proposalPdfDataList.length) {
       finalizePDF();
     }
   });
