@@ -7,6 +7,7 @@
         "publicComment": "Technical review lorem ipsum"
       },
       "proposal": {
+        "id": 1,
         "title": "Test proposal",
         "shortCode": "123123",
         "abstract": "First lorem ipsum"
@@ -107,6 +108,7 @@
         "publicComment": "Second technical review comment"
       },
       "proposal": {
+        "id": 2,
         "title": "Second proposal",
         "shortCode": "7777777",
         "abstract": "Second proposal abstract"

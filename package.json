@@ -10,7 +10,7 @@
   "author": "SWAP",
   "license": "ISC",
   "scripts": {
-    "test": "jest --detectOpenHandles --forceExit",
+    "test": "env NODE_ENV=development jest --detectOpenHandles --forceExit",
     "build": "rm -rf ./build && tsc",
     "prod": "npm run build && env NODE_ENV=production node ./build/index.js",
     "dev": "ts-node-dev --rs --respawn ./src/index.ts",
