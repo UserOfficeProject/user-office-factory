@@ -17,10 +17,16 @@ export type TableOfContents = {
 
 let browser: Browser;
 
+puppeteer
+  .launch({ args: ['--disable-dev-shm-usage'] })
+  .then(inst => (browser = inst))
+  .catch(e => {
+    logger.logException('Failed to start browser puppeteer', e);
+  });
+
 export async function generatePdfFromHtml(html: string) {
-  if (!browser) {
-    browser = await puppeteer.launch({ args: ['--disable-dev-shm-usage'] });
-  }
+  // TODO: create browser lazily while keeping track of it
+  // so we don't end up with dozens of browsers
 
   const name = generateTmpPath();
 

@@ -1,3 +1,28 @@
+export type ProposalPDFData = {
+  proposal: Proposal;
+  questionarySteps: QuestionaryStep[];
+  principalInvestigator: BasicUser;
+  coProposers: BasicUser[];
+  attachmentIds: string[];
+  samples: ProposalSampleData[];
+  technicalReview?: {
+    status: string;
+    timeAllocation: number;
+    publicComment: string;
+  };
+};
+
+export type SamplePDFData = {
+  sample: Sample & { status: string };
+  sampleQuestionaryFields: Answer[];
+  attachmentIds: string[];
+};
+
+export type ProposalSampleData = Pick<
+  SamplePDFData,
+  'sample' | 'sampleQuestionaryFields'
+>;
+
 export interface Proposal {
   id: number;
   title: string;
@@ -79,4 +104,21 @@ export interface BasicUser {
   position: string;
   created: Date;
   placeholder: boolean;
+}
+
+export interface Sample {
+  id: number;
+  title: string;
+  creatorId: number;
+  questionaryId: number;
+  safetyStatus: SampleStatus;
+  safetyComment: string;
+  created: Date;
+}
+
+export enum SampleStatus {
+  PENDING_EVALUTATION = 0,
+  LOW_RISK,
+  ELEVATED_RISK,
+  HIGH_RISK,
 }

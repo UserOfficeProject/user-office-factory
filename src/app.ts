@@ -2,10 +2,11 @@ import 'dotenv/config';
 
 import { join } from 'path';
 
+import { logger } from '@esss-swap/duo-logger';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
-import logger from 'morgan';
+import httpLogger from 'morgan';
 
 import { renderTemplate } from './template';
 import generatePdf from './workflows';
@@ -14,8 +15,8 @@ import './services';
 
 const app = express();
 
-app.use(logger('tiny'));
-app.use(express.json());
+app.use(httpLogger('tiny'));
+app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', express.static(join(__dirname, '..', 'templates')));
@@ -66,6 +67,8 @@ app.use(function(
       stack: err.stack?.toString() || '',
     },
   };
+
+  logger.logError('Factory: request failed', { error: errorMessage });
 
   // render the error page
   res.status(err.status || 500);

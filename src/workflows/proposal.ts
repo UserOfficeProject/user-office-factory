@@ -14,28 +14,22 @@ import {
 } from '../pdf';
 import services from '../services';
 import { renderTemplate } from '../template';
-import { BasicUser, Proposal, QuestionaryStep } from '../types';
+import {
+  BasicUser,
+  Proposal,
+  QuestionaryStep,
+  ProposalPDFData,
+  ProposalSampleData,
+} from '../types';
 import { failSafeDeleteFiles, generateTmpPath } from '../util/fileSystem';
-
-type ProposalPDFData = {
-  proposal: Proposal;
-  questionarySteps: QuestionaryStep[];
-  principalInvestigator: BasicUser;
-  coProposers: BasicUser[];
-  attachmentIds: string[];
-  technicalReview?: {
-    status: string;
-    timeAllocation: number;
-    publicComment: string;
-  };
-};
 
 type ProposalPDFMeta = {
   files: {
     proposal: string;
     questionnaires: string[];
-    technicalReview?: string;
+    samples: string[];
     attachments: string[];
+    technicalReview?: string;
   };
   attachmentsMeta: FileMetadata[];
 };
@@ -52,6 +46,7 @@ class ProposalPdfEmitter extends EventEmitter {
     files: {
       proposal: '',
       questionnaires: [],
+      samples: [],
       attachments: [],
     },
     attachmentsMeta: [],
@@ -65,6 +60,7 @@ class ProposalPdfEmitter extends EventEmitter {
       questionarySteps,
       technicalReview,
       attachmentIds,
+      samples,
     } = data;
 
     this.pdfPageGroup = {
@@ -74,6 +70,7 @@ class ProposalPdfEmitter extends EventEmitter {
         pdfPages: {},
       },
       technicalReview: { waitFor: technicalReview ? 1 : 0, pdfPages: {} },
+      samples: { waitFor: samples.length, pdfPages: {} },
       attachments: {
         waitFor: 0 /* set by fetched:attachmentsMeta */,
         pdfPages: {},
@@ -100,6 +97,11 @@ class ProposalPdfEmitter extends EventEmitter {
       tasksNeeded.push('fetch:attachments');
       tasksNeeded.push('fetch:attachmentsMeta');
       tasksNeeded.push('count-pages:attachments');
+    }
+
+    if (samples.length > 0) {
+      tasksNeeded.push('render:samples');
+      tasksNeeded.push('count-pages:samples');
     }
 
     logger.logDebug(
@@ -129,6 +131,7 @@ class ProposalPdfEmitter extends EventEmitter {
     this.once('render:proposal', this.renderProposal);
     this.once('render:questionnaires', this.renderQuestionarySteps);
     this.once('render:technicalReview', this.renderTechnicalReview);
+    this.once('render:samples', this.renderSamples);
     this.once('fetch:attachments', this.fetchAttachments);
     this.once('fetch:attachmentsMeta', this.fetchAttachmentsMeta);
 
@@ -150,6 +153,14 @@ class ProposalPdfEmitter extends EventEmitter {
       }
     });
 
+    this.on('rendered:sample', pdfPath => {
+      this.meta.files.samples.push(pdfPath);
+
+      if (this.meta.files.samples.length === samples.length) {
+        this.emit('taskFinished', 'render:samples');
+      }
+    });
+
     this.on('fetched:attachment', attachmentPath => {
       this.meta.files.attachments.push(attachmentPath);
 
@@ -165,7 +176,12 @@ class ProposalPdfEmitter extends EventEmitter {
       this.pdfPageGroup.attachments.waitFor = attachmentsMeta.length;
 
       this.emit('taskFinished', 'fetch:attachmentsMeta');
-      this.emit('fetch:attachments', attachmentsMeta);
+      if (this.pdfPageGroup.attachments.waitFor === 0) {
+        this.emit('taskFinished', 'fetch:attachments');
+        this.emit('taskFinished', 'count-pages:attachments');
+      } else {
+        this.emit('fetch:attachments', attachmentsMeta);
+      }
     });
 
     this.on('taskFinished', task => {
@@ -190,6 +206,10 @@ class ProposalPdfEmitter extends EventEmitter {
 
     this.emit('render:proposal', proposal, principalInvestigator, coProposers);
     this.emit('render:questionnaires', questionarySteps);
+
+    if (samples.length > 0) {
+      this.emit('render:samples', samples);
+    }
 
     if (technicalReview) {
       this.emit('render:technicalReview', technicalReview);
@@ -261,19 +281,6 @@ class ProposalPdfEmitter extends EventEmitter {
     }
   }
 
-  private countPages(pdfPath: string, group: keyof ProposalPDFMeta['files']) {
-    const totalPages = getTotalPages(pdfPath);
-
-    this.pdfPageGroup[group].pdfPages[pdfPath] = totalPages;
-
-    if (
-      Object.keys(this.pdfPageGroup[group].pdfPages).length ===
-      this.pdfPageGroup[group].waitFor
-    ) {
-      this.emit('taskFinished', `count-pages:${group}`);
-    }
-  }
-
   private async fetchAttachmentsMeta(attachmentIds: string[]) {
     try {
       const filesMeta = await services.queries.files.getFileMetadata(
@@ -299,6 +306,41 @@ class ProposalPdfEmitter extends EventEmitter {
       }
     } catch (e) {
       this.emit('error', e, 'fetchAttachments');
+    }
+  }
+
+  private async renderSamples(samples: ProposalSampleData[]) {
+    try {
+      for (const { sample, sampleQuestionaryFields } of samples) {
+        if (this.stopped) {
+          return;
+        }
+
+        const renderedProposalSample = await renderTemplate('sample.hbs', {
+          sample,
+          sampleQuestionaryFields,
+        });
+
+        const pdfPath = await generatePdfFromHtml(renderedProposalSample);
+
+        this.emit('countPages', pdfPath, 'samples');
+        this.emit('rendered:sample', pdfPath);
+      }
+    } catch (e) {
+      this.emit('error', e, 'renderSamples');
+    }
+  }
+
+  private countPages(pdfPath: string, group: keyof ProposalPDFMeta['files']) {
+    const totalPages = getTotalPages(pdfPath);
+
+    this.pdfPageGroup[group].pdfPages[pdfPath] = totalPages;
+
+    if (
+      Object.keys(this.pdfPageGroup[group].pdfPages).length ===
+      this.pdfPageGroup[group].waitFor
+    ) {
+      this.emit('taskFinished', `count-pages:${group}`);
     }
   }
 
@@ -330,8 +372,11 @@ export default async function generateProposalPdf(
 
   const ee = new EventEmitter();
 
+  const pdfEmitters: ProposalPdfEmitter[] = [];
+
   for (let i = 0; i < proposalPdfDataList.length; i++) {
     const proposalPdfEmitter = new ProposalPdfEmitter();
+    pdfEmitters.push(proposalPdfEmitter);
 
     proposalPdfEmitter.once('error', err => ee.emit('error', err));
     proposalPdfEmitter.once('done', (meta, pdfPageGroup) => {
@@ -339,11 +384,15 @@ export default async function generateProposalPdf(
       ee.emit('pdfCreated');
     });
 
-    ee.once('error', () => proposalPdfEmitter.emit('cleanup'));
-    ee.once('cleanup', () => proposalPdfEmitter.emit('cleanup'));
-
     proposalPdfEmitter.init(proposalPdfDataList[i]);
   }
+
+  ee.once('error', () =>
+    pdfEmitters.forEach(pdfEmitter => pdfEmitter.emit('cleanup'))
+  );
+  ee.once('cleanup', () =>
+    pdfEmitters.forEach(pdfEmitter => pdfEmitter.emit('cleanup'))
+  );
 
   const proposalIds = proposalPdfDataList.map(({ proposal }) => proposal.id);
 
@@ -387,12 +436,27 @@ export default async function generateProposalPdf(
         pageNumber += pdfPageGroup.questionnaires.pdfPages[questionary];
       });
 
+      meta.files.samples.forEach((sample, qIdx) => {
+        filePaths.push(sample);
+        toc.children.push({
+          title: `Sample: ${proposalPdfDataList[rootIdx].samples[qIdx].sample.title}`,
+          page: pageNumber,
+          children: [],
+        });
+
+        pageNumber += pdfPageGroup.samples.pdfPages[sample];
+      });
+
       if (meta.files.attachments.length > 0) {
-        const attachmentToC: TableOfContents[] = [];
+        const attachmentToC: TableOfContents = {
+          title: 'Attachments',
+          page: pageNumber,
+          children: [],
+        };
 
         meta.files.attachments.forEach((attachment, aIdx) => {
           filePaths.push(attachment);
-          attachmentToC.push({
+          attachmentToC.children.push({
             title: meta.attachmentsMeta[aIdx].originalFileName,
             page: pageNumber,
             children: [],
@@ -401,11 +465,7 @@ export default async function generateProposalPdf(
           pageNumber += pdfPageGroup.attachments.pdfPages[attachment];
         });
 
-        toc.children.push({
-          title: 'Attachments',
-          page: pageNumber,
-          children: attachmentToC,
-        });
+        toc.children.push(attachmentToC);
       }
 
       if (meta.files.technicalReview) {

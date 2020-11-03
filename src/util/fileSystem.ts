@@ -19,10 +19,6 @@ export function failSafeDeleteFiles(filePaths: string[]) {
   filePaths.forEach(filePath =>
     unlink(filePath, err => {
       if (!err) {
-        logger.logDebug('[failSafeDeleteFiles] File successfully deleted', {
-          filePath,
-        });
-
         return;
       }
 
