@@ -1,0 +1,41 @@
+@font-face {
+  font-family: 'Calibri';
+  src: url('http://localhost:4500/static/fonts/Calibri_Regular.ttf')
+    format('ttf');
+}
+
+@font-face {
+  font-family: 'Calibri';
+  src: url('http://localhost:4500/static/fonts/Calibri_Bold.ttf') format('ttf');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Calibri';
+  src: url('http://localhost:4500/static/fonts/Calibri_Italic.ttf')
+    format('ttf');
+  font-style: italic;
+}
+
+body {
+  font-size: 0.75rem;
+  font-family: 'Calibri';
+}
+
+.logo {
+  margin: 15px;
+  width: 130px;
+}
+
+.root {
+  padding: 0 72px;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.bold {
+  font-weight: bold;
+}
