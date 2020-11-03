@@ -1,7 +1,13 @@
-const writeOutlines = (ctx, outlines, parent, linkToTop = true) => {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const writeOutlines = (
+  ctx: any,
+  outlines: any[],
+  parent: any,
+  linkToTop = true
+) => {
   const ids = outlines.map(() => ctx.allocateNewObjectID());
 
-  outlines.forEach(({ title, page, children }, i) => {
+  outlines.forEach(({ title, page, children }: any, i) => {
     const id = ids[i];
     const childrenIds =
       children && children.length ? writeOutlines(ctx, children, id) : null;
@@ -54,7 +60,7 @@ const writeOutlines = (ctx, outlines, parent, linkToTop = true) => {
   return ids;
 };
 
-module.exports = (ctx, outlines) => {
+export default function writeOutline(ctx: any, outlines: any[]) {
   if (outlines.length === 0) {
     return null;
   }
@@ -76,4 +82,4 @@ module.exports = (ctx, outlines) => {
   ctx.endIndirectObject();
 
   return outline;
-};
+}

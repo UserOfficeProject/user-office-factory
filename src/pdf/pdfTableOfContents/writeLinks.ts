@@ -1,24 +1,22 @@
-import {
-  verticalMax,
-  verticalMargin,
-  lineSpacing,
-  leftMarginEnd,
-} from './config';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import config from './config';
 import createLink from './createLink';
+
+const { verticalMax, verticalMargin, lineSpacing, leftMarginEnd } = config;
 
 const annotationArrayKey = 'Annots';
 
-const isFirstLineOnSubsequentPage = (pageSize, pageIndex, idx) =>
+const isFirstLineOnSubsequentPage = (pageSize: any, pageIndex: any, idx: any) =>
   pageIndex > 0 && (idx + 1) % pageSize === 0;
 
 const getLinks = (
-  objCtx,
-  parser,
-  tocText,
-  pageIndex,
-  howManyPages,
-  pageSize
-) => {
+  objCtx: any,
+  parser: any,
+  tocText: any[],
+  pageIndex: any,
+  howManyPages: any,
+  pageSize: any
+): any[] => {
   let myPage = 0;
 
   return tocText.reduce((acc, { page }, idx) => {
@@ -48,15 +46,15 @@ const getLinks = (
   }, []);
 };
 
-module.exports = (
-  objCtx,
-  copyCtx,
-  parser,
-  pageIndex,
-  tocText,
-  howManyPages,
-  pageSize
-) => {
+export default function writeLinks(
+  objCtx: any,
+  copyCtx: any,
+  parser: any,
+  pageIndex: any,
+  tocText: any,
+  howManyPages: any,
+  pageSize: any
+) {
   const pageId = parser.getPageObjectID(pageIndex);
   const pageObject = parser
     .parsePage(pageIndex)
@@ -94,4 +92,4 @@ module.exports = (
     .endLine()
     .endDictionary(modifiedPageObject)
     .endIndirectObject();
-};
+}

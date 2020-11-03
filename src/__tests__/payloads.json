@@ -1,0 +1,178 @@
+{
+  "test_1": [
+    {
+      "technicalReview": {
+        "status": "Okey",
+        "timeAllocation": 30,
+        "publicComment": "Technical review lorem ipsum"
+      },
+      "proposal": {
+        "id": 1,
+        "title": "Test proposal",
+        "shortCode": "123123",
+        "abstract": "First lorem ipsum"
+      },
+      "principalInvestigator": {
+        "firstname": "Foo",
+        "lastname": "Bar",
+        "organisation": "Baz",
+        "position": "Foobar"
+      },
+      "coProposers": [
+        {
+          "firstname": "Co Foo 1",
+          "lastname": "Co Bar 1",
+          "organisation": "Co Baz 1"
+        },
+        {
+          "firstname": "Co Foo 2",
+          "lastname": "Co Bar 2",
+          "organisation": "Co Baz 2"
+        }
+      ],
+      "attachmentIds": [],
+      "questionarySteps": [
+        {
+          "topic": {
+            "title": "Questionary 1"
+          },
+          "fields": [
+            {
+              "question": {
+                "dataType": "EMBELLISHMENT",
+                "config": {
+                  "plain": "Visible EMBELLISHMENT",
+                  "omitFromPdf": false
+                }
+              }
+            },
+            {
+              "question": {
+                "dataType": "EMBELLISHMENT",
+                "config": {
+                  "plain": "Hidden EMBELLISHMENT",
+                  "omitFromPdf": true
+                }
+              }
+            },
+            {
+              "question": {
+                "dataType": "FILE_UPLOAD",
+                "question": "File upload question - exists"
+              },
+              "value": true
+            },
+            {
+              "question": {
+                "dataType": "FILE_UPLOAD",
+                "question": "File upload question - nope"
+              },
+              "value": false
+            },
+            {
+              "question": {
+                "dataType": "DATE",
+                "question": "Date question"
+              },
+              "value": "2020-10-27T15:06:23.849Z"
+            },
+            {
+              "question": {
+                "dataType": "BOOLEAN",
+                "question": "Boolean question - true"
+              },
+              "value": true
+            },
+            {
+              "question": {
+                "dataType": "BOOLEAN",
+                "question": "Boolean question - false"
+              },
+              "value": false
+            },
+            {
+              "question": {
+                "dataType": "Unknown dataType",
+                "question": "Random question"
+              },
+              "value": "Random answer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "technicalReview": {
+        "status": "Okey-ish",
+        "timeAllocation": 0,
+        "publicComment": "Second technical review comment"
+      },
+      "proposal": {
+        "id": 2,
+        "title": "Second proposal",
+        "shortCode": "7777777",
+        "abstract": "Second proposal abstract"
+      },
+      "principalInvestigator": {
+        "firstname": "Bar",
+        "lastname": "Baz",
+        "organisation": "Foo AB",
+        "position": "Foo"
+      },
+      "coProposers": [
+        {
+          "firstname": "Co Foo",
+          "lastname": "Co Bar",
+          "organisation": "Co Baz"
+        }
+      ],
+      "attachmentIds": [],
+      "questionarySteps": [
+        {
+          "topic": {
+            "title": "Questionary 2"
+          },
+          "fields": [
+            {
+              "question": {
+                "dataType": "SUBTEMPLATE",
+                "question": "Sub-template"
+              },
+              "value": [
+                {
+                  "fields": [
+                    {
+                      "question": {
+                        "dataType": "BOOLEAN",
+                        "question": "Sub BOOLEAN 1"
+                      },
+                      "value": true
+                    }
+                  ]
+                },
+                {
+                  "fields": [
+                    {
+                      "question": {
+                        "dataType": "DATE",
+                        "question": "Sub DATE 2"
+                      },
+                      "value": "2020-10-30T15:06:23.849Z"
+                    },
+                    {
+                      "question": {
+                        "dataType": "BOOLEAN",
+                        "question": "Sub BOOLEAN 2"
+                      },
+                      "value": false
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

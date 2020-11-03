@@ -1,5 +1,6 @@
-module.exports = (outline, tocPageCount) => {
-  const getTabs = tabLevel => {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default function getTOCText(outline: any, tocPageCount: any) {
+  const getTabs = (tabLevel: any) => {
     let output = '';
     for (let i = 0; i < tabLevel; ++i) {
       output += '  ';
@@ -8,8 +9,8 @@ module.exports = (outline, tocPageCount) => {
     return output;
   };
   const lineLength = 60;
-  const makeTOC = (outln, tabLevel, prefix = '') =>
-    outln.reduce((acc, curr, idx) => {
+  const makeTOC = (outln: any, tabLevel: any, prefix = '') =>
+    outln.reduce((acc: any, curr: any, idx: any) => {
       const entry = `${getTabs(tabLevel)}${prefix}${idx + 1} ${curr.title}`;
       const paddingLength =
         lineLength - String(curr.page + tocPageCount).length;
@@ -31,4 +32,4 @@ module.exports = (outline, tocPageCount) => {
     }, []);
 
   return makeTOC(outline, 0);
-};
+}

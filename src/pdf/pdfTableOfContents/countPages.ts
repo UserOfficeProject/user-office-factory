@@ -1,6 +1,9 @@
-import { verticalMax, verticalMargin, lineSpacing } from './config';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import config from './config';
 
-export default itemCount => {
+const { verticalMax, verticalMargin, lineSpacing } = config;
+
+export default function countPages(itemCount: any) {
   const verticalTextStart = verticalMax - verticalMargin;
 
   let pageSize = 0;
@@ -19,4 +22,4 @@ export default itemCount => {
   }
 
   return pages;
-};
+}

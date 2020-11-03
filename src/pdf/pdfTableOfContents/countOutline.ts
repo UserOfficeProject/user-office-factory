@@ -1,4 +1,5 @@
-const countOutline = outline =>
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default function countOutline(outline: any[]) {
   outline.reduce((acc, curr) => {
     if (curr.children === undefined) {
       return acc + 1;
@@ -6,5 +7,4 @@ const countOutline = outline =>
 
     return acc + countOutline(curr.children) + 1;
   }, 0);
-
-module.exports = countOutline;
+}
