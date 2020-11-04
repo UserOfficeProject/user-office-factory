@@ -40,7 +40,7 @@ export async function generatePdfFromHtml(html: string) {
   const pdfPath = `${name}.pdf`;
 
   const page = await browser.newPage();
-  await page.goto(`data:text/html;charset=UTF-8,${html}`, {
+  await page.setContent(html, {
     waitUntil: 'networkidle0',
   });
   await page.emulateMediaType('screen');
