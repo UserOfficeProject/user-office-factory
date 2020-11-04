@@ -12,6 +12,6 @@ services:
       DATABASE_PASSWORD: duopassword
       DATABASE_DATABASE: duo
     ports:
-      - 4500:4500
+      - 4500
     cap_add:
       - SYS_ADMIN
