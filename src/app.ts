@@ -24,7 +24,10 @@ app.use('/static', express.static(join(__dirname, '..', 'templates')));
 app.post('/generate-pdf/:type', (req, res, next) => {
   const { type } = req.params;
   generatePdf(type, req.body)
-    .then(rs => rs.pipe(res))
+    .then(rs => {
+      res.setHeader('content-type', 'application/pdf');
+      rs.pipe(res);
+    })
     .catch(err => next(err));
 });
 
