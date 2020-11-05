@@ -35,6 +35,18 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
+USER root
+
+RUN cd ./node_modules/puppeteer/.local-chromium/linux-*/chrome-linux/ && \
+  chown root:root chrome_sandbox && \
+  chmod 4755 chrome_sandbox && \
+  cp -p chrome_sandbox /usr/local/sbin/chrome-devel-sandbox && \
+  export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
+
+USER node
+
+RUN echo 'export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox' >> ~/.bashrc
+
 EXPOSE 4500
 
 CMD [ "node", "./build/index.js" ]
