@@ -18,7 +18,7 @@ export type TableOfContents = {
 let browser: Browser;
 
 puppeteer
-  .launch({ args: ['--disable-dev-shm-usage'] })
+  .launch({ args: ['--disable-dev-shm-usage', '--no-sandbox'] })
   .then(inst => (browser = inst))
   .catch(e => {
     logger.logException('Failed to start browser puppeteer', e);
