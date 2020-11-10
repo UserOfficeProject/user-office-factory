@@ -18,9 +18,9 @@ RUN npm run build
 
 FROM alpine:edge
 
-# Installs latest Chromium (85) package.
+# Installs  Chromium (86) package.
 RUN apk add --no-cache \
-  chromium \
+  "chromium~=86.0.4240.111-r0" \
   nss \
   freetype \
   freetype-dev \
