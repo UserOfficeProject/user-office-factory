@@ -8,7 +8,9 @@ WORKDIR /home/node/app
 
 COPY --chown=node:node package*.json ./
 
-RUN npm ci --no-optional --loglevel error --no-fund
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+RUN npm ci --loglevel error --no-fund
 
 COPY --chown=node:node . .
 
