@@ -51,6 +51,9 @@ COPY --chown=pptruser:pptruser ./templates ./templates
 
 RUN npm ci --only=production --loglevel error --no-fund
 
+ARG BUILD_VERSION=<unknown>
+RUN echo $BUILD_VERSION > build-version.txt
+
 EXPOSE 4500
 
 CMD [ "node", "./build/index.js" ]
