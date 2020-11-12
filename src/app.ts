@@ -2,10 +2,11 @@ import 'dotenv/config';
 
 import { join } from 'path';
 
+import { logger } from '@esss-swap/duo-logger';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
-import logger from 'morgan';
+import httpLogger from 'morgan';
 
 import { renderTemplate } from './template';
 import generatePdf from './workflows';
@@ -14,8 +15,8 @@ import './services';
 
 const app = express();
 
-app.use(logger('tiny'));
-app.use(express.json());
+app.use(httpLogger('tiny'));
+app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', express.static(join(__dirname, '..', 'templates')));
@@ -23,7 +24,10 @@ app.use('/static', express.static(join(__dirname, '..', 'templates')));
 app.post('/generate-pdf/:type', (req, res, next) => {
   const { type } = req.params;
   generatePdf(type, req.body)
-    .then(rs => rs.pipe(res))
+    .then(rs => {
+      res.setHeader('content-type', 'application/pdf');
+      rs.pipe(res);
+    })
     .catch(err => next(err));
 });
 
@@ -66,6 +70,8 @@ app.use(function(
       stack: err.stack?.toString() || '',
     },
   };
+
+  logger.logError('Factory: request failed', { error: errorMessage });
 
   // render the error page
   res.status(err.status || 500);

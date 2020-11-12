@@ -11,7 +11,8 @@ import './partials';
 type TemplateNames =
   | 'proposal-main.hbs'
   | 'questionary-step.hbs'
-  | 'technical-review.hbs';
+  | 'technical-review.hbs'
+  | 'sample.hbs';
 
 export async function renderTemplate(
   templateName: TemplateNames,

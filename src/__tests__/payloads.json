@@ -1,6 +1,17 @@
 {
-  "test_1": [
+  "proposal_test_1": [
     {
+      "samples": [
+        {
+          "sample": {
+            "id": 8,
+            "title": "Foo sample",
+            "safetyComment": "Safety foo bar",
+            "status": "Not evaluated"
+          },
+          "sampleQuestionaryFields": []
+        }
+      ],
       "technicalReview": {
         "status": "Okey",
         "timeAllocation": 30,
@@ -102,6 +113,7 @@
       ]
     },
     {
+      "samples": [],
       "technicalReview": {
         "status": "Okey-ish",
         "timeAllocation": 0,
@@ -173,6 +185,18 @@
           ]
         }
       ]
+    }
+  ],
+  "sample_test_1": [
+    {
+      "sample": {
+        "id": 8,
+        "title": "Foo sample",
+        "safetyComment": "Safety foo bar",
+        "status": "Not evaluated"
+      },
+      "sampleQuestionaryFields": [],
+      "attachmentIds": []
     }
   ]
 }

@@ -1,6 +1,7 @@
 import { Readable } from 'stream';
 
 import generateProposalPdf from './proposal';
+import generateSamplePdf from './sample';
 
 export default function generatePdf(
   pdfType: string,
@@ -11,7 +12,10 @@ export default function generatePdf(
       // TODO: check data
 
       return generateProposalPdf(data);
+
+    case 'sample':
+      return generateSamplePdf(data);
     default:
-      throw new Error('Unknown');
+      throw new Error(`Unknown PDF type: ${pdfType}`);
   }
 }

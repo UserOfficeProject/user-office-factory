@@ -22,7 +22,7 @@ describe('Proposal PDF', () => {
 
         const r = request(app)
           .post('/generate-pdf/proposal')
-          .send(testPayloads.test_1);
+          .send(testPayloads.proposal_test_1);
 
         r.on('response', resp => {
           expect(resp.status).toBe(200);
@@ -31,7 +31,7 @@ describe('Proposal PDF', () => {
         r.pipe(ws).once('close', () => {
           const totalPages = getTotalPages(pdfPath);
 
-          expect(totalPages).toBe(6);
+          expect(totalPages).toBe(7);
 
           const text = extractPDFText(pdfPath);
 
@@ -53,6 +53,10 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Boolean question - true\nYes/);
           expect(text).toMatch(/Boolean question - false\nNo/);
           expect(text).toMatch(/Random question\nRandom answer/);
+
+          expect(text).toMatch(/Sample: Foo sample/);
+          expect(text).toMatch(/Status:\nNot evaluated/);
+          expect(text).toMatch(/Comment:\nSafety foo bar/);
 
           expect(text).toMatch(/Status\nOkey/);
           expect(text).toMatch(/Time Allocation\n30 Days/);

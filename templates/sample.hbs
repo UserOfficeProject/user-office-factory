@@ -1,0 +1,28 @@
+{{#> layout}}
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+
+        <span class="title">Sample: {{sample.title}}</span><br />
+        <br />
+
+        {{#each sampleQuestionaryFields}}
+          {{> questionaryAnswer}}
+        {{/each}}
+
+        <span class="title">Status:</span><br />
+        {{ sample.status }}<br />
+        <br />
+
+        {{#if sample.safetyComment}}
+          <span class="title">Comment:</span><br />
+          {{ sample.safetyComment }}<br />
+          <br />
+        {{/if}}
+
+      </div>
+    </div>
+  </div>
+
+{{/layout}}
