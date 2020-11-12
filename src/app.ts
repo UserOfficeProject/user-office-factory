@@ -47,11 +47,11 @@ app.get('/test-template/:template', (req, res, next) => {
     .catch(e => next(e));
 });
 
-let cached: string;
+let cachedVersion: string;
 
 app.get('/version', (req, res) => {
-  if (cached) {
-    return res.end(cached);
+  if (cachedVersion) {
+    return res.end(cachedVersion);
   }
 
   readFile(join(process.cwd(), 'build-version.txt'), (err, content) => {
@@ -66,9 +66,9 @@ app.get('/version', (req, res) => {
       return res.end('<unknown>');
     }
 
-    cached = content.toString().trim();
+    cachedVersion = content.toString().trim();
 
-    res.end(cached);
+    res.end(cachedVersion);
   });
 });
 
