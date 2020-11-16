@@ -17,8 +17,16 @@ export type TableOfContents = {
 
 let browser: Browser;
 
+const launchOptions = ['--disable-dev-shm-usage'];
+
+if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
+  launchOptions.push('--no-sandbox');
+}
+
+logger.logInfo('Launching puppeteer with ', { args: launchOptions });
+
 puppeteer
-  .launch({ args: ['--disable-dev-shm-usage', '--no-sandbox'] })
+  .launch({ args: launchOptions })
   .then(inst => (browser = inst))
   .catch(e => {
     logger.logException('Failed to start browser puppeteer', e);
