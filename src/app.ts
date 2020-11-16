@@ -1,5 +1,6 @@
 import 'dotenv/config';
 
+import { readFile } from 'fs';
 import { join } from 'path';
 
 import { logger } from '@esss-swap/duo-logger';
@@ -44,6 +45,31 @@ app.get('/test-template/:template', (req, res, next) => {
       res.end();
     })
     .catch(e => next(e));
+});
+
+let cachedVersion: string;
+
+app.get('/version', (req, res) => {
+  if (cachedVersion) {
+    return res.end(cachedVersion);
+  }
+
+  readFile(join(process.cwd(), 'build-version.txt'), (err, content) => {
+    if (err) {
+      if (err.code !== 'ENOENT') {
+        logger.logException(
+          'Unknown error while reading build-version.txt',
+          err
+        );
+      }
+
+      return res.end('<unknown>');
+    }
+
+    cachedVersion = content.toString().trim();
+
+    res.end(cachedVersion);
+  });
 });
 
 app.get('/', (req, res) => {
