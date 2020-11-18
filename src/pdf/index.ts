@@ -47,9 +47,10 @@ export async function generatePdfFromHtml(html: string) {
 
   const pdfPath = `${name}.pdf`;
 
+  const start = Date.now();
   const page = await browser.newPage();
   await page.setContent(html, {
-    waitUntil: 'networkidle0',
+    waitUntil: 'load',
   });
   await page.emulateMediaType('screen');
   await page.pdf({
@@ -59,7 +60,10 @@ export async function generatePdfFromHtml(html: string) {
 
   await page.close();
 
-  logger.logDebug('[generatePdfFromHtml] PDF output:', { pdfPath });
+  logger.logDebug('[generatePdfFromHtml] PDF output:', {
+    pdfPath,
+    runtime: Date.now() - start,
+  });
 
   return pdfPath;
 }

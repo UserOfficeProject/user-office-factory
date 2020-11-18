@@ -16,7 +16,17 @@ import './services';
 
 const app = express();
 
-app.use(httpLogger('tiny'));
+app.use(
+  httpLogger('tiny', {
+    skip: function(req, res) {
+      // skip health check and static requests from logs
+      return (
+        (req.path === '/health-check' || req.baseUrl.startsWith('/static')) &&
+        res.statusCode < 400
+      );
+    },
+  })
+);
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -72,7 +82,7 @@ app.get('/version', (req, res) => {
   });
 });
 
-app.get('/', (req, res) => {
+app.get(['/', '/health-check'], (req, res) => {
   res.json({ message: 'Up and running ヾ(￣▽￣) ' });
 });
 
