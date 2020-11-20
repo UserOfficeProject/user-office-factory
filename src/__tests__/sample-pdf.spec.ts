@@ -21,8 +21,8 @@ describe('Sample PDF', () => {
         const ws = createWriteStream(pdfPath);
 
         const r = request(app)
-          .post('/generate-pdf/sample')
-          .send(testPayloads.sample_test_1);
+          .post('/generate/pdf/sample')
+          .send({ data: testPayloads.sample_test_1 });
 
         r.on('response', resp => {
           expect(resp.status).toBe(200);
