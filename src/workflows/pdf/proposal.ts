@@ -4,24 +4,24 @@ import { Readable } from 'stream';
 
 import { logger } from '@esss-swap/duo-logger';
 
-import { FileMetadata } from '../models/File';
+import { FileMetadata } from '../../models/File';
 import {
   generatePdfFromHtml,
   getTotalPages,
   mergePDF,
   writeToC,
   TableOfContents,
-} from '../pdf';
-import services from '../services';
-import { renderTemplate } from '../template';
+} from '../../pdf';
+import services from '../../services';
+import { renderTemplate } from '../../template';
 import {
   BasicUser,
   Proposal,
   QuestionaryStep,
   ProposalPDFData,
   ProposalSampleData,
-} from '../types';
-import { failSafeDeleteFiles, generateTmpPath } from '../util/fileSystem';
+} from '../../types';
+import { failSafeDeleteFiles, generateTmpPath } from '../../util/fileSystem';
 
 type ProposalPDFMeta = {
   files: {
@@ -359,7 +359,7 @@ class ProposalPdfEmitter extends EventEmitter {
   }
 }
 
-export default async function generateProposalPdf(
+export default async function generateProposalPDF(
   proposalPdfDataList: ProposalPDFData[]
 ) {
   const overallMeta: Map<
@@ -491,10 +491,15 @@ export default async function generateProposalPdf(
       proposalIds,
     });
 
-    const rs = createReadStream(pdfPath).once('close', () =>
-      // after the steam is closed clean up all files
-      failSafeDeleteFiles([mergedPdfPath, pdfPath])
-    );
+    const rs = createReadStream(pdfPath)
+      // .once('error', () =>
+      //   // after the steam is closed clean up all files
+      //   failSafeDeleteFiles([mergedPdfPath, pdfPath])
+      // )
+      .once('close', () =>
+        // after the steam is closed clean up all files
+        failSafeDeleteFiles([mergedPdfPath, pdfPath])
+      );
 
     ee.emit('cleanup');
     ee.emit('finished', rs);

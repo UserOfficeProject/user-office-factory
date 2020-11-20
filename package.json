@@ -32,7 +32,8 @@
     "morgan": "~1.9.1",
     "pg": "^8.4.2",
     "pg-large-object": "^2.0.0",
-    "puppeteer": "^5.4.1"
+    "puppeteer": "^5.4.1",
+    "xlsx": "^0.16.9"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.2",

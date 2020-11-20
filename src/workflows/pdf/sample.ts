@@ -4,18 +4,18 @@ import { Readable } from 'stream';
 
 import { logger } from '@esss-swap/duo-logger';
 
-import { FileMetadata } from '../models/File';
+import { FileMetadata } from '../../models/File';
 import {
   generatePdfFromHtml,
   getTotalPages,
   mergePDF,
   writeToC,
   TableOfContents,
-} from '../pdf';
-import services from '../services';
-import { renderTemplate } from '../template';
-import { Answer, Sample, SamplePDFData } from '../types';
-import { failSafeDeleteFiles, generateTmpPath } from '../util/fileSystem';
+} from '../../pdf';
+import services from '../../services';
+import { renderTemplate } from '../../template';
+import { Answer, Sample, SamplePDFData } from '../../types';
+import { failSafeDeleteFiles, generateTmpPath } from '../../util/fileSystem';
 
 type SamplePDFMeta = {
   files: {
@@ -221,7 +221,7 @@ class SamplePdfEmitter extends EventEmitter {
   }
 }
 
-export default async function generateSamplePdf(
+export default async function generateSamplePDF(
   SamplePDFDataList: SamplePDFData[]
 ) {
   const overallMeta: Map<

@@ -1,20 +1,20 @@
 import { Readable } from 'stream';
 
-import generateProposalPdf from './proposal';
-import generateSamplePdf from './sample';
+import generateProposalPDF from './proposal';
+import generateSamplePDF from './sample';
 
-export default function generatePdf(
+export default function generatePDF(
   pdfType: string,
-  data: any
+  { data }: { data: any[] }
 ): Promise<Readable> {
   switch (pdfType) {
     case 'proposal':
       // TODO: check data
 
-      return generateProposalPdf(data);
+      return generateProposalPDF(data);
 
     case 'sample':
-      return generateSamplePdf(data);
+      return generateSamplePDF(data);
     default:
       throw new Error(`Unknown PDF type: ${pdfType}`);
   }
