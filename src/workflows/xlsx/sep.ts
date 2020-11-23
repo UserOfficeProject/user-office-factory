@@ -14,6 +14,11 @@ export default async function generateProposalXLSX({
 
   const wb = newWorkBook();
 
+  // handle edge case (no data)
+  if (data.length === 0) {
+    appendSheet(wb, 'Sheet 1', [], []);
+  }
+
   for (const { sheetName, rows } of data) {
     appendSheet(wb, sheetName, meta.columns, rows);
   }
