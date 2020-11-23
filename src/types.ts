@@ -2,6 +2,10 @@ export type MetaBase = { collectionFilename: string; singleFilename: string };
 export type XLSXMetaBase = MetaBase & { columns: string[] };
 
 export type ProposalXLSXData = Array<string | number>;
+export type SEPXLSXData = Array<{
+  sheetName: string;
+  rows: Array<string | number>;
+}>;
 
 export type ProposalPDFData = {
   proposal: Proposal;
