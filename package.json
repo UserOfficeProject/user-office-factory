@@ -11,6 +11,7 @@
   "license": "ISC",
   "scripts": {
     "test": "jest --detectOpenHandles --forceExit",
+    "test:watch": "jest --watchAll --runInBand --detectOpenHandles",
     "build": "rm -rf ./build && tsc",
     "prod": "npm run build && env NODE_ENV=production node ./build/index.js",
     "dev": "ts-node-dev --rs --trace-warnings --respawn ./src/index.ts",

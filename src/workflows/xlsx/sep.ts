@@ -10,8 +10,6 @@ export default async function generateProposalXLSX({
   data: SEPXLSXData;
   meta: XLSXMetaBase;
 }) {
-  console.dir(data, { depth: 10 });
-
   const wb = newWorkBook();
 
   // handle edge case (no data)
