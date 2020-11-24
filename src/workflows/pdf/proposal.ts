@@ -491,15 +491,10 @@ export default async function generateProposalPDF(
       proposalIds,
     });
 
-    const rs = createReadStream(pdfPath)
-      // .once('error', () =>
-      //   // after the steam is closed clean up all files
-      //   failSafeDeleteFiles([mergedPdfPath, pdfPath])
-      // )
-      .once('close', () =>
-        // after the steam is closed clean up all files
-        failSafeDeleteFiles([mergedPdfPath, pdfPath])
-      );
+    const rs = createReadStream(pdfPath).once('close', () =>
+      // after the steam is closed clean up all files
+      failSafeDeleteFiles([mergedPdfPath, pdfPath])
+    );
 
     ee.emit('cleanup');
     ee.emit('finished', rs);
