@@ -1,0 +1,74 @@
+{
+  "sep_test_1": {
+    "data": [
+      {
+        "sheetName": "Instrument 1",
+        "rows": [["134245", "Baz", "Foo bar", 1, 3.5, 6, 5, "no"]]
+      },
+      {
+        "sheetName": "Instrument 2",
+        "rows": [
+          [9999999, "baz baz", "", 1.99999, 3.5, 11, 7, "yes"],
+          ["555555", "Bar Baz", "", 1, 1, 1, 1, "foo"]
+        ]
+      }
+    ],
+    "meta": {
+      "columns": [
+        "Proposal Short Code",
+        "Proposal Title",
+        "Principal Investigator",
+        "Instrument available time",
+        "Technical review allocated time",
+        "Average Score",
+        "Current rank",
+        "Is in availability zone"
+      ]
+    }
+  },
+  "proposal_test_1": {
+    "data": [
+      [
+        "134245",
+        "Test 1",
+        "Carl Carlsson",
+        "Feasible",
+        "",
+        4,
+        4,
+        4.333333333333333,
+        "asdasdasd",
+        "ACCEPTED",
+        9
+      ],
+      [
+        "567122",
+        "Test 1",
+        "Carl Carlsson",
+        "<missing>",
+        "<missing>",
+        "<missing>",
+        "NA",
+        "NA",
+        "<missing>",
+        "<missing>",
+        "<missing>"
+      ]
+    ],
+    "meta": {
+      "columns": [
+        "Proposal ID",
+        "Title",
+        "Principal Investigator",
+        "Technical Status",
+        "Tehnical Comment",
+        "Time(Days)",
+        "Score difference",
+        "Average Score",
+        "Comment Management",
+        "Decision",
+        "Order"
+      ]
+    }
+  }
+}
