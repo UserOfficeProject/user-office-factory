@@ -16,7 +16,7 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
-FROM alpine:edge
+FROM alpine:latest
 
 # Installs  Chromium (86) package.
 RUN apk add --no-cache \
