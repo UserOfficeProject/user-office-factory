@@ -9,3 +9,11 @@ handlebar.registerHelper('$sum', function(...args) {
 
   return args.reduce((sum, curr) => sum + curr, 0);
 });
+
+handlebar.registerHelper('$join', function(src, delimiter) {
+  if (!Array.isArray(src)) {
+    return src;
+  }
+
+  return src.join(delimiter);
+});

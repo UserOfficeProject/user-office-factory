@@ -436,16 +436,26 @@ export default async function generateProposalPDF(
         pageNumber += pdfPageGroup.questionnaires.pdfPages[questionary];
       });
 
-      meta.files.samples.forEach((sample, qIdx) => {
-        filePaths.push(sample);
-        toc.children.push({
-          title: `Sample: ${proposalPdfDataList[rootIdx].samples[qIdx].sample.title}`,
+      if (meta.files.samples.length > 0) {
+        const sampleToC: TableOfContents = {
+          title: 'Samples',
           page: pageNumber,
           children: [],
+        };
+
+        meta.files.samples.forEach((sample, qIdx) => {
+          filePaths.push(sample);
+          sampleToC.children.push({
+            title: `Sample: ${proposalPdfDataList[rootIdx].samples[qIdx].sample.title}`,
+            page: pageNumber,
+            children: [],
+          });
+
+          pageNumber += pdfPageGroup.samples.pdfPages[sample];
         });
 
-        pageNumber += pdfPageGroup.samples.pdfPages[sample];
-      });
+        toc.children.push(sampleToC);
+      }
 
       if (meta.files.attachments.length > 0) {
         const attachmentToC: TableOfContents = {

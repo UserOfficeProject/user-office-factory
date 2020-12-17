@@ -36,6 +36,9 @@ describe('Sample PDF', () => {
           const text = extractPDFText(pdfPath);
 
           expect(text).toMatch(/Sample: Foo sample/);
+
+          expect(text).toMatch(/Date question\n2020-10-27/);
+
           expect(text).toMatch(/Status:\nNot evaluated/);
           expect(text).toMatch(/Comment:/);
 
