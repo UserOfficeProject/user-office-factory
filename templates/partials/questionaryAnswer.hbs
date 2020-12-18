@@ -27,25 +27,35 @@
       No
     {{/if}}
     <br />
-  {{else if ($eq this.question.dataType 'SUBTEMPLATE')}}
+  {{else if ($eq this.question.dataType 'SAMPLE_DECLARATION')}}
     <span class="bold">{{this.question.question}}</span><br />
     <br />
-    {{#each this.value}}
-      <span class="bold">Entry {{ $sum @index 1 }} of {{ ../this.value.length }}</span><br />
-      {{#each this.fields}}
-        {{> questionaryAnswer}}
-      {{/each}}
 
-      <br />
-    {{/each}}
-    {{#unless this.value}}
-      <div class="mb-2">&nbsp;</div>
-    {{/unless}}
+    <div class="ml-3">
+      {{#each this.value}}
+        <span class="bold">Sample Entry {{ $sum @index 1 }} of {{ ../this.value.length }}</span><br />
+        {{this.title}} - <em>See appendix</em>
+        <br /><br />
+      {{/each}}
+      {{#unless this.value}}
+        <div class="mb-2">Left blank</div>
+      {{/unless}}
+    </div>
+
+  {{else if ($eq this.question.dataType 'INTERVAL')}}
+    <span class="bold">{{this.question.question}}</span><br />
+    {{#if this.value}}
+      Min: {{this.value.min}}<br />
+      Max: {{this.value.max}}<br />
+      Unit: {{this.value.unit}}
+    {{else}}
+      Left blank
+    {{/if}}
 
   {{else}}
     <span class="bold">{{this.question.question}}</span><br />
     {{#if this.value}}
-      {{ this.value}}
+      {{$join this.value ', '}}
     {{else}}
       Left blank
     {{/if}}

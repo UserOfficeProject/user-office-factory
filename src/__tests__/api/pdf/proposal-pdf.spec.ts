@@ -31,7 +31,7 @@ describe('Proposal PDF', () => {
         r.pipe(ws).once('close', () => {
           const totalPages = getTotalPages(pdfPath);
 
-          expect(totalPages).toBe(7);
+          expect(totalPages).toBe(8);
 
           const text = extractPDFText(pdfPath);
 
@@ -52,11 +52,14 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Date question\n2020-10-27/);
           expect(text).toMatch(/Boolean question - true\nYes/);
           expect(text).toMatch(/Boolean question - false\nNo/);
+          expect(text).toMatch(/Selection from options\nSelected answer/);
+          expect(text).toMatch(
+            /Selection from options with multiple select\nfoo, bar/
+          );
+          expect(text).toMatch(
+            /Interval question\nMin: -1\nMax: 99\nUnit: foo/
+          );
           expect(text).toMatch(/Random question\nRandom answer/);
-
-          expect(text).toMatch(/Sample: Foo sample/);
-          expect(text).toMatch(/Status:\nNot evaluated/);
-          expect(text).toMatch(/Comment:\nSafety foo bar/);
 
           expect(text).toMatch(/Status\nOkey/);
           expect(text).toMatch(/Time Allocation\n30 Days/);
@@ -70,13 +73,20 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Co-proposer:\nCo Foo Co Bar, Co Baz/);
 
           expect(text).toMatch(/Questionary 2/);
-          expect(text).toMatch(/Sub-template/);
-          expect(text).toMatch(/Entry 1 of 2/);
-          expect(text).toMatch(/Sub BOOLEAN 1\nYes/);
+          expect(text).toMatch(/Sample declaration/);
+          expect(text).toMatch(/Sample Entry 1 of 2/);
+          expect(text).toMatch(/Foo sample - See appendix/);
 
-          expect(text).toMatch(/Entry 2 of 2/);
-          expect(text).toMatch(/Sub DATE 2\n2020-10-30/);
-          expect(text).toMatch(/Sub BOOLEAN 2\nNo/);
+          expect(text).toMatch(/Sample Entry 2 of 2/);
+          expect(text).toMatch(/Sample 999 - See appendix/);
+
+          expect(text).toMatch(/Sample: Foo sample/);
+          expect(text).toMatch(/Sample date question\n2020-10-27/);
+          expect(text).toMatch(/Status:\nNot evaluated/);
+          expect(text).toMatch(/Comment:\nSafety foo bar/);
+
+          expect(text).toMatch(/Sample: Sample 999/);
+          expect(text).toMatch(/Status:\nRisky/);
 
           expect(text).toMatch(/Status\nOkey-ish/);
           expect(text).toMatch(/Time Allocation\n0 Days/);

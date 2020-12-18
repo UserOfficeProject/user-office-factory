@@ -1,17 +1,7 @@
 {
   "proposal_test_1": [
     {
-      "samples": [
-        {
-          "sample": {
-            "id": 8,
-            "title": "Foo sample",
-            "safetyComment": "Safety foo bar",
-            "status": "Not evaluated"
-          },
-          "sampleQuestionaryFields": []
-        }
-      ],
+      "samples": [],
       "technicalReview": {
         "status": "Okey",
         "timeAllocation": 30,
@@ -103,6 +93,27 @@
             },
             {
               "question": {
+                "dataType": "SELECTION_FROM_OPTIONS",
+                "question": "Selection from options"
+              },
+              "value": ["Selected answer"]
+            },
+            {
+              "question": {
+                "dataType": "SELECTION_FROM_OPTIONS",
+                "question": "Selection from options with multiple select"
+              },
+              "value": ["foo", "bar"]
+            },
+            {
+              "question": {
+                "dataType": "INTERVAL",
+                "question": "Interval question"
+              },
+              "value": { "min": -1, "max": 99, "unit": "foo" }
+            },
+            {
+              "question": {
                 "dataType": "Unknown dataType",
                 "question": "Random question"
               },
@@ -113,7 +124,34 @@
       ]
     },
     {
-      "samples": [],
+      "samples": [
+        {
+          "sample": {
+            "id": 8,
+            "title": "Foo sample",
+            "safetyComment": "Safety foo bar",
+            "status": "Not evaluated"
+          },
+          "sampleQuestionaryFields": [
+            {
+              "question": {
+                "dataType": "DATE",
+                "question": "Sample date question"
+              },
+              "value": "2020-10-27T15:06:23.849Z"
+            }
+          ]
+        },
+        {
+          "sample": {
+            "id": 9,
+            "title": "Sample 999",
+            "safetyComment": "",
+            "status": "Risky"
+          },
+          "sampleQuestionaryFields": []
+        }
+      ],
       "technicalReview": {
         "status": "Okey-ish",
         "timeAllocation": 0,
@@ -147,38 +185,21 @@
           "fields": [
             {
               "question": {
-                "dataType": "SUBTEMPLATE",
-                "question": "Sub-template"
+                "dataType": "SAMPLE_DECLARATION",
+                "question": "Sample declaration"
               },
               "value": [
                 {
-                  "fields": [
-                    {
-                      "question": {
-                        "dataType": "BOOLEAN",
-                        "question": "Sub BOOLEAN 1"
-                      },
-                      "value": true
-                    }
-                  ]
+                  "id": 8,
+                  "title": "Foo sample",
+                  "safetyComment": "Safety foo bar",
+                  "status": "Not evaluated"
                 },
                 {
-                  "fields": [
-                    {
-                      "question": {
-                        "dataType": "DATE",
-                        "question": "Sub DATE 2"
-                      },
-                      "value": "2020-10-30T15:06:23.849Z"
-                    },
-                    {
-                      "question": {
-                        "dataType": "BOOLEAN",
-                        "question": "Sub BOOLEAN 2"
-                      },
-                      "value": false
-                    }
-                  ]
+                  "id": 9,
+                  "title": "Sample 999",
+                  "safetyComment": "",
+                  "status": "Risky"
                 }
               ]
             }
@@ -195,7 +216,15 @@
         "safetyComment": "Safety foo bar",
         "status": "Not evaluated"
       },
-      "sampleQuestionaryFields": [],
+      "sampleQuestionaryFields": [
+        {
+          "question": {
+            "dataType": "DATE",
+            "question": "Date question"
+          },
+          "value": "2020-10-27T15:06:23.849Z"
+        }
+      ],
       "attachmentIds": []
     }
   ]
