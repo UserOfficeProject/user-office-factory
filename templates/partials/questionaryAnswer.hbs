@@ -52,6 +52,14 @@
       Left blank
     {{/if}}
 
+  {{else if ($eq this.question.dataType 'NUMBER_INPUT')}}
+    <span class="bold">{{this.question.question}}</span><br />
+    {{#if this.value}}
+      {{this.value.value}} {{this.value.unit}}
+    {{else}}
+      Left blank
+    {{/if}}
+
   {{else}}
     <span class="bold">{{this.question.question}}</span><br />
     {{#if this.value}}
