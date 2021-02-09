@@ -60,6 +60,8 @@ describe('Proposal PDF', () => {
             /Interval question\nMin: -1\nMax: 99\nUnit: foo/
           );
           expect(text).toMatch(/Random question\nRandom answer/);
+          expect(text).toMatch(/Rich text input question\nrich\ntext\ninput/);
+          expect(text).toMatch(/Number input question\n2345 foo\/bar/);
 
           expect(text).toMatch(/Status\nOkey/);
           expect(text).toMatch(/Time Allocation\n30 Days/);

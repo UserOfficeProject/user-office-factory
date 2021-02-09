@@ -1,7 +1,7 @@
 <div class="mb-2">
   {{#if ($eq this.question.dataType 'EMBELLISHMENT') }}
-    {{#unless this.question.config.omitFromPdf }}
-      <span class="bold">{{this.question.config.plain}}</span><br />
+    {{#unless this.config.omitFromPdf }}
+      <span class="bold">{{this.config.plain}}</span><br />
     {{/unless}}
   {{else if ($eq this.question.dataType 'FILE_UPLOAD') }}
     <span class="bold">{{this.question.question}}</span><br />
@@ -56,6 +56,14 @@
     <span class="bold">{{this.question.question}}</span><br />
     {{#if this.value}}
       {{this.value.value}} {{this.value.unit}}
+    {{else}}
+      Left blank
+    {{/if}}
+
+  {{else if ($eq this.question.dataType 'RICH_TEXT_INPUT')}}
+    <span class="bold">{{this.question.question}}</span><br />
+    {{#if this.value}}
+      {{{this.value}}}
     {{else}}
       Left blank
     {{/if}}

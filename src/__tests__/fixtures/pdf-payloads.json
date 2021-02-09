@@ -40,20 +40,20 @@
           "fields": [
             {
               "question": {
-                "dataType": "EMBELLISHMENT",
-                "config": {
-                  "plain": "Visible EMBELLISHMENT",
-                  "omitFromPdf": false
-                }
+                "dataType": "EMBELLISHMENT"
+              },
+              "config": {
+                "plain": "Visible EMBELLISHMENT",
+                "omitFromPdf": false
               }
             },
             {
               "question": {
-                "dataType": "EMBELLISHMENT",
-                "config": {
-                  "plain": "Hidden EMBELLISHMENT",
-                  "omitFromPdf": true
-                }
+                "dataType": "EMBELLISHMENT"
+              },
+              "config": {
+                "plain": "Hidden EMBELLISHMENT",
+                "omitFromPdf": true
               }
             },
             {
@@ -111,6 +111,20 @@
                 "question": "Interval question"
               },
               "value": { "min": -1, "max": 99, "unit": "foo" }
+            },
+            {
+              "question": {
+                "dataType": "RICH_TEXT_INPUT",
+                "question": "Rich text input question"
+              },
+              "value": "<p>rich</p>\n<p>text</p>\n<p>input</p>"
+            },
+            {
+              "question": {
+                "dataType": "NUMBER_INPUT",
+                "question": "Number input question"
+              },
+              "value": { "unit": "foo/bar", "value": "2345" }
             },
             {
               "question": {
