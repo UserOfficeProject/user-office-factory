@@ -47,8 +47,6 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Questionary 1/);
           expect(text).toMatch(/Visible EMBELLISHMENT/);
           expect(text).not.toMatch(/Hidden EMBELLISHMENT/);
-          expect(text).toMatch(/File upload question - exists\nSee appendix/);
-          expect(text).toMatch(/File upload question - nope\nLeft blank/);
           expect(text).toMatch(/Date question\n2020-10-27/);
           expect(text).toMatch(/Boolean question - true\nYes/);
           expect(text).toMatch(/Boolean question - false\nNo/);

@@ -232,6 +232,12 @@ class ProposalPdfEmitter extends EventEmitter {
     if (attachments.length > 0) {
       this.meta.attachments = attachments;
       this.emit('fetch:attachmentsFileMeta', attachments);
+    } else {
+      this.emit('render:questionnaires', questionarySteps, []);
+
+      if (samples.length > 0) {
+        this.emit('render:samples', samples, []);
+      }
     }
   }
 
