@@ -17,24 +17,3 @@ handlebar.registerHelper('$join', function(src, delimiter) {
 
   return src.join(delimiter);
 });
-
-handlebar.registerHelper('$attachment', function(
-  attachmentIds: any[],
-  attachments: any[]
-) {
-  return attachmentIds
-    .map(({ id, figure }) => {
-      const foundIndex = attachments.findIndex(({ fileId }) => fileId === id);
-
-      if (foundIndex === -1) {
-        return 'Error: attachment info not found: ' + id;
-      }
-
-      const attachment = attachments[foundIndex];
-
-      return figure
-        ? `<em>See appendix Figure ${figure}</em>`
-        : `<em>See appendix ${attachment.originalFileName}</em>`;
-    })
-    .join('<br/>');
-});

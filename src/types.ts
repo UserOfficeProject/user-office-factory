@@ -14,7 +14,7 @@ export type ProposalPDFData = {
   questionarySteps: QuestionaryStep[];
   principalInvestigator: BasicUser;
   coProposers: BasicUser[];
-  attachmentIds: Attachment[];
+  attachments: Attachment[];
   samples: ProposalSampleData[];
   technicalReview?: {
     status: string;
@@ -26,7 +26,7 @@ export type ProposalPDFData = {
 export type SamplePDFData = {
   sample: Sample & { status: string };
   sampleQuestionaryFields: Answer[];
-  attachmentIds: Attachment[];
+  attachments: Attachment[];
 };
 
 export type ProposalSampleData = Pick<

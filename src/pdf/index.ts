@@ -83,8 +83,8 @@ export async function generatePdfFromLink(
   await page.goto(link, { waitUntil: 'load' });
 
   const imgHandle = await page.$('img');
-  const width = await page.evaluate(img => img?.width, imgHandle);
-  const height = await page.evaluate(img => img?.height, imgHandle);
+  const width = await page.evaluate(img => img.width, imgHandle);
+  const height = await page.evaluate(img => img.height, imgHandle);
 
   await page.pdf({
     path: pdfPath,
@@ -129,4 +129,13 @@ export function writeToC(inPath: string, toc: TableOfContents[]) {
   logger.logDebug('[writeToC] ToC created', { inPath, pdfPath });
 
   return pdfPath;
+}
+
+export function generatePuppeteerPdfFooter(footerContent: string) {
+  return {
+    margin: { top: 0, left: 0, bottom: '9mm', right: 0 },
+    displayHeaderFooter: true,
+    headerTemplate: '',
+    footerTemplate: `<div style="font-size: 8px; padding:0; text-align: center; display:flex; margin: 0 auto;">${footerContent}</div>`,
+  };
 }

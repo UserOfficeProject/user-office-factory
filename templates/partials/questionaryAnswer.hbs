@@ -6,7 +6,7 @@
   {{else if ($eq this.step.question.dataType 'FILE_UPLOAD') }}
     <span class="bold">{{this.step.question.question}}</span><br />
     {{#if this.step.value}}
-      {{{ $attachment this.step.value this.attachments }}}
+      {{{ $attachment this.step.value this.attachmentsFileMeta }}}
     {{else}}
       Left blank
     {{/if}}
