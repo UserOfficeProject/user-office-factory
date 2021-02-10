@@ -5,7 +5,7 @@ export interface FileDataSource {
   // Read
   getMetadata(
     fileIds: string[],
-    filter?: { mimeType?: string }
+    filter?: { mimeType?: string[] }
   ): Promise<FileMetadata[]>;
   // write
   put(

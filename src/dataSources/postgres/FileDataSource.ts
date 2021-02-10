@@ -24,7 +24,7 @@ export default class PostgresFileDataSource implements FileDataSource {
 
   public async getMetadata(
     fileIds: string[],
-    filter?: { mimeType?: string }
+    filter?: { mimeType?: string[] }
   ): Promise<FileMetadata[]> {
     if (fileIds.length === 0) {
       return [];
@@ -42,7 +42,12 @@ export default class PostgresFileDataSource implements FileDataSource {
       .whereIn('file_id', fileIds)
       .modify(query => {
         if (filter?.mimeType) {
-          query.where('mime_type', '=', filter.mimeType);
+          query.whereRaw(
+            // eslint-disable-next-line quotes
+            `mime_type ~* '(${filter.mimeType
+              .map(r => r.replace(/\//, '\\/'))
+              .join('|')})'`
+          );
         }
       })
       .orderBy('file_id', 'asc')

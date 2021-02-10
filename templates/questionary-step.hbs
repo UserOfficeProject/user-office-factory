@@ -7,7 +7,7 @@
         <br />
 
         {{#each step.fields}}
-          {{> questionaryAnswer}}
+          {{> questionaryAnswer step=this attachments=../attachments}}
         {{/each}}
 
       </div>

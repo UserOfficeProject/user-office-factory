@@ -7,12 +7,14 @@ export type SEPXLSXData = Array<{
   rows: Array<string | number>;
 }>;
 
+export type Attachment = { id: string; figure?: string; caption?: string };
+
 export type ProposalPDFData = {
   proposal: Proposal;
   questionarySteps: QuestionaryStep[];
   principalInvestigator: BasicUser;
   coProposers: BasicUser[];
-  attachmentIds: string[];
+  attachmentIds: Attachment[];
   samples: ProposalSampleData[];
   technicalReview?: {
     status: string;
@@ -24,7 +26,7 @@ export type ProposalPDFData = {
 export type SamplePDFData = {
   sample: Sample & { status: string };
   sampleQuestionaryFields: Answer[];
-  attachmentIds: string[];
+  attachmentIds: Attachment[];
 };
 
 export type ProposalSampleData = Pick<

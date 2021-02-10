@@ -11,6 +11,7 @@ import {
   mergePDF,
   writeToC,
   TableOfContents,
+  generatePdfFromLink,
 } from '../../pdf';
 import services from '../../services';
 import { renderTemplate } from '../../template';
@@ -20,6 +21,7 @@ import {
   QuestionaryStep,
   ProposalPDFData,
   ProposalSampleData,
+  Attachment,
 } from '../../types';
 import { failSafeDeleteFiles, generateTmpPath } from '../../util/fileSystem';
 
@@ -32,6 +34,7 @@ type ProposalPDFMeta = {
     technicalReview?: string;
   };
   attachmentsMeta: FileMetadata[];
+  attachmentIds: Attachment[];
 };
 
 type ProposalPDFPagesMeta = Record<
@@ -50,6 +53,7 @@ class ProposalPdfEmitter extends EventEmitter {
       attachments: [],
     },
     attachmentsMeta: [],
+    attachmentIds: [],
   };
 
   init(data: ProposalPDFData) {
@@ -171,16 +175,22 @@ class ProposalPdfEmitter extends EventEmitter {
       }
     });
 
-    this.once('fetched:attachmentsMeta', attachmentsMeta => {
+    this.once('fetched:attachmentsMeta', (attachmentsMeta, attachmentIds) => {
       this.meta.attachmentsMeta = attachmentsMeta;
       this.pdfPageGroup.attachments.waitFor = attachmentsMeta.length;
 
       this.emit('taskFinished', 'fetch:attachmentsMeta');
+      this.emit('render:questionnaires', questionarySteps, attachmentsMeta);
+
+      if (samples.length > 0) {
+        this.emit('render:samples', samples, attachmentsMeta);
+      }
+
       if (this.pdfPageGroup.attachments.waitFor === 0) {
         this.emit('taskFinished', 'fetch:attachments');
         this.emit('taskFinished', 'count-pages:attachments');
       } else {
-        this.emit('fetch:attachments', attachmentsMeta);
+        this.emit('fetch:attachments', attachmentsMeta, attachmentIds);
       }
     });
 
@@ -205,17 +215,13 @@ class ProposalPdfEmitter extends EventEmitter {
      */
 
     this.emit('render:proposal', proposal, principalInvestigator, coProposers);
-    this.emit('render:questionnaires', questionarySteps);
-
-    if (samples.length > 0) {
-      this.emit('render:samples', samples);
-    }
 
     if (technicalReview) {
       this.emit('render:technicalReview', technicalReview);
     }
 
     if (attachmentIds.length > 0) {
+      this.meta.attachmentIds = attachmentIds;
       this.emit('fetch:attachmentsMeta', attachmentIds);
     }
   }
@@ -240,7 +246,10 @@ class ProposalPdfEmitter extends EventEmitter {
     }
   }
 
-  private async renderQuestionarySteps(questionarySteps: QuestionaryStep[]) {
+  private async renderQuestionarySteps(
+    questionarySteps: QuestionaryStep[],
+    attachmentsMeta: FileMetadata[]
+  ) {
     try {
       for (const questionaryStep of questionarySteps) {
         if (this.stopped) {
@@ -249,7 +258,7 @@ class ProposalPdfEmitter extends EventEmitter {
 
         const renderedProposalQuestion = await renderTemplate(
           'questionary-step.hbs',
-          { step: questionaryStep }
+          { step: questionaryStep, attachments: attachmentsMeta }
         );
 
         const pdfPath = await generatePdfFromHtml(renderedProposalQuestion);
@@ -281,35 +290,85 @@ class ProposalPdfEmitter extends EventEmitter {
     }
   }
 
-  private async fetchAttachmentsMeta(attachmentIds: string[]) {
+  private async fetchAttachmentsMeta(attachmentIds: Attachment[]) {
     try {
       const filesMeta = await services.queries.files.getFileMetadata(
-        attachmentIds,
-        { mimeType: 'application/pdf' }
+        attachmentIds.map(({ id }) => id),
+        { mimeType: ['application/pdf', '^image/.*'] }
       );
 
-      this.emit('fetched:attachmentsMeta', filesMeta);
+      this.emit('fetched:attachmentsMeta', filesMeta, attachmentIds);
     } catch (e) {
       this.emit('error', e, 'fetchAttachmentsMeta');
     }
   }
 
-  private async fetchAttachments(attachmentsMeta: FileMetadata[]) {
+  private async fetchAttachments(
+    attachmentsMeta: FileMetadata[],
+    attachmentIds: Attachment[]
+  ) {
     try {
-      for (const { fileId } of attachmentsMeta) {
+      for (const attachmentMeta of attachmentsMeta) {
+        const { fileId, mimeType } = attachmentMeta;
         // pre-download file
         const attachmentPath = generateTmpPath();
         await services.mutations.files.prepare(fileId, attachmentPath);
 
-        this.emit('countPages', attachmentPath, 'attachments');
-        this.emit('fetched:attachment', attachmentPath);
+        if (mimeType.startsWith('image/')) {
+          const pdfPath = await this.renderImageAttachmentPdf(
+            attachmentPath,
+            attachmentMeta,
+            attachmentIds
+          );
+
+          this.emit('countPages', pdfPath, 'attachments');
+          this.emit('fetched:attachment', pdfPath);
+        } else {
+          this.emit('countPages', attachmentPath, 'attachments');
+          this.emit('fetched:attachment', attachmentPath);
+        }
       }
     } catch (e) {
       this.emit('error', e, 'fetchAttachments');
     }
   }
 
-  private async renderSamples(samples: ProposalSampleData[]) {
+  private async renderImageAttachmentPdf(
+    attachmentPath: string,
+    { fileId, originalFileName }: FileMetadata,
+    attachmentIds: Attachment[]
+  ) {
+    const attachment = attachmentIds.find(({ id }) => id === fileId);
+
+    // the filename is our fallback option if we have no caption  or figure
+    let footer = originalFileName;
+
+    if (attachment) {
+      const figure = attachment.figure ?? '';
+      const caption = attachment.caption ?? '';
+
+      footer =
+        figure && caption ? `Figure ${figure}: ${caption}` : figure + caption;
+    }
+
+    const pdfPath = await generatePdfFromLink(`file://${attachmentPath}`, {
+      pdfOptions: {
+        margin: { top: 0, left: 0, bottom: '9mm', right: 0 },
+        displayHeaderFooter: true,
+        headerTemplate: '',
+        footerTemplate: `<div style="font-size: 8px; padding:0; text-align: center; display:flex; margin: 0 auto;">${footer}</div>`,
+      },
+    });
+
+    failSafeDeleteFiles([attachmentPath]);
+
+    return pdfPath;
+  }
+
+  private async renderSamples(
+    samples: ProposalSampleData[],
+    attachmentsMeta: FileMetadata[]
+  ) {
     try {
       for (const { sample, sampleQuestionaryFields } of samples) {
         if (this.stopped) {
@@ -319,6 +378,7 @@ class ProposalPdfEmitter extends EventEmitter {
         const renderedProposalSample = await renderTemplate('sample.hbs', {
           sample,
           sampleQuestionaryFields,
+          attachments: attachmentsMeta,
         });
 
         const pdfPath = await generatePdfFromHtml(renderedProposalSample);
@@ -465,9 +525,17 @@ export default async function generateProposalPDF(
         };
 
         meta.files.attachments.forEach((attachment, aIdx) => {
+          const attachmentFileMeta = meta.attachmentsMeta[aIdx];
+          const attachmentMeta = meta.attachmentIds.find(
+            ({ id }) => id === attachmentFileMeta.fileId
+          );
+
           filePaths.push(attachment);
           attachmentToC.children.push({
-            title: meta.attachmentsMeta[aIdx].originalFileName,
+            title:
+              attachmentMeta && attachmentMeta.figure
+                ? `Figure ${attachmentMeta.figure}`
+                : attachmentFileMeta.originalFileName,
             page: pageNumber,
             children: [],
           });

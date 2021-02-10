@@ -1,76 +1,76 @@
 <div class="mb-2">
-  {{#if ($eq this.question.dataType 'EMBELLISHMENT') }}
-    {{#unless this.config.omitFromPdf }}
-      <span class="bold">{{this.config.plain}}</span><br />
+  {{#if ($eq this.step.question.dataType 'EMBELLISHMENT') }}
+    {{#unless this.step.config.omitFromPdf }}
+      <span class="bold">{{this.step.config.plain}}</span><br />
     {{/unless}}
-  {{else if ($eq this.question.dataType 'FILE_UPLOAD') }}
-    <span class="bold">{{this.question.question}}</span><br />
-    {{#if this.value}}
-      <em>See appendix</em>
+  {{else if ($eq this.step.question.dataType 'FILE_UPLOAD') }}
+    <span class="bold">{{this.step.question.question}}</span><br />
+    {{#if this.step.value}}
+      {{{ $attachment this.step.value this.attachments }}}
     {{else}}
       Left blank
     {{/if}}
     <br />
-  {{else if ($eq this.question.dataType 'DATE') }}
-    <span class="bold">{{this.question.question}}</span><br />
-    {{#if this.value}}
-      {{ $utcDate this.value}}
+  {{else if ($eq this.step.question.dataType 'DATE') }}
+    <span class="bold">{{this.step.question.question}}</span><br />
+    {{#if this.step.value}}
+      {{ $utcDate this.step.value}}
     {{else}}
       Left blank
     {{/if}}
     <br />
-  {{else if ($eq this.question.dataType 'BOOLEAN')}}
-    <span class="bold">{{this.question.question}}</span><br />
-    {{#if this.value}}
+  {{else if ($eq this.step.question.dataType 'BOOLEAN')}}
+    <span class="bold">{{this.step.question.question}}</span><br />
+    {{#if this.step.value}}
       Yes
     {{else}}
       No
     {{/if}}
     <br />
-  {{else if ($eq this.question.dataType 'SAMPLE_DECLARATION')}}
-    <span class="bold">{{this.question.question}}</span><br />
+  {{else if ($eq this.step.question.dataType 'SAMPLE_DECLARATION')}}
+    <span class="bold">{{this.step.question.question}}</span><br />
     <br />
 
     <div class="ml-3">
-      {{#each this.value}}
+      {{#each this.step.value}}
         <span class="bold">Sample Entry {{ $sum @index 1 }} of {{ ../this.value.length }}</span><br />
         {{this.title}} - <em>See appendix</em>
         <br /><br />
       {{/each}}
-      {{#unless this.value}}
+      {{#unless this.step.value}}
         <div class="mb-2">Left blank</div>
       {{/unless}}
     </div>
 
-  {{else if ($eq this.question.dataType 'INTERVAL')}}
-    <span class="bold">{{this.question.question}}</span><br />
+  {{else if ($eq this.step.question.dataType 'INTERVAL')}}
+    <span class="bold">{{this.step.question.question}}</span><br />
     {{#if this.value}}
-      Min: {{this.value.min}}<br />
-      Max: {{this.value.max}}<br />
-      Unit: {{this.value.unit}}
+      Min: {{this.step.value.min}}<br />
+      Max: {{this.step.value.max}}<br />
+      Unit: {{this.step.value.unit}}
     {{else}}
       Left blank
     {{/if}}
 
-  {{else if ($eq this.question.dataType 'NUMBER_INPUT')}}
-    <span class="bold">{{this.question.question}}</span><br />
-    {{#if this.value}}
-      {{this.value.value}} {{this.value.unit}}
+  {{else if ($eq this.step.question.dataType 'NUMBER_INPUT')}}
+    <span class="bold">{{this.step.question.question}}</span><br />
+    {{#if this.step.value}}
+      {{this.step.value.value}} {{this.step.value.unit}}
     {{else}}
       Left blank
     {{/if}}
 
-  {{else if ($eq this.question.dataType 'RICH_TEXT_INPUT')}}
-    <span class="bold">{{this.question.question}}</span><br />
-    {{#if this.value}}
-      {{{this.value}}}
+  {{else if ($eq this.step.question.dataType 'RICH_TEXT_INPUT')}}
+    <span class="bold">{{this.step.question.question}}</span><br />
+    {{#if this.step.value}}
+      {{{this.step.value}}}
     {{else}}
       Left blank
     {{/if}}
 
   {{else}}
-    <span class="bold">{{this.question.question}}</span><br />
-    {{#if this.value}}
+    <span class="bold">{{this.step.question.question}}</span><br />
+    {{#if this.step.value}}
       {{$join this.value ', '}}
     {{else}}
       Left blank

@@ -25,6 +25,8 @@ if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
 
 logger.logInfo('Launching puppeteer with ', { args: launchOptions });
 
+// TODO: create browser lazily while keeping track of it
+// so we don't end up with dozens of browsers
 puppeteer
   .launch({ args: launchOptions })
   .then(inst => (browser = inst))
@@ -33,9 +35,6 @@ puppeteer
   });
 
 export async function generatePdfFromHtml(html: string) {
-  // TODO: create browser lazily while keeping track of it
-  // so we don't end up with dozens of browsers
-
   const name = generateTmpPath();
 
   if (process.env.PDF_DEBUG_HTML === '1') {
@@ -49,9 +48,7 @@ export async function generatePdfFromHtml(html: string) {
 
   const start = Date.now();
   const page = await browser.newPage();
-  await page.setContent(html, {
-    waitUntil: 'load',
-  });
+  await page.setContent(html, { waitUntil: 'load' });
   await page.emulateMediaType('screen');
   await page.pdf({
     path: pdfPath,
@@ -61,6 +58,44 @@ export async function generatePdfFromHtml(html: string) {
   await page.close();
 
   logger.logDebug('[generatePdfFromHtml] PDF output:', {
+    pdfPath,
+    runtime: Date.now() - start,
+  });
+
+  return pdfPath;
+}
+
+export async function generatePdfFromLink(
+  link: string,
+  { pdfOptions }: { pdfOptions?: puppeteer.PDFOptions } = {}
+) {
+  const name = generateTmpPath();
+
+  const pdfPath = `${name}.pdf`;
+
+  const start = Date.now();
+  const page = await browser.newPage();
+  await page.setViewport({
+    width: 1920,
+    height: 947,
+  });
+
+  await page.goto(link, { waitUntil: 'load' });
+
+  const imgHandle = await page.$('img');
+  const width = await page.evaluate(img => img?.width, imgHandle);
+  const height = await page.evaluate(img => img?.height, imgHandle);
+
+  await page.pdf({
+    path: pdfPath,
+    margin: { top: 0, left: 0, bottom: 0, right: 0 },
+    landscape: width > height,
+    ...pdfOptions,
+  });
+
+  await page.close();
+
+  logger.logDebug('[generatePdfFromLink] PDF output:', {
     pdfPath,
     runtime: Date.now() - start,
   });
