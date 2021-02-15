@@ -11,10 +11,12 @@ import {
   mergePDF,
   writeToC,
   TableOfContents,
+  generatePdfFromLink,
+  generatePuppeteerPdfFooter,
 } from '../../pdf';
 import services from '../../services';
 import { renderTemplate } from '../../template';
-import { Answer, Sample, SamplePDFData } from '../../types';
+import { Answer, Sample, SamplePDFData, Attachment } from '../../types';
 import { failSafeDeleteFiles, generateTmpPath } from '../../util/fileSystem';
 
 type SamplePDFMeta = {
@@ -22,7 +24,8 @@ type SamplePDFMeta = {
     sample: string;
     attachments: string[];
   };
-  attachmentsMeta: FileMetadata[];
+  attachmentsFileMeta: FileMetadata[];
+  attachments: Attachment[];
 };
 
 type SamplePDFPagesMeta = Record<
@@ -38,16 +41,17 @@ class SamplePdfEmitter extends EventEmitter {
       sample: '',
       attachments: [],
     },
-    attachmentsMeta: [],
+    attachmentsFileMeta: [],
+    attachments: [],
   };
 
   init(data: SamplePDFData) {
-    const { sample, sampleQuestionaryFields, attachmentIds } = data;
+    const { sample, sampleQuestionaryFields, attachments } = data;
 
     this.pdfPageGroup = {
       sample: { waitFor: 1, pdfPages: {} },
       attachments: {
-        waitFor: 0 /* set by fetched:attachmentsMeta */,
+        waitFor: 0 /* set by fetched:attachmentsFileMeta */,
         pdfPages: {},
       },
     };
@@ -58,9 +62,9 @@ class SamplePdfEmitter extends EventEmitter {
 
     const tasksNeeded = ['render:sample', 'count-pages:sample'];
 
-    if (attachmentIds.length > 0) {
+    if (attachments.length > 0) {
       tasksNeeded.push('fetch:attachments');
-      tasksNeeded.push('fetch:attachmentsMeta');
+      tasksNeeded.push('fetch:attachmentsFileMeta');
       tasksNeeded.push('count-pages:attachments');
     }
 
@@ -90,7 +94,7 @@ class SamplePdfEmitter extends EventEmitter {
 
     this.once('render:sample', this.renderSample);
     this.once('fetch:attachments', this.fetchAttachments);
-    this.once('fetch:attachmentsMeta', this.fetchAttachmentsMeta);
+    this.once('fetch:attachmentsFileMeta', this.fetchAttachmentsFileMeta);
 
     this.once('rendered:sample', pdfPath => {
       this.meta.files.sample = pdfPath;
@@ -101,24 +105,35 @@ class SamplePdfEmitter extends EventEmitter {
       this.meta.files.attachments.push(attachmentPath);
 
       if (
-        this.meta.files.attachments.length === this.meta.attachmentsMeta.length
+        this.meta.files.attachments.length ===
+        this.meta.attachmentsFileMeta.length
       ) {
         this.emit('taskFinished', 'fetch:attachments');
       }
     });
 
-    this.once('fetched:attachmentsMeta', attachmentsMeta => {
-      this.meta.attachmentsMeta = attachmentsMeta;
-      this.pdfPageGroup.attachments.waitFor = attachmentsMeta.length;
+    this.once(
+      'fetched:attachmentsFileMeta',
+      (attachmentsFileMeta, attachments) => {
+        this.meta.attachmentsFileMeta = attachmentsFileMeta;
+        this.pdfPageGroup.attachments.waitFor = attachmentsFileMeta.length;
 
-      this.emit('taskFinished', 'fetch:attachmentsMeta');
-      if (this.pdfPageGroup.attachments.waitFor === 0) {
-        this.emit('taskFinished', 'fetch:attachments');
-        this.emit('taskFinished', 'count-pages:attachments');
-      } else {
-        this.emit('fetch:attachments', attachmentsMeta);
+        this.emit(
+          'render:sample',
+          sample,
+          sampleQuestionaryFields,
+          attachmentsFileMeta
+        );
+
+        this.emit('taskFinished', 'fetch:attachmentsFileMeta');
+        if (this.pdfPageGroup.attachments.waitFor === 0) {
+          this.emit('taskFinished', 'fetch:attachments');
+          this.emit('taskFinished', 'count-pages:attachments');
+        } else {
+          this.emit('fetch:attachments', attachmentsFileMeta, attachments);
+        }
       }
-    });
+    );
 
     this.on('taskFinished', task => {
       logger.logDebug(
@@ -140,21 +155,24 @@ class SamplePdfEmitter extends EventEmitter {
      * Emitters
      */
 
-    this.emit('render:sample', sample, sampleQuestionaryFields);
-
-    if (attachmentIds.length > 0) {
-      this.emit('fetch:attachmentsMeta', attachmentIds);
+    if (attachments.length > 0) {
+      this.meta.attachments = attachments;
+      this.emit('fetch:attachmentsFileMeta', attachments);
+    } else {
+      this.emit('render:sample', sample, sampleQuestionaryFields);
     }
   }
 
   private async renderSample(
     sample: Sample,
-    sampleQuestionaryFields: Answer[]
+    sampleQuestionaryFields: Answer[],
+    attachmentsFileMeta: FileMetadata[]
   ) {
     try {
       const renderedSampleHtml = await renderTemplate('sample.hbs', {
         sample,
         sampleQuestionaryFields,
+        attachmentsFileMeta,
       });
       const pdfPath = await generatePdfFromHtml(renderedSampleHtml);
 
@@ -178,32 +196,74 @@ class SamplePdfEmitter extends EventEmitter {
     }
   }
 
-  private async fetchAttachmentsMeta(attachmentIds: string[]) {
+  private async fetchAttachmentsFileMeta(attachments: Attachment[]) {
     try {
       const filesMeta = await services.queries.files.getFileMetadata(
-        attachmentIds,
-        { mimeType: 'application/pdf' }
+        attachments.map(({ id }) => id),
+        { mimeType: ['application/pdf', '^image/.*'] }
       );
 
-      this.emit('fetched:attachmentsMeta', filesMeta);
+      this.emit('fetched:attachmentsFileMeta', filesMeta, attachments);
     } catch (e) {
-      this.emit('error', e, 'fetchAttachmentsMeta');
+      this.emit('error', e, 'fetchAttachmentsFileMeta');
     }
   }
 
-  private async fetchAttachments(attachmentsMeta: FileMetadata[]) {
+  private async fetchAttachments(
+    attachmentsFileMeta: FileMetadata[],
+    attachments: Attachment[]
+  ) {
     try {
-      for (const { fileId } of attachmentsMeta) {
+      for (const attachmentFileMeta of attachmentsFileMeta) {
+        const { fileId, mimeType } = attachmentFileMeta;
         // pre-download file
         const attachmentPath = generateTmpPath();
         await services.mutations.files.prepare(fileId, attachmentPath);
 
-        this.emit('countPages', attachmentPath, 'attachments');
-        this.emit('fetched:attachment', attachmentPath);
+        if (mimeType.startsWith('image/')) {
+          const pdfPath = await this.renderImageAttachmentPdf(
+            attachmentPath,
+            attachmentFileMeta,
+            attachments
+          );
+
+          this.emit('countPages', pdfPath, 'attachments');
+          this.emit('fetched:attachment', pdfPath);
+        } else {
+          this.emit('countPages', attachmentPath, 'attachments');
+          this.emit('fetched:attachment', attachmentPath);
+        }
       }
     } catch (e) {
       this.emit('error', e, 'fetchAttachments');
     }
+  }
+
+  private async renderImageAttachmentPdf(
+    attachmentPath: string,
+    { fileId, originalFileName }: FileMetadata,
+    attachments: Attachment[]
+  ) {
+    const attachment = attachments.find(({ id }) => id === fileId);
+
+    // the filename is our fallback option if we have no caption  or figure
+    let footer = originalFileName;
+
+    if (attachment) {
+      const figure = attachment.figure ?? '';
+      const caption = attachment.caption ?? '';
+
+      footer =
+        figure && caption ? `Figure ${figure}: ${caption}` : figure + caption;
+    }
+
+    const pdfPath = await generatePdfFromLink(`file://${attachmentPath}`, {
+      pdfOptions: generatePuppeteerPdfFooter(footer),
+    });
+
+    failSafeDeleteFiles([attachmentPath]);
+
+    return pdfPath;
   }
 
   private async cleanup() {
@@ -294,9 +354,17 @@ export default async function generateSamplePDF(
         };
 
         meta.files.attachments.forEach((attachment, aIdx) => {
+          const attachmentFileMeta = meta.attachmentsFileMeta[aIdx];
+          const attachmentMeta = meta.attachments.find(
+            ({ id }) => id === attachmentFileMeta.fileId
+          );
+
           filePaths.push(attachment);
           attachmentToC.children.push({
-            title: meta.attachmentsMeta[aIdx].originalFileName,
+            title:
+              attachmentMeta && attachmentMeta.figure
+                ? `Figure ${attachmentMeta.figure}`
+                : attachmentFileMeta.originalFileName,
             page: pageNumber,
             children: [],
           });

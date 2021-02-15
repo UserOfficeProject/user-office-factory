@@ -31,7 +31,7 @@
           "organisation": "Co Baz 2"
         }
       ],
-      "attachmentIds": [],
+      "attachments": [],
       "questionarySteps": [
         {
           "topic": {
@@ -55,20 +55,6 @@
                 "plain": "Hidden EMBELLISHMENT",
                 "omitFromPdf": true
               }
-            },
-            {
-              "question": {
-                "dataType": "FILE_UPLOAD",
-                "question": "File upload question - exists"
-              },
-              "value": true
-            },
-            {
-              "question": {
-                "dataType": "FILE_UPLOAD",
-                "question": "File upload question - nope"
-              },
-              "value": false
             },
             {
               "question": {
@@ -190,7 +176,7 @@
           "organisation": "Co Baz"
         }
       ],
-      "attachmentIds": [],
+      "attachments": [],
       "questionarySteps": [
         {
           "topic": {
@@ -239,7 +225,7 @@
           "value": "2020-10-27T15:06:23.849Z"
         }
       ],
-      "attachmentIds": []
+      "attachments": []
     }
   ]
 }
