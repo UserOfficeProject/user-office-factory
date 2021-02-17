@@ -22,20 +22,15 @@ body {
   font-family: 'Calibri';
 }
 
-.logo {
-  margin: 15px;
-  width: 130px;
-}
-
-.root {
-  padding: 0 72px;
-}
-
 .title {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: bold;
 }
 
 .bold {
   font-weight: bold;
+}
+
+.avoid-page-break-inside {
+  page-break-inside: avoid;
 }

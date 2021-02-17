@@ -15,7 +15,7 @@ import {
   generatePuppeteerPdfFooter,
 } from '../../pdf';
 import services from '../../services';
-import { renderTemplate } from '../../template';
+import { renderTemplate, renderHeaderFooter } from '../../template';
 import {
   BasicUser,
   Proposal,
@@ -71,7 +71,7 @@ class ProposalPdfEmitter extends EventEmitter {
     this.pdfPageGroup = {
       proposal: { waitFor: 1, pdfPages: {} },
       questionnaires: {
-        waitFor: questionarySteps.length,
+        waitFor: questionarySteps.length > 0 ? 1 : 0,
         pdfPages: {},
       },
       technicalReview: { waitFor: technicalReview ? 1 : 0, pdfPages: {} },
@@ -153,9 +153,7 @@ class ProposalPdfEmitter extends EventEmitter {
     this.on('rendered:questionary', pdfPath => {
       this.meta.files.questionnaires.push(pdfPath);
 
-      if (this.meta.files.questionnaires.length === questionarySteps.length) {
-        this.emit('taskFinished', 'render:questionnaires');
-      }
+      this.emit('taskFinished', 'render:questionnaires');
     });
 
     this.on('rendered:sample', pdfPath => {
@@ -252,7 +250,11 @@ class ProposalPdfEmitter extends EventEmitter {
         principalInvestigator,
         coProposers,
       });
-      const pdfPath = await generatePdfFromHtml(renderedProposalHtml);
+      const renderedHeaderFooter = await renderHeaderFooter();
+
+      const pdfPath = await generatePdfFromHtml(renderedProposalHtml, {
+        pdfOptions: renderedHeaderFooter,
+      });
 
       this.emit('countPages', pdfPath, 'proposal');
       this.emit('rendered:proposal', pdfPath);
@@ -266,21 +268,18 @@ class ProposalPdfEmitter extends EventEmitter {
     attachmentsFileMeta: FileMetadata[]
   ) {
     try {
-      for (const questionaryStep of questionarySteps) {
-        if (this.stopped) {
-          return;
-        }
+      const renderedProposalQuestion = await renderTemplate(
+        'questionary-step.hbs',
+        { steps: questionarySteps, attachmentsFileMeta }
+      );
+      const renderedHeaderFooter = await renderHeaderFooter();
 
-        const renderedProposalQuestion = await renderTemplate(
-          'questionary-step.hbs',
-          { step: questionaryStep, attachmentsFileMeta }
-        );
+      const pdfPath = await generatePdfFromHtml(renderedProposalQuestion, {
+        pdfOptions: renderedHeaderFooter,
+      });
 
-        const pdfPath = await generatePdfFromHtml(renderedProposalQuestion);
-
-        this.emit('countPages', pdfPath, 'questionnaires');
-        this.emit('rendered:questionary', pdfPath);
-      }
+      this.emit('countPages', pdfPath, 'questionnaires');
+      this.emit('rendered:questionary', pdfPath);
     } catch (e) {
       this.emit('error', e, 'renderQuestionarySteps');
     }
@@ -296,7 +295,11 @@ class ProposalPdfEmitter extends EventEmitter {
         'technical-review.hbs',
         { technicalReview }
       );
-      const pdfPath = await generatePdfFromHtml(renderedTechnicalReview);
+      const renderedHeaderFooter = await renderHeaderFooter();
+
+      const pdfPath = await generatePdfFromHtml(renderedTechnicalReview, {
+        pdfOptions: renderedHeaderFooter,
+      });
 
       this.emit('countPages', pdfPath, 'technicalReview');
       this.emit('rendered:technicalReview', pdfPath);
@@ -390,8 +393,11 @@ class ProposalPdfEmitter extends EventEmitter {
           sampleQuestionaryFields,
           attachmentsFileMeta,
         });
+        const renderedHeaderFooter = await renderHeaderFooter();
 
-        const pdfPath = await generatePdfFromHtml(renderedProposalSample);
+        const pdfPath = await generatePdfFromHtml(renderedProposalSample, {
+          pdfOptions: renderedHeaderFooter,
+        });
 
         this.emit('countPages', pdfPath, 'samples');
         this.emit('rendered:sample', pdfPath);
@@ -494,11 +500,10 @@ export default async function generateProposalPDF(
 
       filePaths.push(meta.files.proposal);
 
-      meta.files.questionnaires.forEach((questionary, qIdx) => {
+      meta.files.questionnaires.forEach(questionary => {
         filePaths.push(questionary);
         toc.children.push({
-          title:
-            proposalPdfDataList[rootIdx].questionarySteps[qIdx].topic.title,
+          title: 'Questionary', // proposalPdfDataList[rootIdx].questionarySteps[qIdx].topic.title,
           page: pageNumber,
           children: [],
         });

@@ -47,19 +47,19 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Questionary 1/);
           expect(text).toMatch(/Visible EMBELLISHMENT/);
           expect(text).not.toMatch(/Hidden EMBELLISHMENT/);
-          expect(text).toMatch(/Date question\n2020-10-27/);
-          expect(text).toMatch(/Boolean question - true\nYes/);
-          expect(text).toMatch(/Boolean question - false\nNo/);
-          expect(text).toMatch(/Selection from options\nSelected answer/);
+          expect(text).toMatch(/Date question 2020-10-27/);
+          expect(text).toMatch(/Boolean question - true Yes/);
+          expect(text).toMatch(/Boolean question - false No/);
+          expect(text).toMatch(/Selection from options Selected answer/);
           expect(text).toMatch(
-            /Selection from options with multiple select\nfoo, bar/
+            /Selection from options with multiple select foo, bar/
           );
           expect(text).toMatch(
             /Interval question\nMin: -1\nMax: 99\nUnit: foo/
           );
           expect(text).toMatch(/Random question\nRandom answer/);
           expect(text).toMatch(/Rich text input question\nrich\ntext\ninput/);
-          expect(text).toMatch(/Number input question\n2345 foo\/bar/);
+          expect(text).toMatch(/Number input question 2345 foo\/bar/);
 
           expect(text).toMatch(/Status\nOkey/);
           expect(text).toMatch(/Time Allocation\n30 Days/);
@@ -81,7 +81,7 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Sample 999 - See appendix/);
 
           expect(text).toMatch(/Sample: Foo sample/);
-          expect(text).toMatch(/Sample date question\n2020-10-27/);
+          expect(text).toMatch(/Sample date question 2020-10-27/);
           expect(text).toMatch(/Status:\nNot evaluated/);
           expect(text).toMatch(/Comment:\nSafety foo bar/);
 

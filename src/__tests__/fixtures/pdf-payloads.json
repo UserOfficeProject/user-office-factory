@@ -219,6 +219,13 @@
       "sampleQuestionaryFields": [
         {
           "question": {
+            "dataType": "SAMPLE_BASIS",
+            "question": "Sample basis question"
+          },
+          "value": null
+        },
+        {
+          "question": {
             "dataType": "DATE",
             "question": "Date question"
           },

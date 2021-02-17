@@ -15,7 +15,7 @@ import {
   generatePuppeteerPdfFooter,
 } from '../../pdf';
 import services from '../../services';
-import { renderTemplate } from '../../template';
+import { renderTemplate, renderHeaderFooter } from '../../template';
 import { Answer, Sample, SamplePDFData, Attachment } from '../../types';
 import { failSafeDeleteFiles, generateTmpPath } from '../../util/fileSystem';
 
@@ -174,7 +174,11 @@ class SamplePdfEmitter extends EventEmitter {
         sampleQuestionaryFields,
         attachmentsFileMeta,
       });
-      const pdfPath = await generatePdfFromHtml(renderedSampleHtml);
+      const renderedHeaderFooter = await renderHeaderFooter();
+
+      const pdfPath = await generatePdfFromHtml(renderedSampleHtml, {
+        pdfOptions: renderedHeaderFooter,
+      });
 
       this.emit('countPages', pdfPath, 'sample');
       this.emit('rendered:sample', pdfPath);
