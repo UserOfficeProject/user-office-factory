@@ -182,11 +182,14 @@ class ProposalPdfEmitter extends EventEmitter {
         this.pdfPageGroup.attachments.waitFor = attachmentsFileMeta.length;
 
         this.emit('taskFinished', 'fetch:attachmentsFileMeta');
-        this.emit(
-          'render:questionnaires',
-          questionarySteps,
-          attachmentsFileMeta
-        );
+
+        if (questionarySteps.length > 0) {
+          this.emit(
+            'render:questionnaires',
+            questionarySteps,
+            attachmentsFileMeta
+          );
+        }
 
         if (samples.length > 0) {
           this.emit('render:samples', samples, attachmentsFileMeta);
@@ -231,7 +234,9 @@ class ProposalPdfEmitter extends EventEmitter {
       this.meta.attachments = attachments;
       this.emit('fetch:attachmentsFileMeta', attachments);
     } else {
-      this.emit('render:questionnaires', questionarySteps, []);
+      if (questionarySteps.length > 0) {
+        this.emit('render:questionnaires', questionarySteps, []);
+      }
 
       if (samples.length > 0) {
         this.emit('render:samples', samples, []);
