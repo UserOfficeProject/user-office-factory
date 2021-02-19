@@ -34,7 +34,10 @@ puppeteer
     logger.logException('Failed to start browser puppeteer', e);
   });
 
-export async function generatePdfFromHtml(html: string) {
+export async function generatePdfFromHtml(
+  html: string,
+  { pdfOptions }: { pdfOptions?: puppeteer.PDFOptions } = {}
+) {
   const name = generateTmpPath();
 
   if (process.env.PDF_DEBUG_HTML === '1') {
@@ -53,6 +56,7 @@ export async function generatePdfFromHtml(html: string) {
   await page.pdf({
     path: pdfPath,
     margin: { top: 0, left: 0, bottom: 0, right: 0 },
+    ...pdfOptions,
   });
 
   await page.close();

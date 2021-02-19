@@ -1,26 +1,26 @@
-<div class="mb-2">
+<div class="mb-2 avoid-page-break-inside">
   {{#if ($eq this.step.question.dataType 'EMBELLISHMENT') }}
     {{#unless this.step.config.omitFromPdf }}
-      <span class="bold">{{this.step.config.plain}}</span><br />
+      <div class="bold">{{this.step.config.plain}}</div>
     {{/unless}}
   {{else if ($eq this.step.question.dataType 'FILE_UPLOAD') }}
-    <span class="bold">{{this.step.question.question}}</span><br />
+    <div class="bold">{{this.step.question.question}}</div>
     {{#if this.step.value}}
       {{{ $attachment this.step.value this.attachmentsFileMeta }}}
     {{else}}
-      Left blank
+      <em>Left blank</em>
     {{/if}}
     <br />
   {{else if ($eq this.step.question.dataType 'DATE') }}
-    <span class="bold">{{this.step.question.question}}</span><br />
+    <span class="bold">{{this.step.question.question}}</span>
     {{#if this.step.value}}
       {{ $utcDate this.step.value}}
     {{else}}
-      Left blank
+      <em>Left blank</em>
     {{/if}}
     <br />
   {{else if ($eq this.step.question.dataType 'BOOLEAN')}}
-    <span class="bold">{{this.step.question.question}}</span><br />
+    <span class="bold">{{this.step.question.question}}</span>
     {{#if this.step.value}}
       Yes
     {{else}}
@@ -28,7 +28,7 @@
     {{/if}}
     <br />
   {{else if ($eq this.step.question.dataType 'SAMPLE_DECLARATION')}}
-    <span class="bold">{{this.step.question.question}}</span><br />
+    <div class="bold">{{this.step.question.question}}</div>
     <br />
 
     <div class="ml-3">
@@ -38,42 +38,63 @@
         <br /><br />
       {{/each}}
       {{#unless this.step.value}}
-        <div class="mb-2">Left blank</div>
+        <div class="mb-2"><em>Left blank</em></div>
       {{/unless}}
     </div>
 
   {{else if ($eq this.step.question.dataType 'INTERVAL')}}
-    <span class="bold">{{this.step.question.question}}</span><br />
+    <div class="bold">{{this.step.question.question}}</div>
     {{#if this.value}}
       Min: {{this.step.value.min}}<br />
       Max: {{this.step.value.max}}<br />
       Unit: {{this.step.value.unit}}
     {{else}}
-      Left blank
+      <em>Left blank</em>
     {{/if}}
 
   {{else if ($eq this.step.question.dataType 'NUMBER_INPUT')}}
-    <span class="bold">{{this.step.question.question}}</span><br />
+    <span class="bold">{{this.step.question.question}}</span>
     {{#if this.step.value}}
       {{this.step.value.value}} {{this.step.value.unit}}
     {{else}}
-      Left blank
+      <em>Left blank</em>
     {{/if}}
 
   {{else if ($eq this.step.question.dataType 'RICH_TEXT_INPUT')}}
-    <span class="bold">{{this.step.question.question}}</span><br />
+    <div class="bold">{{this.step.question.question}}</div>
     {{#if this.step.value}}
       {{{this.step.value}}}
     {{else}}
-      Left blank
+      <em>Left blank</em>
     {{/if}}
 
-  {{else}}
-    <span class="bold">{{this.step.question.question}}</span><br />
+  {{else if ($eq this.step.question.dataType 'SELECTION_FROM_OPTIONS')}}
+    <span class="bold">{{this.step.question.question}}</span>
     {{#if this.step.value}}
       {{$join this.value ', '}}
     {{else}}
-      Left blank
+      <em>Left blank</em>
+    {{/if}}
+
+  {{else if ($eq this.step.question.dataType 'SAMPLE_BASIS')}}
+    <div class="bold">{{this.step.question.question}}</div>
+    {{! 
+        SAMPLE_BASIS is a special case, its value is never set
+        instead we have to use the sample title title directly
+        as that is what actually holds the relevant value
+    }}
+    {{#if this.sample.title}}
+      {{ this.sample.title }}
+    {{else}}
+      <em>Left blank</em>
+    {{/if}}
+
+  {{else}}
+    <div class="bold">{{this.step.question.question}}</div>
+    {{#if this.step.value}}
+      {{$join this.value ', '}}
+    {{else}}
+      <em>Left blank</em>
     {{/if}}
   {{/if}}
 

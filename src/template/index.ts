@@ -2,6 +2,7 @@ import { promises } from 'fs';
 import { join } from 'path';
 
 import handlebar from 'handlebars';
+import { PDFOptions } from 'puppeteer';
 
 // register helpers
 import './helpers';
@@ -14,12 +15,14 @@ type TemplateNames =
   | 'technical-review.hbs'
   | 'sample.hbs';
 
+const templatesFolder = join(__dirname, '..', '..', 'templates');
+
 export async function renderTemplate(
   templateName: TemplateNames,
   payload: any
 ) {
   const htmlTemplate = await promises.readFile(
-    join(__dirname, '..', '..', 'templates', templateName),
+    join(templatesFolder, templateName),
     'utf-8'
   );
 
@@ -27,4 +30,29 @@ export async function renderTemplate(
   const template = handlebar.compile(htmlTemplate);
 
   return template(payload);
+}
+
+export async function renderHeaderFooter() {
+  const htmlHeaderTemplate = await promises.readFile(
+    join(templatesFolder, 'pdf', 'header.hbs'),
+    'utf-8'
+  );
+
+  const htmlFooterTemplate = await promises.readFile(
+    join(templatesFolder, 'pdf', 'footer.hbs'),
+    'utf-8'
+  );
+
+  const settings: PDFOptions = JSON.parse(
+    await promises.readFile(
+      join(templatesFolder, 'pdf', 'settings.json'),
+      'utf-8'
+    )
+  );
+
+  return {
+    ...settings,
+    headerTemplate: handlebar.compile(htmlHeaderTemplate)(null),
+    footerTemplate: handlebar.compile(htmlFooterTemplate)(null),
+  };
 }
