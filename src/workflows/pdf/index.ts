@@ -1,20 +1,20 @@
 import { Readable } from 'stream';
 
-import generateProposalPDF from './proposal';
-import generateSamplePDF from './sample';
+import PdfWorkflowManager from './PdfFactoryManager';
+import generateProposalPDF, { ProposalPdfEmitter } from './proposal';
+import generateSamplePDF, { SamplePdfEmitter } from './sample';
 
 export default function generatePDF(
   pdfType: string,
   { data }: { data: any[] }
-): Promise<Readable> {
+) {
   switch (pdfType) {
     case 'proposal':
       // TODO: check data
 
-      return generateProposalPDF(data);
-
+      return new PdfWorkflowManager(ProposalPdfEmitter, data);
     case 'sample':
-      return generateSamplePDF(data);
+      return new PdfWorkflowManager(SamplePdfEmitter, data);
     default:
       throw new Error(`Unknown PDF type: ${pdfType}`);
   }

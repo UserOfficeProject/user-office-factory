@@ -1,10 +1,16 @@
 import { EventEmitter } from 'events';
 import { join } from 'path';
 
+import { logger } from '@esss-swap/duo-logger';
 import imagemagick from 'imagemagick';
+import delay from 'lodash/delay';
 
 import { FileMetadata } from '../../models/File';
-import { generatePdfFromLink, generatePuppeteerPdfFooter } from '../../pdf';
+import {
+  generatePdfFromLink,
+  generatePuppeteerPdfFooter,
+  getTotalPages,
+} from '../../pdf';
 import services from '../../services';
 import { Attachment } from '../../types';
 import { generateTmpPath, failSafeDeleteFiles } from '../../util/fileSystem';
@@ -19,7 +25,25 @@ const imResourcePath = join(
 );
 const TIFF_FALLBACK_ERROR_IMAGE = join(imResourcePath, 'tiff_im_not_found.png');
 
-export default abstract class PdfEmitter<T> extends EventEmitter {
+export type PdfFactoryMeta = {
+  files: { [k: string]: null | string | string[] };
+  attachmentsFileMeta: FileMetadata[];
+  attachments: Attachment[];
+};
+
+export type PdfFactoryCountedPagesMeta<
+  T extends PdfFactoryMeta = PdfFactoryMeta
+> = Record<
+  keyof T['files'],
+  { waitFor: number; countedPagesPerPdf: Record<string, number> }
+>;
+
+export default abstract class PdfFactory<T> extends EventEmitter {
+  protected stopped = false;
+
+  protected abstract meta: PdfFactoryMeta;
+  protected abstract countedPagesMeta: PdfFactoryCountedPagesMeta;
+
   abstract init(params: T): void;
 
   protected fetchAttachmentsFileMeta(mimeType: string[]) {
@@ -118,5 +142,44 @@ export default abstract class PdfEmitter<T> extends EventEmitter {
     deleteAttachment && failSafeDeleteFiles([attachmentPath]);
 
     return pdfPath;
+  }
+
+  protected countPages(
+    pdfPath: string,
+    group: keyof PdfFactoryMeta['files'],
+    attempt = 1
+  ) {
+    try {
+      const totalPages = getTotalPages(pdfPath);
+
+      this.countedPagesMeta[group].countedPagesPerPdf[pdfPath] = totalPages;
+
+      if (
+        Object.keys(this.countedPagesMeta[group].countedPagesPerPdf).length ===
+        this.countedPagesMeta[group].waitFor
+      ) {
+        this.emit('taskFinished', `count-pages:${group}`);
+      }
+    } catch (e) {
+      if (attempt >= 3) {
+        this.emit('error', e, 'countPages', { pdfPath, group });
+      } else {
+        delay(() => this.emit('countPages', pdfPath, group, attempt + 1), 100);
+      }
+    }
+  }
+
+  protected async cleanup() {
+    this.stopped = true;
+
+    Object.values(this.meta.files).forEach(filePaths => {
+      if (!filePaths) {
+        return;
+      }
+
+      typeof filePaths === 'string'
+        ? failSafeDeleteFiles([filePaths])
+        : failSafeDeleteFiles(filePaths);
+    });
   }
 }

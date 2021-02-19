@@ -11,7 +11,8 @@ import httpLogger from 'morgan';
 
 import { renderTemplate } from './template';
 import generatePDF from './workflows/pdf';
-import generateXLSX from './workflows/xlsx';
+// import generateXLSX from './workflows/xlsx';
+import { WorkflowManager } from './workflows/WorkflowManager';
 
 import './services';
 
@@ -33,34 +34,67 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', express.static(join(__dirname, '..', 'templates')));
 
-app.post('/generate/:downloadType/:type', (req, res, next) => {
-  const { type, downloadType } = req.params;
+app.post(
+  '/generate/:downloadType/:type',
+  (req: Request, res: Response, next) => {
+    const { type, downloadType } = req.params;
 
-  switch (downloadType) {
-    case 'pdf':
-      generatePDF(type, req.body)
-        .then(rs => {
-          res.setHeader('content-type', 'application/pdf');
-          rs.pipe(res);
-        })
-        .catch(err => next(err));
-      break;
-    case 'xlsx':
-      generateXLSX(type, req.body)
-        .then(rs => {
-          res.setHeader(
-            'content-type',
-            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-          );
-          rs.pipe(res);
-        })
-        .catch(err => next(err));
-      break;
-    default:
-      next(new Error(`Unknown 'downloadType': ${downloadType}`));
+    let manager: WorkflowManager;
+    switch (downloadType) {
+      case 'pdf':
+        manager = generatePDF(type, req.body);
+        break;
+      case 'xlsx':
+      default:
+        return next(new Error(`Unknown 'downloadType': ${downloadType}`));
+    }
+
+    manager.onError(e => next(e));
+
+    manager.onTaskFinished(rs => {
+      res.setHeader('content-type', 'application/pdf');
+      rs.pipe(res);
+    });
+
+    req.once('close', () => {
+      if (res.finished) {
+        return;
+      }
+
+      /**
+       * if the request was closed before we finished writing
+       * assume the request was aborted
+       * and cancel any ongoing work if there is any
+       */
+      manager.cancelTasks();
+    });
+
+    // switch (downloadType) {
+    //   case 'pdf':
+    //     generatePDF(type, req.body)
+    //       .then(rs => {
+    //         res.setHeader('content-type', 'application/pdf');
+    //         rs.pipe(res);
+    //       })
+    //       .catch(err => next(err));
+    //     break;
+    //   case 'xlsx':
+    //     generateXLSX(type, req.body)
+    //       .then(rs => {
+    //         res.setHeader(
+    //           'content-type',
+    //           // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+    //           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    //         );
+    //         rs.pipe(res);
+    //       })
+    //       .catch(err => next(err));
+    //     break;
+    //   default:
+    //     next(new Error(`Unknown 'downloadType': ${downloadType}`));
+    // }
   }
-});
+);
 
 app.get('/test-template/:template', (req, res, next) => {
   const { template } = req.params;
