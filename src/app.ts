@@ -9,12 +9,11 @@ import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
 import httpLogger from 'morgan';
 
-import { renderTemplate } from './template';
-import generatePDF from './workflows/pdf';
-// import generateXLSX from './workflows/xlsx';
-import { WorkflowManager } from './workflows/WorkflowManager';
-
 import './services';
+import { renderTemplate } from './template';
+import getPDFWorkflowManager from './workflows/pdf';
+import { WorkflowManager } from './workflows/WorkflowManager';
+import getXLSXWorkflowManager from './workflows/xlsx';
 
 const app = express();
 
@@ -42,9 +41,11 @@ app.post(
     let manager: WorkflowManager;
     switch (downloadType) {
       case 'pdf':
-        manager = generatePDF(type, req.body);
+        manager = getPDFWorkflowManager(type, req.body);
         break;
       case 'xlsx':
+        manager = getXLSXWorkflowManager(type, req.body);
+        break;
       default:
         return next(new Error(`Unknown 'downloadType': ${downloadType}`));
     }
@@ -52,7 +53,11 @@ app.post(
     manager.onError(e => next(e));
 
     manager.onTaskFinished(rs => {
-      res.setHeader('content-type', 'application/pdf');
+      if (req.aborted || req.destroyed) {
+        return;
+      }
+
+      res.setHeader('content-type', manager.MIME_TYPE);
       rs.pipe(res);
     });
 
@@ -64,35 +69,9 @@ app.post(
       /**
        * if the request was closed before we finished writing
        * assume the request was aborted
-       * and cancel any ongoing work if there is any
        */
-      manager.cancelTasks();
+      manager.abort();
     });
-
-    // switch (downloadType) {
-    //   case 'pdf':
-    //     generatePDF(type, req.body)
-    //       .then(rs => {
-    //         res.setHeader('content-type', 'application/pdf');
-    //         rs.pipe(res);
-    //       })
-    //       .catch(err => next(err));
-    //     break;
-    //   case 'xlsx':
-    //     generateXLSX(type, req.body)
-    //       .then(rs => {
-    //         res.setHeader(
-    //           'content-type',
-    //           // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-    //           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    //         );
-    //         rs.pipe(res);
-    //       })
-    //       .catch(err => next(err));
-    //     break;
-    //   default:
-    //     next(new Error(`Unknown 'downloadType': ${downloadType}`));
-    // }
   }
 );
 

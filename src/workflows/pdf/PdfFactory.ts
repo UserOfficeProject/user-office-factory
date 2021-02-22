@@ -26,28 +26,79 @@ const imResourcePath = join(
 const TIFF_FALLBACK_ERROR_IMAGE = join(imResourcePath, 'tiff_im_not_found.png');
 
 export type PdfFactoryMeta = {
-  files: { [k: string]: null | string | string[] };
+  files: { [k: string]: string | string[] };
   attachmentsFileMeta: FileMetadata[];
   attachments: Attachment[];
 };
 
-export type PdfFactoryCountedPagesMeta<
-  T extends PdfFactoryMeta = PdfFactoryMeta
-> = Record<
+export type PdfFactoryCountedPagesMeta<T extends PdfFactoryMeta> = Record<
   keyof T['files'],
   { waitFor: number; countedPagesPerPdf: Record<string, number> }
 >;
 
-export default abstract class PdfFactory<T> extends EventEmitter {
+export default abstract class PdfFactory<
+  TData,
+  TPdfFactoryMeta extends PdfFactoryMeta
+> extends EventEmitter {
+  static ENTITY_NAME: string;
+
+  protected entityId: number;
   protected stopped = false;
+  protected aborted = false;
 
-  protected abstract meta: PdfFactoryMeta;
-  protected abstract countedPagesMeta: PdfFactoryCountedPagesMeta;
+  protected abstract meta: TPdfFactoryMeta;
+  protected abstract countedPagesMeta: PdfFactoryCountedPagesMeta<
+    TPdfFactoryMeta
+  >;
 
-  abstract init(params: T): void;
+  abstract init(params: TData): void;
+
+  get logPrefix() {
+    const entityName = (this.constructor as typeof PdfFactory).ENTITY_NAME;
+
+    return `[${this.constructor.name}] ${entityName}, ${this.entityId}: `;
+  }
+
+  constructor(entityId: number) {
+    super();
+
+    this.entityId = entityId;
+    this.on('aborted', (action, ctx: object) => {
+      logger.logWarn(this.logPrefix + `${action} was aborted`, { ...ctx });
+    });
+
+    this.on('error', (err, source, context) => {
+      logger.logException(this.logPrefix + 'had unexpected error', err, {
+        source,
+        context,
+      });
+
+      // `abort` is called by PdfWorkflowManager
+      this.stopped = true;
+    });
+  }
+
+  onceError(cb: (err: Error) => void) {
+    this.once('error', cb);
+  }
+
+  onceDone(
+    cb: (
+      meta: TPdfFactoryMeta,
+      countedPagesMeta: PdfFactoryCountedPagesMeta<TPdfFactoryMeta>
+    ) => void
+  ) {
+    this.once('done', cb);
+  }
 
   protected fetchAttachmentsFileMeta(mimeType: string[]) {
     return async (attachments: Attachment[]) => {
+      if (this.stopped) {
+        this.emit('aborted', 'fetchAttachmentsFileMeta');
+
+        return;
+      }
+
       try {
         const filesMeta = await services.queries.files.getFileMetadata(
           attachments.map(({ id }) => id),
@@ -67,6 +118,12 @@ export default abstract class PdfFactory<T> extends EventEmitter {
   ) {
     try {
       for (const attachmentFileMeta of attachmentsFileMeta) {
+        if (this.stopped) {
+          this.emit('aborted', 'fetchAttachments');
+
+          return;
+        }
+
         const { fileId, mimeType } = attachmentFileMeta;
         // pre-download file
         const attachmentPath = generateTmpPath();
@@ -117,7 +174,7 @@ export default abstract class PdfFactory<T> extends EventEmitter {
           err => (err ? reject(err) : resolve(outputPath))
         );
 
-        proc.on('error', (e: any) => {
+        proc.on('error', (e: Error | NodeJS.ErrnoException) => {
           // there is a high chance the user doesn't have IM installed
           if ('code' in e && e.code === 'ENOENT') {
             // don't delete the fallback image
@@ -149,6 +206,14 @@ export default abstract class PdfFactory<T> extends EventEmitter {
     group: keyof PdfFactoryMeta['files'],
     attempt = 1
   ) {
+    if (this.stopped) {
+      this.emit('aborted', 'countPages', { pdfPath, group, attempt });
+
+      failSafeDeleteFiles([pdfPath]);
+
+      return;
+    }
+
     try {
       const totalPages = getTotalPages(pdfPath);
 
@@ -169,8 +234,16 @@ export default abstract class PdfFactory<T> extends EventEmitter {
     }
   }
 
-  protected async cleanup() {
-    this.stopped = true;
+  abort() {
+    this.aborted = true;
+    this.cleanup();
+  }
+
+  async cleanup() {
+    if (this.aborted) {
+      logger.logWarn(this.logPrefix + 'was aborted', {});
+      this.stopped = true;
+    }
 
     Object.values(this.meta.files).forEach(filePaths => {
       if (!filePaths) {

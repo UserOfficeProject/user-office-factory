@@ -1,20 +1,16 @@
-import { Readable } from 'stream';
+import newProposalPdfWorkflowManager from './proposal';
+import newSamplePdfWorkflowManager from './sample';
 
-import PdfWorkflowManager from './PdfFactoryManager';
-import generateProposalPDF, { ProposalPdfEmitter } from './proposal';
-import generateSamplePDF, { SamplePdfEmitter } from './sample';
-
-export default function generatePDF(
+export default function getPDFWorkflowManager(
   pdfType: string,
   { data }: { data: any[] }
 ) {
+  // TODO: check data
   switch (pdfType) {
     case 'proposal':
-      // TODO: check data
-
-      return new PdfWorkflowManager(ProposalPdfEmitter, data);
+      return newProposalPdfWorkflowManager(data);
     case 'sample':
-      return new PdfWorkflowManager(SamplePdfEmitter, data);
+      return newSamplePdfWorkflowManager(data);
     default:
       throw new Error(`Unknown PDF type: ${pdfType}`);
   }

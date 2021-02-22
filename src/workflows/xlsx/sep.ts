@@ -2,14 +2,15 @@ import { Readable } from 'stream';
 
 import { SEPXLSXData, XLSXMetaBase } from '../../types';
 import { newWorkBook, appendSheet, finalizeAndCreate } from '../../xlsx';
+import XLSXWorkflowManager from './XLSXWorkflowManager';
 
-export default async function generateProposalXLSX({
+const generateSEPXLSX = ({
   data,
   meta,
 }: {
   data: SEPXLSXData;
   meta: XLSXMetaBase;
-}) {
+}) => async () => {
   const wb = newWorkBook();
 
   // handle edge case (no data)
@@ -25,4 +26,11 @@ export default async function generateProposalXLSX({
   const rs = Readable.from(sheetBuffer);
 
   return rs;
+};
+
+export default function newSEPXLSXWorkflowManager(properties: {
+  data: SEPXLSXData;
+  meta: XLSXMetaBase;
+}) {
+  return new XLSXWorkflowManager(generateSEPXLSX(properties));
 }
