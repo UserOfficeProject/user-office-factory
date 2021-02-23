@@ -11,10 +11,7 @@ import {
   mergePDF,
   writeToC,
   TableOfContents,
-  generatePdfFromLink,
-  generatePuppeteerPdfFooter,
 } from '../../pdf';
-import services from '../../services';
 import { renderTemplate, renderHeaderFooter } from '../../template';
 import {
   BasicUser,
@@ -24,7 +21,8 @@ import {
   ProposalSampleData,
   Attachment,
 } from '../../types';
-import { failSafeDeleteFiles, generateTmpPath } from '../../util/fileSystem';
+import { failSafeDeleteFiles } from '../../util/fileSystem';
+import PdfEmitter from './PdfEmitter';
 
 type ProposalPDFMeta = {
   files: {
@@ -43,7 +41,7 @@ type ProposalPDFPagesMeta = Record<
   { waitFor: number; pdfPages: Record<string, number> }
 >;
 
-class ProposalPdfEmitter extends EventEmitter {
+class ProposalPdfEmitter extends PdfEmitter<ProposalPDFData> {
   private stopped = false;
   private pdfPageGroup: ProposalPDFPagesMeta;
   private meta: ProposalPDFMeta = {
@@ -138,7 +136,10 @@ class ProposalPdfEmitter extends EventEmitter {
     this.once('render:technicalReview', this.renderTechnicalReview);
     this.once('render:samples', this.renderSamples);
     this.once('fetch:attachments', this.fetchAttachments);
-    this.once('fetch:attachmentsFileMeta', this.fetchAttachmentsFileMeta);
+    this.once(
+      'fetch:attachmentsFileMeta',
+      this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
+    );
 
     this.once('rendered:proposal', pdfPath => {
       this.meta.files.proposal = pdfPath;
@@ -311,76 +312,6 @@ class ProposalPdfEmitter extends EventEmitter {
     } catch (e) {
       this.emit('error', e, 'renderTechnicalReview');
     }
-  }
-
-  private async fetchAttachmentsFileMeta(attachments: Attachment[]) {
-    try {
-      const filesMeta = await services.queries.files.getFileMetadata(
-        attachments.map(({ id }) => id),
-        { mimeType: ['application/pdf', '^image/.*'] }
-      );
-
-      this.emit('fetched:attachmentsFileMeta', filesMeta, attachments);
-    } catch (e) {
-      this.emit('error', e, 'fetchAttachmentsMeta');
-    }
-  }
-
-  private async fetchAttachments(
-    attachmentsFileMeta: FileMetadata[],
-    attachments: Attachment[]
-  ) {
-    try {
-      for (const attachmentFileMeta of attachmentsFileMeta) {
-        const { fileId, mimeType } = attachmentFileMeta;
-        // pre-download file
-        const attachmentPath = generateTmpPath();
-        await services.mutations.files.prepare(fileId, attachmentPath);
-
-        if (mimeType.startsWith('image/')) {
-          const pdfPath = await this.renderImageAttachmentPdf(
-            attachmentPath,
-            attachmentFileMeta,
-            attachments
-          );
-
-          this.emit('countPages', pdfPath, 'attachments');
-          this.emit('fetched:attachment', pdfPath);
-        } else {
-          this.emit('countPages', attachmentPath, 'attachments');
-          this.emit('fetched:attachment', attachmentPath);
-        }
-      }
-    } catch (e) {
-      this.emit('error', e, 'fetchAttachments');
-    }
-  }
-
-  private async renderImageAttachmentPdf(
-    attachmentPath: string,
-    { fileId, originalFileName }: FileMetadata,
-    attachments: Attachment[]
-  ) {
-    const attachment = attachments.find(({ id }) => id === fileId);
-
-    // the filename is our fallback option if we have no caption  or figure
-    let footer = originalFileName;
-
-    if (attachment) {
-      const figure = attachment.figure ?? '';
-      const caption = attachment.caption ?? '';
-
-      footer =
-        figure && caption ? `Figure ${figure}: ${caption}` : figure + caption;
-    }
-
-    const pdfPath = await generatePdfFromLink(`file://${attachmentPath}`, {
-      pdfOptions: generatePuppeteerPdfFooter(footer),
-    });
-
-    failSafeDeleteFiles([attachmentPath]);
-
-    return pdfPath;
   }
 
   private async renderSamples(
