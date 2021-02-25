@@ -14,7 +14,7 @@ handlebar.registerHelper('$attachment', function(
       );
 
       if (foundIndex === -1) {
-        return 'Error: attachment info not found: ' + id;
+        return '<em>The attachment is not supported, please download the original file from the User Office website</em>';
       }
 
       const attachmentFileMeta = attachmentsFileMeta[foundIndex];
