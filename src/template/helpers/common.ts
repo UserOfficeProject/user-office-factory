@@ -21,6 +21,12 @@ handlebar.registerHelper('$join', function(src, delimiter) {
   return src.join(delimiter);
 });
 
+handlebar.registerHelper('$or', function(...args) {
+  args.pop();
+
+  return args.some(value => !!value);
+});
+
 const extensionMimeTypeMp = new Map<string, string>([['.png', 'image/png']]);
 const base64Cache = new Map<string, Buffer>();
 

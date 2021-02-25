@@ -44,17 +44,19 @@
 
   {{else if ($eq this.step.question.dataType 'INTERVAL')}}
     <div class="bold">{{this.step.question.question}}</div>
-    {{#if this.value}}
+    {{#if ($or this.step.value.min this.step.value.max) }}
       Min: {{this.step.value.min}}<br />
       Max: {{this.step.value.max}}<br />
-      Unit: {{this.step.value.unit}}
+      {{#if this.step.value.unit }}
+        Unit: {{this.step.value.unit}}
+      {{/if}}
     {{else}}
       <em>Left blank</em>
     {{/if}}
 
   {{else if ($eq this.step.question.dataType 'NUMBER_INPUT')}}
     <span class="bold">{{this.step.question.question}}</span>
-    {{#if this.step.value}}
+    {{#if this.step.value.value}}
       {{this.step.value.value}} {{this.step.value.unit}}
     {{else}}
       <em>Left blank</em>
