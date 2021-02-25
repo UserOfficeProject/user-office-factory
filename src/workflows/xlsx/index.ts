@@ -1,18 +1,16 @@
-import { Readable } from 'stream';
-
 import { XLSXMetaBase } from '../../types';
-import generateProposalXLSX from './proposal';
-import generateSEPXLSX from './sep';
+import newProposalXLSXWorkflowManager from './proposal';
+import newSEPXLSXWorkflowManager from './sep';
 
-export default function generateXLSX(
+export default function getXLSXWorkflowManager(
   xlsxType: string,
   properties: { data: any[]; meta: XLSXMetaBase }
-): Promise<Readable> {
+) {
   switch (xlsxType) {
     case 'proposal':
-      return generateProposalXLSX(properties);
+      return newProposalXLSXWorkflowManager(properties);
     case 'sep':
-      return generateSEPXLSX(properties);
+      return newSEPXLSXWorkflowManager(properties);
     default:
       throw new Error(`Unknown XLSX type: ${xlsxType}`);
   }

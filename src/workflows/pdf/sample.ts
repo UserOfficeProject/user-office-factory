@@ -1,21 +1,11 @@
-import { EventEmitter } from 'events';
-import { createReadStream } from 'fs';
-import { Readable } from 'stream';
-
 import { logger } from '@esss-swap/duo-logger';
 
 import { FileMetadata } from '../../models/File';
-import {
-  generatePdfFromHtml,
-  getTotalPages,
-  mergePDF,
-  writeToC,
-  TableOfContents,
-} from '../../pdf';
+import { generatePdfFromHtml, TableOfContents } from '../../pdf';
 import { renderTemplate, renderHeaderFooter } from '../../template';
 import { Answer, Sample, SamplePDFData, Attachment } from '../../types';
-import { failSafeDeleteFiles } from '../../util/fileSystem';
-import PdfEmitter from './PdfEmitter';
+import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
+import PdfWorkflowManager from './PdfWorkflowManager';
 
 type SamplePDFMeta = {
   files: {
@@ -26,15 +16,11 @@ type SamplePDFMeta = {
   attachments: Attachment[];
 };
 
-type SamplePDFPagesMeta = Record<
-  keyof SamplePDFMeta['files'],
-  { waitFor: number; pdfPages: Record<string, number> }
->;
+type SamplePDFPagesMeta = PdfFactoryCountedPagesMeta<SamplePDFMeta>;
 
-class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
-  private stopped = false;
-  private pdfPageGroup: SamplePDFPagesMeta;
-  private meta: SamplePDFMeta = {
+export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
+  protected countedPagesMeta: SamplePDFPagesMeta;
+  protected meta: SamplePDFMeta = {
     files: {
       sample: '',
       attachments: [],
@@ -43,14 +29,16 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
     attachments: [],
   };
 
+  static ENTITY_NAME = 'Sample';
+
   init(data: SamplePDFData) {
     const { sample, sampleQuestionaryFields, attachments } = data;
 
-    this.pdfPageGroup = {
-      sample: { waitFor: 1, pdfPages: {} },
+    this.countedPagesMeta = {
+      sample: { waitFor: 1, countedPagesPerPdf: {} },
       attachments: {
         waitFor: 0 /* set by fetched:attachmentsFileMeta */,
-        pdfPages: {},
+        countedPagesPerPdf: {},
       },
     };
 
@@ -66,10 +54,7 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
       tasksNeeded.push('count-pages:attachments');
     }
 
-    logger.logDebug(
-      `'[SamplePdfEmitter] Sample: ${sample.id}, tasks needed to complete'`,
-      tasksNeeded
-    );
+    logger.logDebug(this.logPrefix + 'tasks needed to complete', tasksNeeded);
 
     /**
      * Listeners
@@ -78,17 +63,6 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
     this.once('cleanup', this.cleanup);
 
     this.on('countPages', this.countPages);
-
-    this.on('error', (err, source) => {
-      logger.logException(
-        `[SamplePdfEmitter] Sample: ${sample.id} has unexpected error`,
-        err,
-        {
-          source,
-        }
-      );
-      this.stopped = true;
-    });
 
     this.once('render:sample', this.renderSample);
     this.once('fetch:attachments', this.fetchAttachments);
@@ -117,7 +91,7 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
       'fetched:attachmentsFileMeta',
       (attachmentsFileMeta, attachments) => {
         this.meta.attachmentsFileMeta = attachmentsFileMeta;
-        this.pdfPageGroup.attachments.waitFor = attachmentsFileMeta.length;
+        this.countedPagesMeta.attachments.waitFor = attachmentsFileMeta.length;
 
         this.emit(
           'render:sample',
@@ -127,7 +101,7 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
         );
 
         this.emit('taskFinished', 'fetch:attachmentsFileMeta');
-        if (this.pdfPageGroup.attachments.waitFor === 0) {
+        if (this.countedPagesMeta.attachments.waitFor === 0) {
           this.emit('taskFinished', 'fetch:attachments');
           this.emit('taskFinished', 'count-pages:attachments');
         } else {
@@ -137,18 +111,12 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
     );
 
     this.on('taskFinished', task => {
-      logger.logDebug(
-        `[SamplePdfEmitter] Sample: ${sample.id}, task finished`,
-        { task }
-      );
+      logger.logDebug(this.logPrefix + 'task finished', { task });
       tasksNeeded.splice(tasksNeeded.indexOf(task), 1);
 
       if (tasksNeeded.length === 0 && !this.stopped) {
-        logger.logDebug(
-          `[SamplePdfEmitter] Sample: ${sample.id}, every task finished`,
-          { task }
-        );
-        this.emit('done', this.meta, this.pdfPageGroup);
+        logger.logDebug(this.logPrefix + 'every task finished', { task });
+        this.emit('done', this.meta, this.countedPagesMeta);
       }
     });
 
@@ -169,6 +137,12 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
     sampleQuestionaryFields: Answer[],
     attachmentsFileMeta: FileMetadata[]
   ) {
+    if (this.stopped) {
+      this.emit('aborted', 'renderSample');
+
+      return;
+    }
+
     try {
       const renderedSampleHtml = await renderTemplate('sample.hbs', {
         sample,
@@ -187,97 +161,25 @@ class SamplePdfEmitter extends PdfEmitter<SamplePDFData> {
       this.emit('error', e, 'renderSample');
     }
   }
-
-  private countPages(pdfPath: string, group: keyof SamplePDFMeta['files']) {
-    const totalPages = getTotalPages(pdfPath);
-
-    this.pdfPageGroup[group].pdfPages[pdfPath] = totalPages;
-
-    if (
-      Object.keys(this.pdfPageGroup[group].pdfPages).length ===
-      this.pdfPageGroup[group].waitFor
-    ) {
-      this.emit('taskFinished', `count-pages:${group}`);
-    }
-  }
-
-  private async cleanup() {
-    this.stopped = true;
-
-    Object.values(this.meta.files).forEach(filePaths => {
-      if (!filePaths) {
-        return;
-      }
-
-      typeof filePaths === 'string'
-        ? failSafeDeleteFiles([filePaths])
-        : failSafeDeleteFiles(filePaths);
-    });
-  }
 }
 
-export default async function generateSamplePDF(
-  SamplePDFDataList: SamplePDFData[]
-) {
-  const overallMeta: Map<
-    number,
-    {
-      meta: SamplePDFMeta;
-      pdfPageGroup: SamplePDFPagesMeta;
-    }
-  > = new Map();
+export default function newSamplePdfWorkflowManager(data: SamplePDFData[]) {
+  const manager = new PdfWorkflowManager<
+    SamplePDFData,
+    SamplePDFMeta,
+    SamplePdfFactory
+  >(SamplePdfFactory, data, data => data.sample.id);
 
-  const ee = new EventEmitter();
-
-  const pdfEmitters: SamplePdfEmitter[] = [];
-
-  for (let i = 0; i < SamplePDFDataList.length; i++) {
-    const samplePdfEmitter = new SamplePdfEmitter();
-    pdfEmitters.push(samplePdfEmitter);
-
-    samplePdfEmitter.once('error', err => ee.emit('error', err));
-    samplePdfEmitter.once('done', (meta, pdfPageGroup) => {
-      overallMeta.set(i, { meta, pdfPageGroup });
-      ee.emit('pdfCreated');
-    });
-
-    samplePdfEmitter.init(SamplePDFDataList[i]);
-  }
-
-  ee.once('error', () =>
-    pdfEmitters.forEach(pdfEmitter => pdfEmitter.emit('cleanup'))
-  );
-  ee.once('cleanup', () =>
-    pdfEmitters.forEach(pdfEmitter => pdfEmitter.emit('cleanup'))
-  );
-
-  const sampleIds = SamplePDFDataList.map(({ sample }) => sample.id);
-
-  const finalizePDF = () => {
-    logger.logDebug('[generateSamplePdf] PDF created', { sampleIds });
-
-    const filePaths: string[] = [];
-
-    const rootToC: TableOfContents[] = [];
-    let pageNumber = 0;
-
-    for (let rootIdx = 0; rootIdx < SamplePDFDataList.length; rootIdx++) {
-      if (!overallMeta.has(rootIdx)) {
-        logger.logError(`'${rootIdx}' is missing from overallMeta`, {
-          overallMeta,
-        });
-        throw new Error(`'${rootIdx}' is missing from overallMeta`);
-      }
-
-      const { meta, pdfPageGroup } = overallMeta.get(rootIdx)!;
-
+  manager.onFinalizePDF(
+    ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
       const toc: TableOfContents = {
-        title: `Sample: ${SamplePDFDataList[rootIdx].sample.title}`,
+        title: `Sample: ${data.sample.title}`,
         page: pageNumber,
         children: [],
       };
 
-      pageNumber += pdfPageGroup.sample.pdfPages[meta.files.sample];
+      pageNumber +=
+        metaCountedPages.sample.countedPagesPerPdf[meta.files.sample];
 
       filePaths.push(meta.files.sample);
 
@@ -304,40 +206,20 @@ export default async function generateSamplePDF(
             children: [],
           });
 
-          pageNumber += pdfPageGroup.attachments.pdfPages[attachment];
+          pageNumber +=
+            metaCountedPages.attachments.countedPagesPerPdf[attachment];
         });
 
         toc.children.push(attachmentToC);
       }
 
       rootToC.push(toc);
+
+      return pageNumber;
     }
+  );
 
-    const mergedPdfPath = mergePDF(filePaths);
-    const pdfPath = writeToC(mergedPdfPath, rootToC);
+  manager.start();
 
-    logger.logDebug('[generateSamplePdf] PDF merged', {
-      pdfPath,
-      sampleIds,
-    });
-
-    const rs = createReadStream(pdfPath).once('close', () =>
-      // after the steam is closed clean up all files
-      failSafeDeleteFiles([mergedPdfPath, pdfPath])
-    );
-
-    ee.emit('cleanup');
-    ee.emit('finished', rs);
-  };
-
-  ee.on('pdfCreated', () => {
-    if (overallMeta.size === SamplePDFDataList.length) {
-      finalizePDF();
-    }
-  });
-
-  return new Promise<Readable>((resolve, reject) => {
-    ee.once('error', err => reject(err));
-    ee.once('finished', rs => resolve(rs));
-  });
+  return manager;
 }
