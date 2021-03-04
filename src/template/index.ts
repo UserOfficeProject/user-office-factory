@@ -3,17 +3,16 @@ import { join } from 'path';
 
 import handlebar from 'handlebars';
 import { PDFOptions } from 'puppeteer';
-
 // register helpers
 import './helpers';
-
 import './partials';
 
 type TemplateNames =
   | 'proposal-main.hbs'
   | 'questionary-step.hbs'
   | 'technical-review.hbs'
-  | 'sample.hbs';
+  | 'sample.hbs'
+  | 'shipment-label.hbs';
 
 const templatesFolder = join(__dirname, '..', '..', 'templates');
 

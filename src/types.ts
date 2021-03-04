@@ -29,6 +29,10 @@ export type SamplePDFData = {
   attachments: Attachment[];
 };
 
+export type ShipmentPDFData = {
+  shipment: Shipment;
+};
+
 export type ProposalSampleData = Pick<
   SamplePDFData,
   'sample' | 'sampleQuestionaryFields'
@@ -103,7 +107,6 @@ export interface QuestionTemplateRelation {
 
 export interface Answer extends QuestionTemplateRelation {
   answerId: number;
-  questionTemplateRelation: QuestionTemplateRelation;
   value?: any;
 }
 
@@ -128,8 +131,26 @@ export interface Sample {
 }
 
 export enum SampleStatus {
-  PENDING_EVALUTATION = 0,
+  PENDING_EVALUATION = 0,
   LOW_RISK,
   ELEVATED_RISK,
   HIGH_RISK,
+}
+
+export class Shipment {
+  constructor(
+    public id: number,
+    public title: string,
+    public creatorId: number,
+    public proposalId: number,
+    public questionaryId: number,
+    public status: ShipmentStatus,
+    public externalRef: string,
+    public created: Date
+  ) {}
+}
+
+export enum ShipmentStatus {
+  DRAFT = 'DRAFT',
+  SUBMITTED = 'SUBMITTED',
 }
