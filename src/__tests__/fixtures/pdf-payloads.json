@@ -262,5 +262,16 @@
       ],
       "attachments": []
     }
+  ],
+  "shipment_label_test_1": [
+    {
+      "shipment": {
+        "shipmentId": 11111,
+        "title": "Foo sample",
+        "proposalId": 22222,
+        "externalRef": 33333
+      },
+      "attachments": []
+    }
   ]
 }

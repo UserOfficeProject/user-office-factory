@@ -1,4 +1,5 @@
 import { logger } from '@esss-swap/duo-logger';
+
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml } from '../../pdf';
 import { renderTemplate } from '../../template';
@@ -98,6 +99,7 @@ export default function newShipmentPdfWorkflowManager(data: ShipmentPDFData[]) {
 
   manager.onFinalizePDF(({ meta, filePaths }) => {
     filePaths.push(meta.files.shipment);
+
     return 1;
   });
 
