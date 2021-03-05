@@ -66,6 +66,10 @@ export class ShipmentPdfFactory extends PdfFactory<
       }
     });
 
+    /**
+     * Emitters
+     */
+
     this.emit('render:shipment', shipment);
   }
 
