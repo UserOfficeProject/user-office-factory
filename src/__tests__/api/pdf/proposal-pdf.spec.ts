@@ -104,7 +104,7 @@ describe('Proposal PDF', () => {
           unlink(pdfPath, err => {
             expect(err).toBe(null);
 
-            done();
+            done(true);
           });
         });
       });

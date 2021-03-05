@@ -1,0 +1,20 @@
+{{#> layout}}
+<div class="p-5" style="font-family:sans-serif;">
+  <div class="container-fluid pl-5 pr-5">
+    <div class="pb-3 d-flex justify-content-center">
+      <img src="{{{ $readAsBase64 './templates/images/ESS-black.png' }}}" class="logo" />
+    </div>
+    <div class="row border border-dark border-top-1 border-right-0 border-bottom-1 border-left-0 pt-2">
+      <div class="col xs-6">
+        <h1>PROPOSAL</h1>
+      </div>
+      <div class="col xs-6 text-white bg bg-dark">
+        <h1>{{shipment.proposalId}}</h1>
+      </div>
+    </div>
+    <div class="d-flex justify-content-center">
+      {{ $barcode shipment.externalRef}}
+    </div>
+  </div>
+</div>
+{{/layout}}
