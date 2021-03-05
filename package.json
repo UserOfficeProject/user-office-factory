@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@esss-swap/duo-logger": "^1.0.4",
-    "@types/xmldom": "^0.1.30",
     "await-to-js": "^2.1.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -54,6 +53,7 @@
     "@types/pg-large-object": "^2.0.2",
     "@types/puppeteer": "^3.0.5",
     "@types/supertest": "^2.0.10",
+    "@types/xmldom": "^0.1.30",
     "@typescript-eslint/eslint-plugin": "^2.29.0",
     "@typescript-eslint/parser": "^2.29.0",
     "eslint": "^6.8.0",
