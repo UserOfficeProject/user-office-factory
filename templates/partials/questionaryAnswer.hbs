@@ -43,7 +43,7 @@
     </div>
 
   {{else if ($eq this.step.question.dataType 'INTERVAL')}}
-    <div class="bold">{{this.step.question.question}}</div>
+    <span class="bold">{{this.step.question.question}}</span>
     {{#if ($or this.step.value.min this.step.value.max) }}
     {{this.step.value.min}} - {{this.step.value.max}} 
       {{#if this.step.value.unit }}
