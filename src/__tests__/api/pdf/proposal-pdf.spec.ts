@@ -54,11 +54,9 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(
             /Selection from options with multiple select foo, bar/
           );
-          expect(text).toMatch(
-            /Interval question\nMin: -1\nMax: 99\nUnit: foo/
-          );
-          expect(text).toMatch(/Interval question - no answer\nLeft blank/);
-          expect(text).toMatch(/Interval question - no unit\nMin: 1\nMax: 2/);
+          expect(text).toMatch(/Interval question -1 - 99 foo/);
+          expect(text).toMatch(/Interval question - no answer Left blank/);
+          expect(text).toMatch(/Interval question - no unit 1 - 2/);
           expect(text).toMatch(/Random question\nRandom answer/);
           expect(text).toMatch(/Rich text input question\nrich\ntext\ninput/);
           expect(text).toMatch(/Number input question 2345 foo\/bar/);
