@@ -1,0 +1,22 @@
+# escape=`
+
+ARG WINDOWS_VERSION
+FROM docker-registry.devs.facilities.rl.ac.uk/bisapps-node:12-servercore${WINDOWS_VERSION}
+
+#Need permissions to add nessary fonts so chromium can launch
+USER ContainerAdministrator
+
+#Get imagemagick, get all link in the binarys folder then regex to find the latest release
+RUN $uri = 'https://download.imagemagick.org/ImageMagick/download/binaries/' ; `
+    $re = 'ImageMagick-\d\d?.\d\d?.\d\d?-\d\d?-portable-Q16-x64.zip$' ; `
+    $versions = (Invoke-WebRequest -Uri $uri -UseBasicParsing ).Links.href | Select-String -Pattern $re ;`
+    $lastest_version = $versions[-1] ;`
+    Invoke-WebRequest "https://download.imagemagick.org/ImageMagick/download/binaries/$lastest_version" -outfile "imagemagick.zip" -UseBasicParsing 
+
+RUN setx path '%path%;C:\imageMagick' 
+
+WORKDIR /app
+
+EXPOSE 4500
+
+CMD ./dockerStart.ps1
