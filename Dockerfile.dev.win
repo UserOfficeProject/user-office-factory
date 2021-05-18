@@ -3,7 +3,7 @@
 ARG WINDOWS_VERSION
 FROM docker-registry.devs.facilities.rl.ac.uk/bisapps-node:12-servercore${WINDOWS_VERSION}
 
-#Need permissions to add nessary fonts so chromium can launch
+#Need permissions to add necessary fonts so chromium can launch
 USER ContainerAdministrator
 
 #Get imagemagick, get all link in the binarys folder then regex to find the latest release

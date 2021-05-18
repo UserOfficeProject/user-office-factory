@@ -1,4 +1,4 @@
-#Addes all chrome deafult fonts can omit all but ariblk.ttf if needed 
+#Adds all chrome default fonts. Can omit all but ariblk.ttf if needed 
 & "C:\App\Add-Font.ps1" -path "C:\fonts\arial.ttf"
 & "C:\App\Add-Font.ps1" -path "C:\fonts\arialbd.ttf"
 & "C:\App\Add-Font.ps1" -path "C:\fonts\arialbi.ttf"
@@ -16,7 +16,7 @@
 & "C:\App\Add-Font.ps1" -path "C:\fonts\timesbi.ttf"
 & "C:\App\Add-Font.ps1" -path "C:\fonts\timesi.ttf"
 
-#Check if package exist so can be used just to add font and start factory for Dockerfile.win and Dockerfile.dev.win
+#Checks if package exists so it can be used just to add font and start factory for Dockerfile.win and Dockerfile.dev.win
 if ($env:DOCKER_START_DEV -eq 1) 
 {
     npm run dev:docker
