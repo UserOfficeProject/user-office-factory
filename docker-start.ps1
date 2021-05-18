@@ -17,7 +17,11 @@
 & "C:\App\Add-Font.ps1" -path "C:\fonts\timesi.ttf"
 
 #Check if package exist so can be used just to add font and start factory for Dockerfile.win and Dockerfile.dev.win
-if (Test-Path -path "C:/app/package.json") 
+if ($env:DOCKER_START_DEV -eq 1) 
 {
     npm run dev:docker
+}
+else 
+{
+    node /app/build/index.js
 }
