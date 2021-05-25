@@ -1,0 +1,49 @@
+# escape=`
+ARG WINDOWS_VERSION
+FROM docker-registry.devs.facilities.rl.ac.uk/bisapps-node:12-servercore${WINDOWS_VERSION} AS build-stage
+
+WORKDIR /app
+
+COPY package*.json ./
+
+#For speed don't need chromium here
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+RUN npm ci --loglevel error --no-fund
+
+COPY . .
+
+RUN npx tsc
+
+FROM docker-registry.devs.facilities.rl.ac.uk/bisapps-node:12-servercore${WINDOWS_VERSION}
+
+#Need permissions to add necessary fonts so chromium can launch
+USER ContainerAdministrator
+
+#Get imagemagick, since we cannot use an install wizard gui, we are getting the portable version.
+#They only host the lastest build of the portable version, so any link here would go out of date.
+#A regex is used to find the latest portable version 
+RUN $uri = 'https://download.imagemagick.org/ImageMagick/download/binaries/' ; `
+    $re = 'ImageMagick-\d\d?.\d\d?.\d\d?-\d\d?-portable-Q16-x64.zip$' ; `
+    $versions = (Invoke-WebRequest -Uri $uri -UseBasicParsing ).Links.href | Select-String -Pattern $re ;`
+    $lastest_version = $versions[-1] ;`
+    Invoke-WebRequest "https://download.imagemagick.org/ImageMagick/download/binaries/$lastest_version" -outfile "imagemagick.zip" -UseBasicParsing 
+
+RUN setx path '%path%;C:\imageMagick'
+
+WORKDIR /app
+
+COPY --from=build-stage /app/package.json ./
+COPY --from=build-stage /app/package-lock.json ./
+
+RUN npm ci --only=production --loglevel error --no-fund
+
+COPY --from=build-stage /app/build ./build
+COPY ./templates ./templates
+
+EXPOSE 4500
+
+# Tell docker-start how to start the factory
+ENV DOCKER_START_DEV 0
+
+CMD ./docker-start.ps1
