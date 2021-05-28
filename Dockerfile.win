@@ -1,6 +1,6 @@
 # escape=`
 ARG WINDOWS_VERSION
-FROM docker-registry.devs.facilities.rl.ac.uk/bisapps-node:12-servercore${WINDOWS_VERSION} AS build-stage
+FROM dmsc/bisapps-node:12.19.0-servercore${WINDOWS_VERSION} as build-stage
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY . .
 
 RUN npx tsc
 
-FROM docker-registry.devs.facilities.rl.ac.uk/bisapps-node:12-servercore${WINDOWS_VERSION}
+FROM dmsc/bisapps-node:12.19.0-servercore${WINDOWS_VERSION}
 
 #Need permissions to add necessary fonts so chromium can launch
 USER ContainerAdministrator
