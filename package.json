@@ -22,7 +22,7 @@
     "lint:fix": "tsc --noEmit && eslint ./src --ext .js,.ts --fix --quiet"
   },
   "dependencies": {
-    "@esss-swap/duo-logger": "^1.0.4",
+    "@esss-swap/duo-logger": "^1.1.0",
     "await-to-js": "^2.1.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
