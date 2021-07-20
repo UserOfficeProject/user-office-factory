@@ -32,20 +32,9 @@ RUN apk add --no-cache \
   ttf-freefont \
   nodejs \
   npm \
-  pcre-tools
+  graphicsmagick
 
 WORKDIR /tmp
-
-# They only host the lastest build of the portable version, so any link here would go out of date.
-# A regex is used to find the latest apk version
-RUN uri="http://dl-cdn.alpinelinux.org/alpine/v3.13/community/x86_64/"; \
-  re="(imagemagick-\d\d?.\d\d?.\d\d?.\d\d?-?.*.apk)\">"; \
-  # content=$(wget -qO- $uri); \
-  latest_version=$(wget -qO- $uri | pcregrep -o1 $re); \
-  wget --quiet http://dl-cdn.alpinelinux.org/alpine/v3.13/community/x86_64/$latest_version && \
-  ldconfig /usr/lib64 \
-  apk add $latest_version && \
-  rm -f $latest_version
 
 #Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
