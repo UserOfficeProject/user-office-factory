@@ -30,7 +30,7 @@
     "express": "^4.17.1",
     "gm": "^1.23.1",
     "handlebars": "^4.7.7",
-    "http-errors": "~1.6.3",
+    "http-errors": "~1.8.0",
     "hummus": "^1.0.110",
     "jsbarcode": "^3.11.3",
     "knex": "^0.21.17",
