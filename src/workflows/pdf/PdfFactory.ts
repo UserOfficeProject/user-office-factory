@@ -1,8 +1,7 @@
 import { EventEmitter } from 'events';
-import { join } from 'path';
 
 import { logger } from '@esss-swap/duo-logger';
-import imagemagick from 'imagemagick';
+import gm from 'gm';
 import delay from 'lodash/delay';
 
 import { FileMetadata } from '../../models/File';
@@ -14,16 +13,6 @@ import {
 import services from '../../services';
 import { Attachment } from '../../types';
 import { generateTmpPath, failSafeDeleteFiles } from '../../util/fileSystem';
-
-const imResourcePath = join(
-  __dirname,
-  '..',
-  '..',
-  '..',
-  'resources',
-  'imagemagick'
-);
-const TIFF_FALLBACK_ERROR_IMAGE = join(imResourcePath, 'tiff_im_not_found.png');
 
 export type PdfFactoryMeta = {
   files: { [k: string]: string | string[] };
@@ -157,7 +146,7 @@ export default abstract class PdfFactory<
 
     // the filename is our fallback option if we have no caption  or figure
     let footer = originalFileName;
-    let deleteAttachment = true;
+    const deleteAttachment = true;
 
     if (attachment) {
       const figure = attachment.figure ? `Figure ${attachment.figure}` : '';
@@ -169,22 +158,9 @@ export default abstract class PdfFactory<
     if (mimeType === 'image/tiff') {
       const outputPath = `${generateTmpPath()}.png`;
       const newFilePath = await new Promise<string>((resolve, reject) => {
-        const proc = imagemagick.convert(
-          [`TIFF:${attachmentPath}`, `${outputPath}`],
-          err => (err ? reject(err) : resolve(outputPath))
+        gm(`TIFF:${attachmentPath}`).write(`${outputPath}`, err =>
+          err ? reject(err) : resolve(outputPath)
         );
-
-        proc.on('error', (e: Error | NodeJS.ErrnoException) => {
-          // there is a high chance the user doesn't have IM installed
-          if ('code' in e && e.code === 'ENOENT') {
-            // don't delete the fallback image
-            deleteAttachment = false;
-
-            return resolve(TIFF_FALLBACK_ERROR_IMAGE);
-          }
-
-          reject(e);
-        });
       });
 
       // delete the original .tiff file
