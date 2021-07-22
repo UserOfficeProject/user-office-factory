@@ -31,17 +31,12 @@ RUN apk add --no-cache \
   ca-certificates \
   ttf-freefont \
   nodejs \
-  npm
+  npm \
+  graphicsmagick
 
 WORKDIR /tmp
 
-# Since the alpine:3.12 version of imagemagick doesn't work with tiff install 3.13's version
-RUN wget --quiet http://dl-cdn.alpinelinux.org/alpine/v3.13/community/x86_64/imagemagick-7.0.10.57-r0.apk && \
-  echo "b895a8145e400af93c71e004529793e663e61e013a933b7811eb25a7b20af3e5  imagemagick-7.0.10.57-r0.apk" | sha256sum -c && \
-  apk add imagemagick-7.0.10.57-r0.apk && \
-  rm -f imagemagick-7.0.10.57-r0.apk
-
-# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
+#Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
   PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
