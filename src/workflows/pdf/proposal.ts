@@ -102,7 +102,9 @@ export class ProposalPdfFactory extends PdfFactory<
       tasksNeeded.push('count-pages:samples');
     }
 
-    logger.logDebug(this.logPrefix + 'tasks needed to complete', tasksNeeded);
+    logger.logDebug(this.logPrefix + 'tasks needed to complete', {
+      tasksNeeded,
+    });
 
     /**
      * Listeners

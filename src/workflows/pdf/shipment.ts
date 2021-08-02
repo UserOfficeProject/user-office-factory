@@ -41,7 +41,9 @@ export class ShipmentPdfFactory extends PdfFactory<
 
     const tasksNeeded = ['render:shipment'];
 
-    logger.logDebug(this.logPrefix + 'tasks needed to complete', tasksNeeded);
+    logger.logDebug(this.logPrefix + 'tasks needed to complete', {
+      tasksNeeded,
+    });
 
     /**
      * Listeners

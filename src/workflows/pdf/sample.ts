@@ -54,7 +54,9 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
       tasksNeeded.push('count-pages:attachments');
     }
 
-    logger.logDebug(this.logPrefix + 'tasks needed to complete', tasksNeeded);
+    logger.logDebug(this.logPrefix + 'tasks needed to complete', {
+      tasksNeeded,
+    });
 
     /**
      * Listeners
