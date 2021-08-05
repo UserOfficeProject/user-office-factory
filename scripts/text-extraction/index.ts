@@ -1,12 +1,10 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-import hummus from 'hummus';
+import muhammara from 'muhammara';
 import * as _ from 'lodash';
 
 import extractText from './lib/text-extraction';
 
 export default function extractPDFText(fileToRun: string) {
-  const pdfReader = hummus.createReader(fileToRun);
+  const pdfReader = muhammara.createReader(fileToRun);
 
   const pagesPlacements: Array<Array<{
     text: string;

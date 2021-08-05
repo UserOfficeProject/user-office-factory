@@ -1,4 +1,4 @@
-var hummus = require('hummus');
+var muhammara = require('muhammara');
 var _ = require('lodash');
 var PDFInterpreter = require('./pdf-interpreter');
 var WinAnsiEncoding = require('./encoding/win-ansi-encoding');
@@ -69,7 +69,7 @@ function parseToUnicode(pdfReader,toUnicodeObjectId) {
                 var startCode = beToNum(operands[i].toBytesArray());
                 var endCode = beToNum(operands[i+1].toBytesArray());
                 
-                if(operands[i+2].getType() === hummus.ePDFObjectArray) {
+                if(operands[i+2].getType() === muhammara.ePDFObjectArray) {
                     var unicodeArray = operands[i+2].toPDFArray();
                     // specific codes
                     for(var j = startCode;j<=endCode;++j) {
@@ -150,7 +150,7 @@ function setupDifferencesEncodingMap(pdfReader,font, encodingDict) {
             var firstIndex = differences[i].value;            
             ++i;
             // now come names, one for each index
-            while(i<differences.length && differences[i].getType() === hummus.ePDFObjectName) {
+            while(i<differences.length && differences[i].getType() === muhammara.ePDFObjectName) {
                 newEncoding[firstIndex] = differences[i].value;
                 ++i;
                 ++firstIndex;
@@ -162,13 +162,13 @@ function setupDifferencesEncodingMap(pdfReader,font, encodingDict) {
 }
 
 function parseSimpleFontEncoding(self,pdfReader,font, encoding) {
-    if(encoding.getType() === hummus.ePDFObjectName) {
+    if(encoding.getType() === muhammara.ePDFObjectName) {
         self.fromSimpleEncodingMap = getStandardEncodingMap(encoding.value);
         self.hasSimpleEncoding = true;
     }
-    else if(encoding.getType() === hummus.ePDFObjectIndirectObjectReference || encoding.getType() === hummus.ePDFObjectDictionary) {
+    else if(encoding.getType() === muhammara.ePDFObjectIndirectObjectReference || encoding.getType() === muhammara.ePDFObjectDictionary) {
         // make sure we have a dict here
-        encoding = (encoding.getType() === hummus.ePDFObjectIndirectObjectReference) ? pdfReader.parseNewObject(encoding.toPDFIndirectObjectReference().getObjectID()):encoding;
+        encoding = (encoding.getType() === muhammara.ePDFObjectIndirectObjectReference) ? pdfReader.parseNewObject(encoding.toPDFIndirectObjectReference().getObjectID()):encoding;
         // now figure it out
         self.fromSimpleEncodingMap = setupDifferencesEncodingMap(pdfReader,font, encoding);
         self.hasSimpleEncoding = true;
@@ -226,7 +226,7 @@ function parseCIDFontDimensions(self, pdfReader,font) {
         while(i<widths.length) {
             var cFirst = widths[i].value;
             ++i;
-            if(widths[i].getType() === hummus.ePDFObjectArray) {
+            if(widths[i].getType() === muhammara.ePDFObjectArray) {
                 var anArray = widths[i].toPDFArray().toJSArray();
                 ++i;
                 // specified widths

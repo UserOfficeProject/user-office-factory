@@ -1,6 +1,6 @@
-var hummus = require('hummus');
+var muhammara = require('muhammara');
 var _ = require('lodash');
-var PDFInterpreter = require('./pdf-interpreter');
+var PDFInterpreter = require('./pdf-interpreter').default;
 var MultiDictHelper = require('./multi-dict-helper');
 
 function parseInterestingResources(resourcesDicts,pdfReader,readResources) {
@@ -15,7 +15,7 @@ function parseInterestingResources(resourcesDicts,pdfReader,readResources) {
                 _.forOwn(xobjectsJS,(xobjectReference,xobjectName)=>{
                     var xobjectObjectId = xobjectReference.toPDFIndirectObjectReference().getObjectID();
                     var xobject = pdfReader.parseNewObject(xobjectObjectId);
-                    if(xobject.getType() == hummus.ePDFObjectStream) {
+                    if(xobject.getType() == muhammara.ePDFObjectStream) {
                         var xobjectStream = xobject.toPDFStream();
                         var xobjectDict = xobjectStream.getDictionary();
                         if(xobjectDict.queryObject('Subtype').value == 'Form') {
@@ -56,7 +56,7 @@ function getResourcesDictionaries(anObject,pdfReader) {
 
         if(anObject.exists('Parent')) {
             var parentDict = pdfReader.queryDictionaryObject(anObject,'Parent');
-            if(parentDict.getType() === hummus.ePDFObjectDictionary)
+            if(parentDict.getType() === muhammara.ePDFObjectDictionary)
                 anObject = parentDict.toPDFDictionary();
             else
                 anObject = null;

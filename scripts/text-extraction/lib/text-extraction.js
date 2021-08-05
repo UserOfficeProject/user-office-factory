@@ -1,9 +1,9 @@
-var hummus = require('hummus');
+var muhammara = require('muhammara');
 var _ = require('lodash');
 var extractPlacements = require('./placements-extraction');
 var transformations = require('./transformations');
 var CollectionState = require('./collection-state');
-var FontDecoding = require('./font-decoding');
+var FontDecoding = require('./font-decoding').default;
 
 // unique id provider for font decoding
 var uniqueId = 0;
@@ -17,7 +17,7 @@ function readResources(resourcesDicts,pdfReader,result) {
         if(!!extGStatesEntry) {
             var extGStatesJS = extGStatesEntry.toPDFDictionary().toJSObject();
             _.forOwn(extGStatesJS,(extGState,extGStateName)=>{
-                if(extGState.getType() === hummus.ePDFObjectIndirectObjectReference) {
+                if(extGState.getType() === muhammara.ePDFObjectIndirectObjectReference) {
                     extGState = pdfReader.parseNewObject(extGState.toPDFIndirectObjectReference().getObjectID()).toPDFDictionary();
                 }
                 else {
@@ -49,7 +49,7 @@ function readResources(resourcesDicts,pdfReader,result) {
             var fontsJS = fontsEntry.toPDFDictionary().toJSObject();
             _.forOwn(fontsJS,(fontReference,fontName)=>{
                 var font;
-                if(fontReference.getType() === hummus.ePDFObjectIndirectObjectReference) {
+                if(fontReference.getType() === muhammara.ePDFObjectIndirectObjectReference) {
                     font = {objectId:fontReference.toPDFIndirectObjectReference().getObjectID()};
                 }
                 else {
@@ -258,7 +258,7 @@ function collectPlacements(resources,placements,formsUsed) {
             case 'TJ': {
                 var params = operands.pop().toPDFArray().toJSArray();
                 textPlacement(_.map(params,(item)=>{
-                    if(item.getType() === hummus.ePDFObjectLiteralString || item.getType() === hummus.ePDFObjectHexString) 
+                    if(item.getType() === muhammara.ePDFObjectLiteralString || item.getType() === muhammara.ePDFObjectHexString) 
                         return {asEncodedText:item.value,asBytes:item.toBytesArray()};
                     else
                         return item.value;

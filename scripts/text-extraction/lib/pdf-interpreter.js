@@ -1,4 +1,4 @@
-var hummus = require('hummus');
+var muhammara = require('muhammara');
 var _ = require('lodash');
 function PDFInterpreter() {
 
@@ -22,7 +22,7 @@ function interpretContentStream(objectParser,onOperatorHandler) {
     var anObject = objectParser.parseNewObject();
     
     while(!!anObject) {
-        if(anObject.getType() === hummus.ePDFObjectSymbol) {
+        if(anObject.getType() === muhammara.ePDFObjectSymbol) {
             // operator!
             onOperatorHandler(anObject.value,operandsStack.concat());
             operandsStack = [];
@@ -41,7 +41,7 @@ PDFInterpreter.prototype.interpretPageContents = function(pdfReader,pageObject,o
     if(!contents)
         return;
 
-    if(contents.getType() === hummus.ePDFObjectArray) {
+    if(contents.getType() === muhammara.ePDFObjectArray) {
         interpretContentStream(pdfReader.startReadingObjectsFromStreams(contents.toPDFArray()),onOperatorHandler);
     }
     else {
