@@ -3,7 +3,7 @@ var _ = require('lodash');
 var extractPlacements = require('./placements-extraction');
 var transformations = require('./transformations');
 var CollectionState = require('./collection-state');
-var FontDecoding = require('./font-decoding').default;
+var FontDecoding = require('./font-decoding');
 
 // unique id provider for font decoding
 var uniqueId = 0;

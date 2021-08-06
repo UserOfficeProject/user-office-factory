@@ -1,6 +1,6 @@
 var muhammara = require('muhammara');
 var _ = require('lodash');
-var PDFInterpreter = require('./pdf-interpreter').default;
+var PDFInterpreter = require('./pdf-interpreter');
 var MultiDictHelper = require('./multi-dict-helper');
 
 function parseInterestingResources(resourcesDicts,pdfReader,readResources) {

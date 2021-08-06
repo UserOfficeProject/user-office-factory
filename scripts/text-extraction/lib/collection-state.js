@@ -37,71 +37,66 @@ function cloneGraphicEnv(env) {
     }
 }
 
-function CollectionState() {
-    this.graphicStateStack = [{
-        ctm:[1,0,0,1,0,0],
-        text:initTextState()
-    }];
-    this.inTextElement = false;
-    this.textElementTextStack = null;
-    this.texts = null;
-}
-
-CollectionState.prototype.pushGraphicState = function() {
-    this.graphicStateStack.push(cloneGraphicEnv(this.graphicStateStack[this.graphicStateStack.length-1]));
-    if(this.inTextElement) {
-        this.textElementTextStack.push(cloneTextEnv(this.textElementTextStack[this.textElementTextStack.length-1]));
+class CollectionState {
+    constructor() {
+        this.graphicStateStack = [{
+            ctm: [1, 0, 0, 1, 0, 0],
+            text: initTextState()
+        }];
+        this.inTextElement = false;
+        this.textElementTextStack = null;
+        this.texts = null;
     }
-}
-
-CollectionState.prototype.popGraphicState = function() {
-    if(this.graphicStateStack.length > 1)
-        this.graphicStateStack.pop();
-    if(this.inTextElement && this.textElementTextStack.length > 1)
-        this.textElementTextStack.pop();
-}
-
-CollectionState.prototype.currentGraphicState = function() {
-    return this.graphicStateStack[this.graphicStateStack.length-1];
-}
-
-CollectionState.prototype.currentTextState = function() {
-    if(this.inTextElement) {
-        return this.textElementTextStack[this.textElementTextStack.length-1];
+    pushGraphicState() {
+        this.graphicStateStack.push(cloneGraphicEnv(this.graphicStateStack[this.graphicStateStack.length - 1]));
+        if (this.inTextElement) {
+            this.textElementTextStack.push(cloneTextEnv(this.textElementTextStack[this.textElementTextStack.length - 1]));
+        }
     }
-    else {
-        return this.graphicStateStack[this.graphicStateStack.length-1].text;
+    popGraphicState() {
+        if (this.graphicStateStack.length > 1)
+            this.graphicStateStack.pop();
+        if (this.inTextElement && this.textElementTextStack.length > 1)
+            this.textElementTextStack.pop();
     }
-}
+    currentGraphicState() {
+        return this.graphicStateStack[this.graphicStateStack.length - 1];
+    }
+    currentTextState() {
+        if (this.inTextElement) {
+            return this.textElementTextStack[this.textElementTextStack.length - 1];
+        }
+        else {
+            return this.graphicStateStack[this.graphicStateStack.length - 1].text;
+        }
+    }
+    cloneCurrentTextState() {
+        return cloneTextEnv(this.currentTextState());
+    }
+    startTextElement() {
+        this.inTextElement = true;
+        this.textElementTextStack = [cloneTextEnv(this.currentGraphicState().text)];
+        this.texts = [];
+    }
+    endTextElement(placements) {
 
-CollectionState.prototype.cloneCurrentTextState = function() {
-    return cloneTextEnv(this.currentTextState());
-}
+        // save text properties to persist after gone (some of them...)
+        var latestTextState = this.cloneCurrentTextState();
+        this.inTextElement = false;
+        this.textElementTextStack = null;
 
-CollectionState.prototype.startTextElement = function() {
-    this.inTextElement = true;
-    this.textElementTextStack = [cloneTextEnv(this.currentGraphicState().text)];
-    this.texts = [];
-}
+        placements.push({
+            type: 'text',
+            text: this.texts
+        });
+        this.texts = null;
 
-CollectionState.prototype.endTextElement = function(placements) {
-
-    // save text properties to persist after gone (some of them...)
-    var latestTextState = this.cloneCurrentTextState();
-    this.inTextElement = false;
-    this.textElementTextStack = null;
-
-    placements.push({
-        type:'text',
-        text: this.texts
-    });    
-    this.texts = null;
-
-    // copy persisted data to top text state
-    var persistingTextState =  this.currentTextState();
-    ['charSpace','wordSpace','scale','leading','rise','font'].forEach((name)=> {
-        persistingTextState[name] = latestTextState[name];
-    });
+        // copy persisted data to top text state
+        var persistingTextState = this.currentTextState();
+        ['charSpace', 'wordSpace', 'scale', 'leading', 'rise', 'font'].forEach((name) => {
+            persistingTextState[name] = latestTextState[name];
+        });
+    }
 }
 
 module.exports = CollectionState;
