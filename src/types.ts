@@ -46,7 +46,7 @@ export interface Proposal {
   statusId: number;
   created: Date;
   updated: Date;
-  shortCode: string;
+  proposalId: string;
   rankOrder: number;
   finalStatus: number; // Should use ProposalEndStatus enum here
   callId: number;

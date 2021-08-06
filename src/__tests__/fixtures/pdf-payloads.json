@@ -10,7 +10,7 @@
       "proposal": {
         "id": 1,
         "title": "Test proposal",
-        "shortCode": "123123",
+        "proposalId": "123123",
         "abstract": "First lorem ipsum"
       },
       "principalInvestigator": {
@@ -188,7 +188,7 @@
       "proposal": {
         "id": 2,
         "title": "Second proposal",
-        "shortCode": "7777777",
+        "proposalId": "7777777",
         "abstract": "Second proposal abstract"
       },
       "principalInvestigator": {

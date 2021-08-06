@@ -1,8 +1,6 @@
 // import countOutline from './countOutline';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-import hummus from 'hummus';
+import muhammara from 'muhammara';
 
 import getTOCText from './getTOCText';
 import translatePageNumbers from './translatePageNumbers';
@@ -15,7 +13,7 @@ import writeOutline from './writeOutline';
 
 export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   // Start new PDF to contain TOC pages only
-  const newPDFWriter = hummus.createWriter(outFile);
+  const newPDFWriter = muhammara.createWriter(outFile);
   // const outlineSize = countOutline(origOutline);
   // const howManyPages = countPages(outlineSize);
   const howManyPages = 1;
@@ -26,9 +24,13 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   // End TOC PDF
 
   // Start final PDF containing bookmarks as well as TOC pages
-  const mergingWriter = hummus.createWriterToModify(outFile);
+  const mergingWriter = muhammara.createWriterToModify(outFile);
+  // FIXME: https://github.com/julianhille/MuhammaraJS/issues/107
+  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   const ctx = mergingWriter.getObjectsContext();
+  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   const events = mergingWriter.getEvents();
+  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   const copyCtx = mergingWriter.createPDFCopyingContextForModifiedFile();
   const parser = copyCtx.getSourceDocumentParser();
 
@@ -57,6 +59,7 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   });
 
   // force update, in case it is necessary
+  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   mergingWriter.requireCatalogUpdate();
   mergingWriter.end();
   // End Final PDF

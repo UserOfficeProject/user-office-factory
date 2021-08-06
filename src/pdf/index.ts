@@ -1,9 +1,7 @@
 import { promises } from 'fs';
 
 import { logger } from '@esss-swap/duo-logger';
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-import hummus from 'hummus';
+import muhammara from 'muhammara';
 import puppeteer, { Browser } from 'puppeteer';
 
 import { generateTmpPath } from '../util/fileSystem';
@@ -108,14 +106,14 @@ export async function generatePdfFromLink(
 }
 
 export function getTotalPages(filePath: string): number {
-  return hummus.createReader(filePath).getPagesCount();
+  return muhammara.createReader(filePath).getPagesCount();
 }
 
 // TODO: come up with a non-blocking version
 export function mergePDF(filePaths: string[]): string {
   const pdfPath = `${generateTmpPath()}.pdf`;
 
-  const pdfWriter = hummus.createWriter(pdfPath);
+  const pdfWriter = muhammara.createWriter(pdfPath);
 
   filePaths.forEach(filePath => pdfWriter.appendPDFPagesFromPDF(filePath));
 

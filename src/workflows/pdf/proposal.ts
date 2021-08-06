@@ -349,7 +349,7 @@ export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
       const toc: TableOfContents = {
-        title: `Proposal number: ${data.proposal.shortCode}`,
+        title: `Proposal number: ${data.proposal.proposalId}`,
         page: pageNumber,
         children: [],
       };
