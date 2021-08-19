@@ -1,7 +1,28 @@
-var hummus = require('hummus');
+var muhammara = require('muhammara');
 var _ = require('lodash');
-function PDFInterpreter() {
 
+class PDFInterpreter {
+    constructor() {
+    }
+    interpretPageContents(pdfReader, pageObject, onOperatorHandler) {
+        pageObject = pageObject.toPDFDictionary();
+        var contents = pageObject.exists('Contents') ? pdfReader.queryDictionaryObject(pageObject, ('Contents')) : null;
+        if (!contents)
+            return;
+
+        if (contents.getType() === muhammara.ePDFObjectArray) {
+            interpretContentStream(pdfReader.startReadingObjectsFromStreams(contents.toPDFArray()), onOperatorHandler);
+        }
+        else {
+            interpretContentStream(pdfReader.startReadingObjectsFromStream(contents.toPDFStream()), onOperatorHandler);
+        }
+    }
+    interpretXObjectContents(pdfReader, xobjectObject, onOperatorHandler) {
+        interpretContentStream(pdfReader.startReadingObjectsFromStream(xobjectObject.toPDFStream()), onOperatorHandler);
+    }
+    interpretStream(pdfReader, stream, onOperatorHandler) {
+        interpretContentStream(pdfReader.startReadingObjectsFromStream(stream), onOperatorHandler);
+    }
 }
 
 function debugStream(pdfReader,contentStream) {
@@ -22,7 +43,7 @@ function interpretContentStream(objectParser,onOperatorHandler) {
     var anObject = objectParser.parseNewObject();
     
     while(!!anObject) {
-        if(anObject.getType() === hummus.ePDFObjectSymbol) {
+        if(anObject.getType() === muhammara.ePDFObjectSymbol) {
             // operator!
             onOperatorHandler(anObject.value,operandsStack.concat());
             operandsStack = [];
@@ -33,28 +54,6 @@ function interpretContentStream(objectParser,onOperatorHandler) {
         }
         anObject = objectParser.parseNewObject();
     }   
-}
-
-PDFInterpreter.prototype.interpretPageContents = function(pdfReader,pageObject,onOperatorHandler) {
-    pageObject = pageObject.toPDFDictionary();
-    var contents = pageObject.exists('Contents') ? pdfReader.queryDictionaryObject(pageObject,('Contents')):null;
-    if(!contents)
-        return;
-
-    if(contents.getType() === hummus.ePDFObjectArray) {
-        interpretContentStream(pdfReader.startReadingObjectsFromStreams(contents.toPDFArray()),onOperatorHandler);
-    }
-    else {
-        interpretContentStream(pdfReader.startReadingObjectsFromStream(contents.toPDFStream()),onOperatorHandler);
-    }    
-}
-
-PDFInterpreter.prototype.interpretXObjectContents = function(pdfReader,xobjectObject,onOperatorHandler) {
-    interpretContentStream(pdfReader.startReadingObjectsFromStream(xobjectObject.toPDFStream()),onOperatorHandler);
-}
-
-PDFInterpreter.prototype.interpretStream = function(pdfReader,stream,onOperatorHandler) {
-    interpretContentStream(pdfReader.startReadingObjectsFromStream(stream),onOperatorHandler);
 }
 
 module.exports = PDFInterpreter;
