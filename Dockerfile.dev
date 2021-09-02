@@ -1,0 +1,26 @@
+FROM alpine:3.12
+
+# Installs  Chromium (86) package.
+RUN apk add --no-cache \
+  "chromium~=86.0.4240.111-r0" \
+  nss \
+  freetype \
+  freetype-dev \
+  harfbuzz \
+  ca-certificates \
+  ttf-freefont \
+  nodejs \
+  npm \
+  graphicsmagick
+
+WORKDIR /tmp
+
+#Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+  PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+WORKDIR /app
+
+EXPOSE 4500
+
+CMD ["npm", "run", "dev:docker"]
