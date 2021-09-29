@@ -49,9 +49,15 @@ export async function renderHeaderFooter() {
     )
   );
 
+  const headerData = {
+    logoPath: process.env.HEADER_LOGO_PATH
+      ? process.env.HEADER_LOGO_PATH
+      : join(process.cwd(), './templates/images/ESS.png'),
+  };
+
   return {
     ...settings,
-    headerTemplate: handlebar.compile(htmlHeaderTemplate)(null),
+    headerTemplate: handlebar.compile(htmlHeaderTemplate)(headerData),
     footerTemplate: handlebar.compile(htmlFooterTemplate)(null),
   };
 }
