@@ -31,8 +31,6 @@ const extensionMimeTypeMp = new Map<string, string>([['.png', 'image/png']]);
 const base64Cache = new Map<string, Buffer>();
 
 handlebar.registerHelper('$readAsBase64', function(path: string) {
-  path = join(process.cwd(), path);
-
   let contentBuff = base64Cache.get(path);
 
   if (contentBuff === undefined) {
