@@ -1,0 +1,34 @@
+{{#> layout}}
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <span class="title">Proposal: {{proposal.title}}</span><br />
+        <br />
+
+        <span class="bold">Proposal ID: </span><br />
+        {{proposal.proposalId}}<br />
+        <br />
+
+        <span class="bold">Brief summary:</span><br />
+        {{proposal.abstract}}<br />
+        <br />
+
+        <span class="bold">Proposal Team</span><br />
+        <br />
+        <span class="bold">Principal Investigator:</span><br />
+        {{principalInvestigator.firstname}} {{principalInvestigator.lastname}}<br />
+        {{principalInvestigator.organisation}}<br />
+        {{principalInvestigator.position}}<br />
+        <br />
+
+        <span class="bold">Co-proposer:</span><br />
+        {{#each coProposers}}
+          {{this.firstname}} {{this.lastname}}, {{this.organisation}}<br />
+        {{/each}}
+
+      </div>
+    </div>
+  </div>
+
+{{/layout}}

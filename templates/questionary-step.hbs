@@ -1,0 +1,19 @@
+{{#> layout}}
+
+  <div class="container-fluid">
+    {{#each steps}}
+      <div class="row">
+        <div class="col">
+          <div class="title mb-1">{{this.topic.title}}</div>
+
+          {{#each this.fields}}
+            {{> questionaryAnswer step=this attachmentsFileMeta=../../attachmentsFileMeta}}
+          {{/each}}
+
+          <div class="mb-3"></div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+
+{{/layout}}

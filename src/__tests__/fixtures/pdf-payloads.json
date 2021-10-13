@@ -1,0 +1,277 @@
+{
+  "proposal_test_1": [
+    {
+      "samples": [],
+      "technicalReview": {
+        "status": "Okey",
+        "timeAllocation": 30,
+        "publicComment": "Technical review lorem ipsum"
+      },
+      "proposal": {
+        "id": 1,
+        "title": "Test proposal",
+        "proposalId": "123123",
+        "abstract": "First lorem ipsum"
+      },
+      "principalInvestigator": {
+        "firstname": "Foo",
+        "lastname": "Bar",
+        "organisation": "Baz",
+        "position": "Foobar"
+      },
+      "coProposers": [
+        {
+          "firstname": "Co Foo 1",
+          "lastname": "Co Bar 1",
+          "organisation": "Co Baz 1"
+        },
+        {
+          "firstname": "Co Foo 2",
+          "lastname": "Co Bar 2",
+          "organisation": "Co Baz 2"
+        }
+      ],
+      "attachments": [],
+      "questionarySteps": [
+        {
+          "topic": {
+            "title": "Questionary 1"
+          },
+          "fields": [
+            {
+              "question": {
+                "dataType": "EMBELLISHMENT"
+              },
+              "config": {
+                "plain": "Visible EMBELLISHMENT",
+                "omitFromPdf": false
+              }
+            },
+            {
+              "question": {
+                "dataType": "EMBELLISHMENT"
+              },
+              "config": {
+                "plain": "Hidden EMBELLISHMENT",
+                "omitFromPdf": true
+              }
+            },
+            {
+              "question": {
+                "dataType": "DATE",
+                "question": "Date question"
+              },
+              "value": "2020-10-27T15:06:23.849Z"
+            },
+            {
+              "question": {
+                "dataType": "BOOLEAN",
+                "question": "Boolean question - true"
+              },
+              "value": true
+            },
+            {
+              "question": {
+                "dataType": "BOOLEAN",
+                "question": "Boolean question - false"
+              },
+              "value": false
+            },
+            {
+              "question": {
+                "dataType": "SELECTION_FROM_OPTIONS",
+                "question": "Selection from options"
+              },
+              "value": ["Selected answer"]
+            },
+            {
+              "question": {
+                "dataType": "SELECTION_FROM_OPTIONS",
+                "question": "Selection from options with multiple select"
+              },
+              "value": ["foo", "bar"]
+            },
+            {
+              "question": {
+                "dataType": "INTERVAL",
+                "question": "Interval question"
+              },
+              "value": { "min": -1, "max": 99, "unit": "foo" }
+            },
+            {
+              "question": {
+                "dataType": "INTERVAL",
+                "question": "Interval question - no answer"
+              },
+              "value": { "min": "", "max": "", "unit": null }
+            },
+            {
+              "question": {
+                "dataType": "INTERVAL",
+                "question": "Interval question - no unit"
+              },
+              "value": { "min": "1", "max": "2", "unit": null }
+            },
+            {
+              "question": {
+                "dataType": "RICH_TEXT_INPUT",
+                "question": "Rich text input question"
+              },
+              "value": "<p>rich</p>\n<p>text</p>\n<p>input</p>"
+            },
+            {
+              "question": {
+                "dataType": "NUMBER_INPUT",
+                "question": "Number input question"
+              },
+              "value": { "unit": "foo/bar", "value": "2345" }
+            },
+            {
+              "question": {
+                "dataType": "NUMBER_INPUT",
+                "question": "Number input question - no answer"
+              },
+              "value": { "unit": "foo/bar", "value": "" }
+            },
+            {
+              "question": {
+                "dataType": "NUMBER_INPUT",
+                "question": "Number input question - no unit"
+              },
+              "value": { "unit": null, "value": "2345" }
+            },
+            {
+              "question": {
+                "dataType": "Unknown dataType",
+                "question": "Random question"
+              },
+              "value": "Random answer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "samples": [
+        {
+          "sample": {
+            "id": 8,
+            "title": "Foo sample",
+            "safetyComment": "Safety foo bar",
+            "status": "Not evaluated"
+          },
+          "sampleQuestionaryFields": [
+            {
+              "question": {
+                "dataType": "DATE",
+                "question": "Sample date question"
+              },
+              "value": "2020-10-27T15:06:23.849Z"
+            }
+          ]
+        },
+        {
+          "sample": {
+            "id": 9,
+            "title": "Sample 999",
+            "safetyComment": "",
+            "status": "Risky"
+          },
+          "sampleQuestionaryFields": []
+        }
+      ],
+      "technicalReview": {
+        "status": "Okey-ish",
+        "timeAllocation": 0,
+        "publicComment": "Second technical review comment"
+      },
+      "proposal": {
+        "id": 2,
+        "title": "Second proposal",
+        "proposalId": "7777777",
+        "abstract": "Second proposal abstract"
+      },
+      "principalInvestigator": {
+        "firstname": "Bar",
+        "lastname": "Baz",
+        "organisation": "Foo AB",
+        "position": "Foo"
+      },
+      "coProposers": [
+        {
+          "firstname": "Co Foo",
+          "lastname": "Co Bar",
+          "organisation": "Co Baz"
+        }
+      ],
+      "attachments": [],
+      "questionarySteps": [
+        {
+          "topic": {
+            "title": "Questionary 2"
+          },
+          "fields": [
+            {
+              "question": {
+                "dataType": "SAMPLE_DECLARATION",
+                "question": "Sample declaration"
+              },
+              "value": [
+                {
+                  "id": 8,
+                  "title": "Foo sample",
+                  "safetyComment": "Safety foo bar",
+                  "status": "Not evaluated"
+                },
+                {
+                  "id": 9,
+                  "title": "Sample 999",
+                  "safetyComment": "",
+                  "status": "Risky"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sample_test_1": [
+    {
+      "sample": {
+        "id": 8,
+        "title": "Foo sample",
+        "safetyComment": "Safety foo bar",
+        "status": "Not evaluated"
+      },
+      "sampleQuestionaryFields": [
+        {
+          "question": {
+            "dataType": "SAMPLE_BASIS",
+            "question": "Sample basis question"
+          },
+          "value": null
+        },
+        {
+          "question": {
+            "dataType": "DATE",
+            "question": "Date question"
+          },
+          "value": "2020-10-27T15:06:23.849Z"
+        }
+      ],
+      "attachments": []
+    }
+  ],
+  "shipment_label_test_1": [
+    {
+      "shipment": {
+        "shipmentId": 11111,
+        "title": "Foo sample",
+        "proposalId": 22222,
+        "externalRef": 33333
+      },
+      "attachments": []
+    }
+  ]
+}

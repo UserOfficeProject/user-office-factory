@@ -1,0 +1,16 @@
+version: "3.1"
+
+services:
+  factory:
+    image: dmsc/duo-factory:${USER_OFFICE_FACTORY_TAG}
+    environment:
+      NODE_ENV: development
+      DATABASE_HOSTNAME: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USER: duouser
+      DATABASE_PASSWORD: duopassword
+      DATABASE_DATABASE: duo
+    ports:
+      - 4500
+    cap_add:
+      - SYS_ADMIN
