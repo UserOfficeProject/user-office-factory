@@ -10,6 +10,7 @@ import {
   ProposalPDFData,
   ProposalSampleData,
   Attachment,
+  GenericTemplate,
 } from '../../types';
 import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
 import PdfWorkflowManager from './PdfWorkflowManager';
@@ -19,6 +20,7 @@ type ProposalPDFMeta = {
     proposal: string;
     questionnaires: string[];
     samples: string[];
+    genericTemplates: string[];
     attachments: string[];
     technicalReview: string;
   };
@@ -38,6 +40,7 @@ export class ProposalPdfFactory extends PdfFactory<
       proposal: '',
       questionnaires: [],
       samples: [],
+      genericTemplates: [],
       attachments: [],
       technicalReview: '',
     },
@@ -56,6 +59,7 @@ export class ProposalPdfFactory extends PdfFactory<
       technicalReview,
       attachments,
       samples,
+      genericTemplates,
     } = data;
 
     this.countedPagesMeta = {
@@ -69,6 +73,10 @@ export class ProposalPdfFactory extends PdfFactory<
         countedPagesPerPdf: {},
       },
       samples: { waitFor: samples.length, countedPagesPerPdf: {} },
+      genericTemplates: {
+        waitFor: genericTemplates.length,
+        countedPagesPerPdf: {},
+      },
       attachments: {
         waitFor: 0 /* set by fetched:attachmentsFileMeta */,
         countedPagesPerPdf: {},
@@ -169,6 +177,7 @@ export class ProposalPdfFactory extends PdfFactory<
           this.emit(
             'render:questionnaires',
             questionarySteps,
+            genericTemplates,
             attachmentsFileMeta
           );
         }
@@ -211,7 +220,12 @@ export class ProposalPdfFactory extends PdfFactory<
       this.emit('fetch:attachmentsFileMeta', attachments);
     } else {
       if (questionarySteps.length > 0) {
-        this.emit('render:questionnaires', questionarySteps, []);
+        this.emit(
+          'render:questionnaires',
+          questionarySteps,
+          genericTemplates,
+          []
+        );
       }
 
       if (samples.length > 0) {
@@ -252,6 +266,7 @@ export class ProposalPdfFactory extends PdfFactory<
 
   private async renderQuestionarySteps(
     questionarySteps: QuestionaryStep[],
+    genericTemplates: GenericTemplate[],
     attachmentsFileMeta: FileMetadata[]
   ) {
     if (this.stopped) {
@@ -263,7 +278,7 @@ export class ProposalPdfFactory extends PdfFactory<
     try {
       const renderedProposalQuestion = await renderTemplate(
         'questionary-step.hbs',
-        { steps: questionarySteps, attachmentsFileMeta }
+        { steps: questionarySteps, genericTemplates, attachmentsFileMeta }
       );
       const renderedHeaderFooter = await renderHeaderFooter();
 

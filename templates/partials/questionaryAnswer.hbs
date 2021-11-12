@@ -1,4 +1,7 @@
-<div class="mb-2 avoid-page-break-inside">
+{{#unless ($eq this.step.question.dataType 'GENERIC_TEMPLATE') }}
+  <div class="mb-2 avoid-page-break-inside">
+{{/unless}}
+
   {{#if ($eq this.step.question.dataType 'EMBELLISHMENT') }}
     {{#unless this.step.config.omitFromPdf }}
       <div class="bold">{{this.step.config.plain}}</div>
@@ -79,7 +82,7 @@
 
   {{else if ($eq this.step.question.dataType 'SAMPLE_BASIS')}}
     <div class="bold">{{this.step.question.question}}</div>
-    {{! 
+    {{!
         SAMPLE_BASIS is a special case, its value is never set
         instead we have to use the sample title title directly
         as that is what actually holds the relevant value
@@ -89,7 +92,14 @@
     {{else}}
       <em>Left blank</em>
     {{/if}}
-
+  {{else if ($eq this.step.question.dataType 'GENERIC_TEMPLATE')}}
+    {{!
+        GENERIC_TEMPLATE question type contains sub questions. The
+        genericTemplates partial is used to loop through these and
+        provide additional formatting, and each (sub) question is
+        then passed back to this partial for rendering.
+    }}
+    {{> genericTemplates question=this.step.question templates=genericTemplates attachmentsFileMeta=this.attachmentsFileMeta }}
   {{else}}
     <div class="bold">{{this.step.question.question}}</div>
     {{#if this.step.value}}
@@ -99,4 +109,7 @@
     {{/if}}
   {{/if}}
 
-</div>
+{{#unless ($eq this.step.question.dataType 'GENERIC_TEMPLATE') }}
+  </div>
+
+{{/unless}}
