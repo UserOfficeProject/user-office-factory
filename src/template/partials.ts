@@ -6,7 +6,7 @@ import handlebar from 'handlebars';
 function registerPartials() {
   const partialsDir = join(__dirname, '..', '..', 'templates', 'partials');
 
-  readdirSync(partialsDir).forEach(file => {
+  readdirSync(partialsDir).forEach((file) => {
     if (extname(file) !== '.hbs') {
       return;
     }

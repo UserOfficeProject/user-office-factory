@@ -7,15 +7,11 @@ import app from '../../../app';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/xlsx-payloads.json';
 
-beforeAll(done => {
-  setTimeout(done, 5000);
-}, 10000);
-
 describe('Proposal XLSX', () => {
   test(
     'should create Proposal XLSX with the provided values',
     () => {
-      return new Promise(done => {
+      return new Promise((done) => {
         const xlsxPath = `${generateTmpPath()}.xlsx`;
         const ws = createWriteStream(xlsxPath);
 
@@ -23,7 +19,7 @@ describe('Proposal XLSX', () => {
           .post('/generate/xlsx/proposal')
           .send(testPayloads.proposal_test_1);
 
-        r.on('response', resp => {
+        r.on('response', (resp) => {
           expect(resp.status).toBe(200);
         });
 
@@ -32,7 +28,7 @@ describe('Proposal XLSX', () => {
 
           expect(wb.SheetNames.length).toBe(1);
 
-          wb.SheetNames.forEach(sheetName => {
+          wb.SheetNames.forEach((sheetName) => {
             const [header, ...rows] = XLSX.utils.sheet_to_json(
               wb.Sheets[sheetName],
               {
@@ -48,14 +44,14 @@ describe('Proposal XLSX', () => {
             );
           });
 
-          unlink(xlsxPath, err => {
+          unlink(xlsxPath, (err) => {
             expect(err).toBe(null);
 
-            done();
+            done(true);
           });
         });
       });
     },
-    20 * 1000
+    30 * 1000
   );
 });

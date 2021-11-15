@@ -122,23 +122,23 @@ export class ProposalPdfFactory extends PdfFactory<
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
 
-    this.once('rendered:proposal', pdfPath => {
+    this.once('rendered:proposal', (pdfPath) => {
       this.meta.files.proposal = pdfPath;
       this.emit('taskFinished', 'render:proposal');
     });
 
-    this.once('rendered:technicalReview', pdfPath => {
+    this.once('rendered:technicalReview', (pdfPath) => {
       this.meta.files.technicalReview = pdfPath;
       this.emit('taskFinished', 'render:technicalReview');
     });
 
-    this.on('rendered:questionary', pdfPath => {
+    this.on('rendered:questionary', (pdfPath) => {
       this.meta.files.questionnaires.push(pdfPath);
 
       this.emit('taskFinished', 'render:questionnaires');
     });
 
-    this.on('rendered:sample', pdfPath => {
+    this.on('rendered:sample', (pdfPath) => {
       this.meta.files.samples.push(pdfPath);
 
       if (this.meta.files.samples.length === samples.length) {
@@ -146,7 +146,7 @@ export class ProposalPdfFactory extends PdfFactory<
       }
     });
 
-    this.on('fetched:attachment', attachmentPath => {
+    this.on('fetched:attachment', (attachmentPath) => {
       this.meta.files.attachments.push(attachmentPath);
 
       if (
@@ -186,7 +186,7 @@ export class ProposalPdfFactory extends PdfFactory<
       }
     );
 
-    this.on('taskFinished', task => {
+    this.on('taskFinished', (task) => {
       logger.logDebug(this.logPrefix + 'task finished', { task });
       tasksNeeded.splice(tasksNeeded.indexOf(task), 1);
 
@@ -344,7 +344,7 @@ export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
     ProposalPDFData,
     ProposalPDFMeta,
     ProposalPdfFactory
-  >(ProposalPdfFactory, data, data => data.proposal.id);
+  >(ProposalPdfFactory, data, (data) => data.proposal.id);
 
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
@@ -359,7 +359,7 @@ export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
 
       filePaths.push(meta.files.proposal);
 
-      meta.files.questionnaires.forEach(questionary => {
+      meta.files.questionnaires.forEach((questionary) => {
         filePaths.push(questionary);
         toc.children.push({
           title: 'Questionary', // data.questionarySteps[qIdx].topic.title,

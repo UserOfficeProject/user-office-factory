@@ -73,12 +73,12 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
 
-    this.once('rendered:sample', pdfPath => {
+    this.once('rendered:sample', (pdfPath) => {
       this.meta.files.sample = pdfPath;
       this.emit('taskFinished', 'render:sample');
     });
 
-    this.on('fetched:attachment', attachmentPath => {
+    this.on('fetched:attachment', (attachmentPath) => {
       this.meta.files.attachments.push(attachmentPath);
 
       if (
@@ -112,7 +112,7 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
       }
     );
 
-    this.on('taskFinished', task => {
+    this.on('taskFinished', (task) => {
       logger.logDebug(this.logPrefix + 'task finished', { task });
       tasksNeeded.splice(tasksNeeded.indexOf(task), 1);
 
@@ -170,7 +170,7 @@ export default function newSamplePdfWorkflowManager(data: SamplePDFData[]) {
     SamplePDFData,
     SamplePDFMeta,
     SamplePdfFactory
-  >(SamplePdfFactory, data, data => data.sample.id);
+  >(SamplePdfFactory, data, (data) => data.sample.id);
 
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {

@@ -16,8 +16,8 @@ export function generateTmpPath() {
 }
 
 export function failSafeDeleteFiles(filePaths: string[]) {
-  filePaths.forEach(filePath =>
-    unlink(filePath, err => {
+  filePaths.forEach((filePath) =>
+    unlink(filePath, (err) => {
       if (!err) {
         return;
       }

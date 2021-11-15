@@ -15,8 +15,8 @@ export default class XLSXWorkflowManager extends WorkflowManager {
     super();
 
     fn()
-      .then(rs => this.cbOnTaskFinished(rs))
-      .catch(err => this.cbOnError(err));
+      .then((rs) => this.cbOnTaskFinished(rs))
+      .catch((err) => this.cbOnError(err));
   }
 
   onError(cb: (e: Error) => void): void {

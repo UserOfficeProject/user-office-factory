@@ -36,9 +36,7 @@ export default abstract class PdfFactory<
   protected aborted = false;
 
   protected abstract meta: TPdfFactoryMeta;
-  protected abstract countedPagesMeta: PdfFactoryCountedPagesMeta<
-    TPdfFactoryMeta
-  >;
+  protected abstract countedPagesMeta: PdfFactoryCountedPagesMeta<TPdfFactoryMeta>;
 
   abstract init(params: TData): void;
 
@@ -52,7 +50,7 @@ export default abstract class PdfFactory<
     super();
 
     this.entityId = entityId;
-    this.on('aborted', (action, ctx: object) => {
+    this.on('aborted', (action, ctx: Record<string, unknown>) => {
       logger.logWarn(this.logPrefix + `${action} was aborted`, { ...ctx });
     });
 
@@ -158,7 +156,7 @@ export default abstract class PdfFactory<
     if (mimeType === 'image/tiff') {
       const outputPath = `${generateTmpPath()}.png`;
       const newFilePath = await new Promise<string>((resolve, reject) => {
-        gm(`TIFF:${attachmentPath}`).write(`${outputPath}`, err =>
+        gm(`TIFF:${attachmentPath}`).write(`${outputPath}`, (err) =>
           err ? reject(err) : resolve(outputPath)
         );
       });
@@ -221,7 +219,7 @@ export default abstract class PdfFactory<
       this.stopped = true;
     }
 
-    Object.values(this.meta.files).forEach(filePaths => {
+    Object.values(this.meta.files).forEach((filePaths) => {
       if (!filePaths) {
         return;
       }

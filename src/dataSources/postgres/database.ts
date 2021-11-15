@@ -16,12 +16,12 @@ const db = Knex({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-db.on('query-error', function(error: any, obj: any) {
+db.on('query-error', function (error: any, obj: any) {
   logger.logError('QUERY ERROR', { error, obj });
 });
 
 if (process.env.DATABASE_LOG_QUERIES === '1') {
-  db.on('query', function({ sql }) {
+  db.on('query', function ({ sql }) {
     // TODO: add timestamp to logger (maybe only ConsoleLogger needs it)
     logger.logDebug(`${new Date().toISOString()} - QUERY`, sql);
   });

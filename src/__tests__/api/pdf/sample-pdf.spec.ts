@@ -8,15 +8,11 @@ import { getTotalPages } from '../../../pdf';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/pdf-payloads.json';
 
-beforeAll(done => {
-  setTimeout(done, 5000);
-}, 10000);
-
 describe('Sample PDF', () => {
   test(
     'should create sample PDF with the provided values',
     () => {
-      return new Promise(done => {
+      return new Promise((done) => {
         const pdfPath = `${generateTmpPath()}.pdf`;
         const ws = createWriteStream(pdfPath);
 
@@ -24,7 +20,7 @@ describe('Sample PDF', () => {
           .post('/generate/pdf/sample')
           .send({ data: testPayloads.sample_test_1 });
 
-        r.on('response', resp => {
+        r.on('response', (resp) => {
           expect(resp.status).toBe(200);
         });
 
@@ -48,10 +44,10 @@ describe('Sample PDF', () => {
            */
           // expect(text).toMatch(/Safety foo bar/);
 
-          unlink(pdfPath, err => {
+          unlink(pdfPath, (err) => {
             expect(err).toBe(null);
 
-            done();
+            done(true);
           });
         });
       });

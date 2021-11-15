@@ -56,10 +56,7 @@ export default function writeLinks(
   pageSize: any
 ) {
   const pageId = parser.getPageObjectID(pageIndex);
-  const pageObject = parser
-    .parsePage(pageIndex)
-    .getDictionary()
-    .toJSObject();
+  const pageObject = parser.parsePage(pageIndex).getDictionary().toJSObject();
 
   const links = getLinks(
     objCtx,
@@ -73,7 +70,7 @@ export default function writeLinks(
   objCtx.startModifiedIndirectObject(pageId);
   const modifiedPageObject = objCtx.startDictionary();
 
-  Object.getOwnPropertyNames(pageObject).forEach(element => {
+  Object.getOwnPropertyNames(pageObject).forEach((element) => {
     // leave everything besides annotations on TOC pages in tact
     // bookmark annotations are at doc level, so won't be affected
     if (element !== annotationArrayKey) {
@@ -85,7 +82,7 @@ export default function writeLinks(
   modifiedPageObject.writeKey(annotationArrayKey);
   objCtx.startArray();
 
-  links.forEach(link => objCtx.writeIndirectObjectReference(link));
+  links.forEach((link) => objCtx.writeIndirectObjectReference(link));
 
   objCtx
     .endArray()

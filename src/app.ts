@@ -19,7 +19,7 @@ const app = express();
 
 app.use(
   httpLogger('tiny', {
-    skip: function(req, res) {
+    skip: function (req, res) {
       // skip health check and static requests from logs
       return (
         (req.path === '/health-check' || req.baseUrl.startsWith('/static')) &&
@@ -50,9 +50,9 @@ app.post(
         return next(new Error(`Unknown 'downloadType': ${downloadType}`));
     }
 
-    manager.onError(e => next(e));
+    manager.onError((e) => next(e));
 
-    manager.onTaskFinished(rs => {
+    manager.onTaskFinished((rs) => {
       if (req.aborted || req.destroyed) {
         return;
       }
@@ -83,11 +83,11 @@ app.get('/test-template/:template', (req, res, next) => {
   renderTemplate(template as any, {
     ...JSON.parse(Buffer.from(data as string, 'base64').toString()),
   })
-    .then(html => {
+    .then((html) => {
       res.write(html);
       res.end();
     })
-    .catch(e => next(e));
+    .catch((e) => next(e));
 });
 
 let cachedVersion: string;
@@ -122,12 +122,12 @@ app.get(['/', '/health-check'], (req, res) => {
 app.get('/favicon.ico', (req, res) => res.end());
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(
+app.use(function (
   err: HttpError,
   req: Request,
   res: Response,

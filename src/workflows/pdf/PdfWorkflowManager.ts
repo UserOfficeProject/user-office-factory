@@ -40,10 +40,8 @@ export default class PdfWorkflowManager<
   protected data: TFactoryData[];
   protected entityIds: number[] = [];
   protected factories: TFactory[] = [];
-  protected factoriesMeta: Map<
-    number,
-    FactoryMeta<TPdfFactoryMeta>
-  > = new Map();
+  protected factoriesMeta: Map<number, FactoryMeta<TPdfFactoryMeta>> =
+    new Map();
 
   private responseRS: ReadStream | null = null;
   // callback used in `finalizePDF`
@@ -75,7 +73,7 @@ export default class PdfWorkflowManager<
 
       this.entityIds.push(entityId);
 
-      inst.onceError(err => this.ee.emit('error', err));
+      inst.onceError((err) => this.ee.emit('error', err));
       inst.onceDone((meta, metaCountedPages) => {
         this.factoriesMeta.set(i, { meta, metaCountedPages });
         this.ee.emit('pdfCreated');
@@ -94,7 +92,7 @@ export default class PdfWorkflowManager<
   }
 
   onError(cb: (err: Error) => void): void {
-    this.ee.once('error', err => cb(err));
+    this.ee.once('error', (err) => cb(err));
   }
 
   onTaskFinished(cb: (rs: Readable) => void): void {
@@ -119,20 +117,20 @@ export default class PdfWorkflowManager<
 
   private setupListeners() {
     // If there were more than one errors keep logging them
-    this.ee.on('error', err => {
+    this.ee.on('error', (err) => {
       logger.logException(this.logPrefix + 'had error', err, {});
     });
 
     // if we encountered an error, we finished or were aborted
     // try to stop any ongoing work and clean things up
     this.ee.once('error', () =>
-      this.factories.forEach(factory => factory.abort())
+      this.factories.forEach((factory) => factory.abort())
     );
     this.ee.once('abort', () =>
-      this.factories.forEach(factory => factory.abort())
+      this.factories.forEach((factory) => factory.abort())
     );
     this.ee.once('taskFinished', () =>
-      this.factories.forEach(factory => factory.cleanup())
+      this.factories.forEach((factory) => factory.cleanup())
     );
 
     this.ee.on('pdfCreated', () => {
@@ -201,7 +199,7 @@ export default class PdfWorkflowManager<
 
   private taskFinished(pdfWithToCPath: string) {
     this.responseRS = createReadStream(pdfWithToCPath);
-    this.responseRS.on('error', err => this.ee.emit('error', err));
+    this.responseRS.on('error', (err) => this.ee.emit('error', err));
     this.responseRS.once('close', () => failSafeDeleteFiles([pdfWithToCPath]));
 
     this.ee.emit('taskFinished');
