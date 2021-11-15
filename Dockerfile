@@ -16,9 +16,6 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
-# alpine 3.12 has Node 12, alpine:3.13 has Node 14, 
-# but Node 14 has no prebuilt binaries for hummus
-# after upgrade make sure to add the dependencies for node-gyp and hummus
 FROM alpine:3.13
 
 # Installs  Chromium (86) package.
