@@ -146,6 +146,44 @@
                 "question": "Random question"
               },
               "value": "Random answer"
+            },
+            {
+              "question":{
+                "id":"generic_template_1234",
+                "dataType":"GENERIC_TEMPLATE",
+                "question":"Generic template main question"
+              },
+              "value":[
+                {
+                  "title":"Generic template answer #1",
+                  "questionId":"generic_template_1234"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "genericTemplates":[
+        {
+          "genericTemplate":{
+            "title":"Generic template basis answer",
+            "questionId":"generic_template_1234"
+          },
+          "genericTemplateQuestionaryFields":[
+            {
+              "question":{
+                "dataType":"GENERIC_TEMPLATE_BASIS"
+              },
+              "config":{
+                "questionLabel":"Generic template basis question"
+              }
+            },
+            {
+              "question":{
+                "dataType":"TEXT_INPUT",
+                "question":"Text question"
+              },
+              "value":"Text answer"
             }
           ]
         }
@@ -233,7 +271,8 @@
             }
           ]
         }
-      ]
+      ],
+      "genericTemplates": []
     }
   ],
   "sample_test_1": [
