@@ -16,6 +16,7 @@ export type ProposalPDFData = {
   coProposers: BasicUser[];
   attachments: Attachment[];
   samples: ProposalSampleData[];
+  genericTemplates: GenericTemplate[];
   technicalReview?: {
     status: string;
     timeAllocation: number;
@@ -153,4 +154,13 @@ export class Shipment {
 export enum ShipmentStatus {
   DRAFT = 'DRAFT',
   SUBMITTED = 'SUBMITTED',
+}
+
+export interface GenericTemplate {
+  id: number;
+  title: string;
+  creatorId: number;
+  questionaryId: number;
+  questionId: string;
+  created: Date;
 }
