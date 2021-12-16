@@ -32,7 +32,7 @@
     "handlebars": "^4.7.7",
     "http-errors": "~1.8.1",
     "jsbarcode": "^3.11.5",
-    "knex": "^0.21.17",
+    "knex": "^0.95.14",
     "morgan": "~1.10.0",
     "muhammara": "^1.10.0",
     "pg": "^8.7.1",
