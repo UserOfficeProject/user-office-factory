@@ -143,11 +143,22 @@ export class Shipment {
     public id: number,
     public title: string,
     public creatorId: number,
-    public proposalId: number,
+    public proposalPk: number,
     public questionaryId: number,
     public status: ShipmentStatus,
     public externalRef: string,
-    public created: Date
+    public created: Date,
+    public proposalId: string,
+    public callShortCode: string,
+    public instrumentShortCode: string,
+    public weight: number,
+    public width: number,
+    public height: number,
+    public length: number,
+    public storageTemplerature: string,
+    public isFragile: boolean,
+    public isDangerous: boolean,
+    public localContact: string
   ) {}
 }
 
