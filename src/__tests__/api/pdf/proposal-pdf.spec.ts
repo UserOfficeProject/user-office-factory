@@ -92,7 +92,7 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Sample: Foo sample/);
           expect(text).toMatch(/Sample date question 2020-10-27/);
           expect(text).toMatch(/Status:\nNot evaluated/);
-          expect(text).toMatch(/Comment:\nSafety foo bar/);
+          expect(text).toMatch(/Comment:\n\nSafety foo bar/);
 
           expect(text).toMatch(/Sample: Sample 999/);
           expect(text).toMatch(/Status:\nRisky/);

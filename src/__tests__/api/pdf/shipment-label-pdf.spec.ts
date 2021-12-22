@@ -35,7 +35,7 @@ describe('Shipment label PDF', () => {
 
           const text = extractPDFText(pdfPath);
 
-          expect(text).toMatch(/PROPOSAL\n22222/);
+          expect(text).toMatch(/CONTAINER ID33333/);
 
           unlink(pdfPath, err => {
             expect(err).toBe(null);
