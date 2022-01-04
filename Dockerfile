@@ -36,7 +36,7 @@ RUN apk add --no-cache \
   jpeg-dev \
   pango-dev \
   giflib-dev \
-  python 
+  python3
 
 WORKDIR /tmp
 
