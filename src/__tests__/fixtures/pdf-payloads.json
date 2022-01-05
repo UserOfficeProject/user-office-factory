@@ -82,35 +82,52 @@
                 "dataType": "SELECTION_FROM_OPTIONS",
                 "question": "Selection from options"
               },
-              "value": ["Selected answer"]
+              "value": [
+                "Selected answer"
+              ]
             },
             {
               "question": {
                 "dataType": "SELECTION_FROM_OPTIONS",
                 "question": "Selection from options with multiple select"
               },
-              "value": ["foo", "bar"]
+              "value": [
+                "foo",
+                "bar"
+              ]
             },
             {
               "question": {
                 "dataType": "INTERVAL",
                 "question": "Interval question"
               },
-              "value": { "min": -1, "max": 99, "unit": "foo" }
+              "value": {
+                "min": -1,
+                "max": 99,
+                "unit": "foo"
+              }
             },
             {
               "question": {
                 "dataType": "INTERVAL",
                 "question": "Interval question - no answer"
               },
-              "value": { "min": "", "max": "", "unit": null }
+              "value": {
+                "min": "",
+                "max": "",
+                "unit": null
+              }
             },
             {
               "question": {
                 "dataType": "INTERVAL",
                 "question": "Interval question - no unit"
               },
-              "value": { "min": "1", "max": "2", "unit": null }
+              "value": {
+                "min": "1",
+                "max": "2",
+                "unit": null
+              }
             },
             {
               "question": {
@@ -124,21 +141,30 @@
                 "dataType": "NUMBER_INPUT",
                 "question": "Number input question"
               },
-              "value": { "unit": "foo/bar", "value": "2345" }
+              "value": {
+                "unit": "foo/bar",
+                "value": "2345"
+              }
             },
             {
               "question": {
                 "dataType": "NUMBER_INPUT",
                 "question": "Number input question - no answer"
               },
-              "value": { "unit": "foo/bar", "value": "" }
+              "value": {
+                "unit": "foo/bar",
+                "value": ""
+              }
             },
             {
               "question": {
                 "dataType": "NUMBER_INPUT",
                 "question": "Number input question - no unit"
               },
-              "value": { "unit": null, "value": "2345" }
+              "value": {
+                "unit": null,
+                "value": "2345"
+              }
             },
             {
               "question": {
@@ -148,42 +174,42 @@
               "value": "Random answer"
             },
             {
-              "question":{
-                "id":"generic_template_1234",
-                "dataType":"GENERIC_TEMPLATE",
-                "question":"Generic template main question"
+              "question": {
+                "id": "generic_template_1234",
+                "dataType": "GENERIC_TEMPLATE",
+                "question": "Generic template main question"
               },
-              "value":[
+              "value": [
                 {
-                  "title":"Generic template answer #1",
-                  "questionId":"generic_template_1234"
+                  "title": "Generic template answer #1",
+                  "questionId": "generic_template_1234"
                 }
               ]
             }
           ]
         }
       ],
-      "genericTemplates":[
+      "genericTemplates": [
         {
-          "genericTemplate":{
-            "title":"Generic template basis answer",
-            "questionId":"generic_template_1234"
+          "genericTemplate": {
+            "title": "Generic template basis answer",
+            "questionId": "generic_template_1234"
           },
-          "genericTemplateQuestionaryFields":[
+          "genericTemplateQuestionaryFields": [
             {
-              "question":{
-                "dataType":"GENERIC_TEMPLATE_BASIS"
+              "question": {
+                "dataType": "GENERIC_TEMPLATE_BASIS"
               },
-              "config":{
-                "questionLabel":"Generic template basis question"
+              "config": {
+                "questionLabel": "Generic template basis question"
               }
             },
             {
-              "question":{
-                "dataType":"TEXT_INPUT",
-                "question":"Text question"
+              "question": {
+                "dataType": "TEXT_INPUT",
+                "question": "Text question"
               },
-              "value":"Text answer"
+              "value": "Text answer"
             }
           ]
         }
@@ -307,8 +333,8 @@
       "shipment": {
         "shipmentId": 11111,
         "title": "Foo sample",
-        "proposalId": 22222,
-        "externalRef": 33333
+        "proposalId": "22222",
+        "externalRef": "33333"
       },
       "attachments": []
     }

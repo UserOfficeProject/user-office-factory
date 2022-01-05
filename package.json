@@ -24,6 +24,7 @@
   "dependencies": {
     "@esss-swap/duo-logger": "^1.1.1",
     "await-to-js": "^2.1.1",
+    "canvas": "^2.8.0",
     "cookie-parser": "~1.4.6",
     "debug": "~2.6.9",
     "dotenv": "^8.6.0",
@@ -38,6 +39,7 @@
     "pg": "^8.7.1",
     "pg-large-object": "^2.0.0",
     "puppeteer": "^5.4.1",
+    "qrcode": "^1.5.0",
     "xlsx": "^0.17.4",
     "xmldom": "^0.6.0"
   },
@@ -53,6 +55,7 @@
     "@types/pg": "^7.14.10",
     "@types/pg-large-object": "^2.0.2",
     "@types/puppeteer": "^3.0.5",
+    "@types/qrcode": "^1.4.2",
     "@types/supertest": "^2.0.10",
     "@types/xmldom": "^0.1.30",
     "@typescript-eslint/eslint-plugin": "^2.29.0",

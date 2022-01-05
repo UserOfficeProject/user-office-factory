@@ -1,4 +1,14 @@
-FROM node:12-alpine AS build-stage
+FROM node:16-alpine AS build-stage
+
+RUN apk add --no-cache \
+  python3 \
+  build-base \
+  g++ \
+  cairo-dev \
+  jpeg-dev \
+  pango-dev \
+  giflib-dev
+
 
 USER node
 
@@ -29,7 +39,13 @@ RUN apk add --no-cache \
   ttf-freefont \
   nodejs \
   npm \
-  graphicsmagick
+  graphicsmagick \
+  build-base \
+  g++ \
+  cairo-dev \
+  jpeg-dev \
+  pango-dev \
+  giflib-dev
 
 WORKDIR /tmp
 

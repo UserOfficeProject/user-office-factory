@@ -1,20 +1,71 @@
 {{#> layout}}
-<div class="p-5" style="font-family:sans-serif;">
-  <div class="container-fluid pl-5 pr-5">
+
+<div style="font-family:sans-serif; width: 70%; margin:40px auto 0 auto">
+  <div style="padding: 30px 40px; border:1px dashed #999999;">
     <div class="pb-3 d-flex justify-content-center">
       <img src="{{{ $readAsBase64 './templates/images/ESS-black.png' }}}" class="logo" />
     </div>
-    <div class="row border border-dark border-top-1 border-right-0 border-bottom-1 border-left-0 pt-2">
+    <div class="row border border-dark border-left-0 border-right-0">
+      <div class="col xs-6 p-2">
+        <h2 class="m-0 text-center font-weight-bold">CONTAINER ID</h2>
+      </div>
+      <div class="col xs-6 text-white bg bg-dark  p-2">
+        <h2 class="m-0 text-center font-weight-bold">{{shipment.externalRef}}</h2>
+      </div>
+    </div>
+    <div class="row border border-dark border-left-0 border-right-0">
+      <div class="col xs-6 p-2">
+        <h2 class="m-0 text-left font-weight-bold">{{shipment.callShortCode}}</h2>
+      </div>
+      <div class="col xs-6 p-2">
+        <h2 class="m-0 text-right font-weight-bold">{{shipment.instrumentShortCode}}</h2>
+      </div>
+    </div>
+    <div class="row border border-dark border-left-0 border-right-0">
+      <div class="col text-left p-3">
+        <img src="{{containerIdQRCode}}">
+      </div>
+      <div class="col text-right p-3" style="background-color: :burlywood;">
+        <img src="{{containerIdBarcode}}">
+      </div>
+    </div>
+
+
+    <div class="row pt-3 pb-3">
       <div class="col xs-6">
-        <h1>PROPOSAL</h1>
+        <h5 class="m-0 text-left font-weight-bold">Weight: {{shipment.weight}}</h5>
       </div>
-      <div class="col xs-6 text-white bg bg-dark">
-        <h1>{{shipment.proposalId}}</h1>
+      <div class="col xs-6 text-right">
+        <h5 class="m-0 text-left font-weight-bold">Size: {{shipment.width}} x {{shipment.height}} x
+          {{shipment.length}}
+        </h5>
       </div>
     </div>
-    <div class="d-flex justify-content-center">
-      {{ $barcode shipment.externalRef}}
+
+    <div class="row border border-dark p-2 pt-3">
+      <div class="col xs-12">
+        <h3 class="font-weight-bold">European Spallation Source ERIC<br />
+          Box 176<br />
+          SE-221 00, Lund<br />
+          Sweden
+        </h3>
+      </div>
     </div>
+    <div class="row border border-dark p-2 pt-3">
+      <div class="col xs-12">
+        <h5>Storage temperature: {{shipment.storageTemperature}}<br />
+          Fragile: {{shipment.isFragile}}<br />
+          Is dangerous: {{shipment.isDangerous}}<br />
+          Local contact: {{shipment.localContact}}</h4>
+      </div>
+    </div>
+
   </div>
+  <h5 style="color: #666; font-size:14px">* Do not tape over the QR or Barcode.</h5>
 </div>
+
+
+</div>
+
+
 {{/layout}}
