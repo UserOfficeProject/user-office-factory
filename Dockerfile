@@ -1,4 +1,4 @@
-FROM node:12-alpine AS build-stage
+FROM node:16.13-alpine AS build-stage
 
 USER node
 
