@@ -1,7 +1,7 @@
 import { ReadStream, createReadStream } from 'fs';
 import { Readable } from 'stream';
 
-import { logger } from '@esss-swap/duo-logger';
+import { logger } from '@user-office-software/duo-logger';
 
 import { TableOfContents, mergePDF, writeToC } from '../../pdf';
 import { failSafeDeleteFiles } from '../../util/fileSystem';

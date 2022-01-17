@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { readFile } from 'fs';
 import { join } from 'path';
 
-import { logger } from '@esss-swap/duo-logger';
+import { logger } from '@user-office-software/duo-logger';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';

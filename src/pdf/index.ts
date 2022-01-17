@@ -1,6 +1,6 @@
 import { promises } from 'fs';
 
-import { logger } from '@esss-swap/duo-logger';
+import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
 import puppeteer, { Browser } from 'puppeteer';
 
