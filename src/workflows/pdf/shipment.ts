@@ -1,4 +1,7 @@
 import { logger } from '@user-office-software/duo-logger';
+import { Canvas } from 'canvas';
+import JsBarcode from 'jsbarcode';
+import QRCode from 'qrcode';
 
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml } from '../../pdf';
@@ -83,11 +86,32 @@ export class ShipmentPdfFactory extends PdfFactory<
     }
 
     try {
+      const labelHeight = 130;
+      const canvas = new Canvas(200, labelHeight);
+      JsBarcode(canvas, shipment.externalRef, {
+        displayValue: false,
+        width: 3,
+        height: labelHeight,
+        margin: 0,
+      });
+      const containerIdBarcode = canvas.toDataURL();
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+      QRCode.toCanvas(canvas, shipment.externalRef, {
+        width: labelHeight,
+        margin: 0,
+      });
+      const containerIdQRCode = canvas.toDataURL();
+
       const renderedShipmentHtml = await renderTemplate('shipment-label.hbs', {
         shipment,
+        containerIdBarcode,
+        containerIdQRCode,
       });
 
-      const pdfPath = await generatePdfFromHtml(renderedShipmentHtml);
+      const pdfPath = await generatePdfFromHtml(renderedShipmentHtml, {
+        pdfOptions: { printBackground: true },
+      });
 
       this.emit('rendered:shipment', pdfPath);
     } catch (e) {

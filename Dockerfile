@@ -1,5 +1,15 @@
 FROM node:16.13-alpine AS build-stage
 
+RUN apk add --no-cache \
+  python3 \
+  build-base \
+  g++ \
+  cairo-dev \
+  jpeg-dev \
+  pango-dev \
+  giflib-dev
+
+
 USER node
 
 RUN mkdir -p /home/node/app
@@ -29,7 +39,13 @@ RUN apk add --no-cache \
   ttf-freefont \
   nodejs \
   npm \
-  graphicsmagick
+  graphicsmagick \
+  build-base \
+  g++ \
+  cairo-dev \
+  jpeg-dev \
+  pango-dev \
+  giflib-dev
 
 WORKDIR /tmp
 

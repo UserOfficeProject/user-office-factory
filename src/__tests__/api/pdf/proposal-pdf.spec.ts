@@ -59,6 +59,13 @@ describe('Proposal PDF', () => {
           expect(text).toMatch(/Number input question - no answer Left blank/);
           expect(text).toMatch(/Number input question - no unit 2345/);
 
+          expect(text).toMatch(/Generic template main question/);
+          expect(text).toMatch(/1 of 1/);
+          expect(text).toMatch(/Generic template basis question/);
+          expect(text).toMatch(/Generic template basis answer/);
+          expect(text).toMatch(/Text question/);
+          expect(text).toMatch(/Text answer/);
+
           expect(text).toMatch(/Status\nOkey/);
           expect(text).toMatch(/Time Allocation\n30 Days/);
           expect(text).toMatch(/Comment\nTechnical review lorem ipsum/);

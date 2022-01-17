@@ -1,0 +1,49 @@
+{{#> layout}}
+
+  <div class="mb-3">
+
+    <span class="bold">{{question.question}}</span><br />
+    <br />
+
+    {{#unless this.templates.length}}
+      Left blank
+    {{/unless}}
+
+    <div class="row">
+
+      {{#each this.templates}}
+        {{#if ($eq this.genericTemplate.questionId ../question.id) }}
+
+          <div class="col-6 border avoid-page-break-inside">
+
+            <div class="mb-2 mt-2">
+              <em>{{ $sum @index 1 }} of {{ ../this.templates.length }}</em>
+            </div>
+
+            {{#each this.genericTemplateQuestionaryFields}}
+              {{!
+                  GENERIC_TEMPLATE_BASIS has its question and answer stored
+                  differently to the other generic template questions, so it
+                  is rendered in this partial. All other questions are passed
+                  back to questionaryAnswer to be rendered as normal questions.
+              }}
+              {{#if ($eq this.question.dataType 'GENERIC_TEMPLATE_BASIS') }}
+                <div class="mb-2 avoid-page-break-inside">
+                  <span class="bold">{{ this.config.questionLabel }}</span><br />
+                  {{ ../this.genericTemplate.title }}
+                </div>
+              {{else}}
+                {{> questionaryAnswer step=this genericTemplates=../../genericTemplates attachmentsFileMeta=../../attachmentsFileMeta }}
+              {{/if}}
+            {{/each}}
+
+          </div>
+
+        {{/if}}
+      {{/each}}
+
+    </div>
+
+  </div>
+
+{{/layout}}
