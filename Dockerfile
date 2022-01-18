@@ -1,4 +1,4 @@
-FROM node:16.13-alpine AS build-stage
+FROM node:16-alpine AS build-stage
 
 RUN apk add --no-cache \
   python3 \
