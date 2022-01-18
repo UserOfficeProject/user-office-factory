@@ -7,6 +7,12 @@ import app from '../../../app';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/xlsx-payloads.json';
 
+beforeAll(() => {
+  return new Promise((done) => {
+    setTimeout(done, 5000);
+  });
+}, 10000);
+
 describe('SEP XLSX', () => {
   test(
     'should create SEP XLSX with the provided values',

@@ -8,6 +8,12 @@ import { getTotalPages } from '../../../pdf';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/pdf-payloads.json';
 
+beforeAll(() => {
+  return new Promise((done) => {
+    setTimeout(done, 5000);
+  });
+}, 10000);
+
 describe('Shipment label PDF', () => {
   test(
     'should create shipment label PDF with the provided values',
