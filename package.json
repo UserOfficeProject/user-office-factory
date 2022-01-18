@@ -38,7 +38,7 @@
     "muhammara": "^2.1.0",
     "pg": "^8.7.1",
     "pg-large-object": "^2.0.0",
-    "puppeteer": "^5.4.1",
+    "puppeteer": "^13.1.1",
     "qrcode": "^1.5.0",
     "xlsx": "^0.17.4",
     "xmldom": "^0.6.0"
@@ -54,7 +54,6 @@
     "@types/node": "^16.0.0",
     "@types/pg": "^8.6.4",
     "@types/pg-large-object": "^2.0.2",
-    "@types/puppeteer": "^3.0.5",
     "@types/qrcode": "^1.4.2",
     "@types/supertest": "^2.0.10",
     "@types/xmldom": "^0.1.30",
@@ -85,7 +84,7 @@
     }
   },
   "engines": {
-    "npm": ">=8.0.0",
-    "node": ">=16.0.0"
+    "npm": ">=6.0.0",
+    "node": ">=14.0.0"
   }
 }
