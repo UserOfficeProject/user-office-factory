@@ -53,7 +53,7 @@ app.post(
     manager.onError((e) => next(e));
 
     manager.onTaskFinished((rs) => {
-      if (req.aborted || req.destroyed) {
+      if (req.aborted || rs.destroyed || res.destroyed) {
         return;
       }
 
@@ -61,8 +61,8 @@ app.post(
       rs.pipe(res);
     });
 
-    req.once('close', () => {
-      if (res.finished) {
+    res.once('close', () => {
+      if (res.writableEnded) {
         return;
       }
 
