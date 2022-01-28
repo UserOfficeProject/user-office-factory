@@ -3,7 +3,7 @@ import { mkdtempSync, unlink } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
-import { logger } from '@esss-swap/duo-logger';
+import { logger } from '@user-office-software/duo-logger';
 
 const tmpDir = mkdtempSync(join(tmpdir(), 'user-office-'));
 
@@ -16,8 +16,8 @@ export function generateTmpPath() {
 }
 
 export function failSafeDeleteFiles(filePaths: string[]) {
-  filePaths.forEach(filePath =>
-    unlink(filePath, err => {
+  filePaths.forEach((filePath) =>
+    unlink(filePath, (err) => {
       if (!err) {
         return;
       }

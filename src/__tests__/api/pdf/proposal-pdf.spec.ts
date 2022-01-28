@@ -1,4 +1,5 @@
 import { createWriteStream, unlink } from 'fs';
+import { setTimeout } from 'timers/promises';
 
 import request from 'supertest';
 
@@ -8,15 +9,16 @@ import { getTotalPages } from '../../../pdf';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/pdf-payloads.json';
 
-beforeAll(done => {
-  setTimeout(done, 5000);
+// NOTE: This is just to make sure everything is up and running before we start.
+beforeAll(async () => {
+  await setTimeout(5000);
 }, 10000);
 
 describe('Proposal PDF', () => {
   test(
     'should create proposal PDF with the provided values',
     () => {
-      return new Promise(done => {
+      return new Promise((done) => {
         const pdfPath = `${generateTmpPath()}.pdf`;
         const ws = createWriteStream(pdfPath);
 
@@ -24,7 +26,7 @@ describe('Proposal PDF', () => {
           .post('/generate/pdf/proposal')
           .send({ data: testPayloads.proposal_test_1 });
 
-        r.on('response', resp => {
+        r.on('response', (resp) => {
           expect(resp.status).toBe(200);
         });
 
@@ -106,7 +108,7 @@ describe('Proposal PDF', () => {
            */
           // expect(text).toMatch(/Comment\nSecond technical review comment/);
 
-          unlink(pdfPath, err => {
+          unlink(pdfPath, (err) => {
             expect(err).toBe(null);
 
             done(true);

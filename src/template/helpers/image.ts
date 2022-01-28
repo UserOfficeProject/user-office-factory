@@ -2,7 +2,7 @@ import handlebar, { SafeString } from 'handlebars';
 import JsBarcode from 'jsbarcode';
 import { DOMImplementation, XMLSerializer } from 'xmldom';
 
-handlebar.registerHelper('$barcode', function(data: string) {
+handlebar.registerHelper('$barcode', function (data: string) {
   const xmlSerializer = new XMLSerializer();
   const document = new DOMImplementation().createDocument(
     'http://www.w3.org/1999/xhtml',

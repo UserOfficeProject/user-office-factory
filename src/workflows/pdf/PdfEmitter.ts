@@ -77,7 +77,7 @@ export default abstract class PdfEmitter<T> extends EventEmitter {
     if (mimeType === 'image/tiff') {
       const outputPath = `${generateTmpPath()}.png`;
       const newFilePath = await new Promise<string>((resolve, reject) => {
-        gm(`TIFF:${attachmentPath}`).write(`${outputPath}`, err =>
+        gm(`TIFF:${attachmentPath}`).write(`${outputPath}`, (err) =>
           err ? reject(err) : resolve(outputPath)
         );
       });

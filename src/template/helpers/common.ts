@@ -1,19 +1,19 @@
 import { readFileSync } from 'fs';
-import { join, extname } from 'path';
+import { extname } from 'path';
 
 import handlebar from 'handlebars';
 
-handlebar.registerHelper('$eq', function(a, b) {
+handlebar.registerHelper('$eq', function (a, b) {
   return a === b;
 });
 
-handlebar.registerHelper('$sum', function(...args) {
+handlebar.registerHelper('$sum', function (...args) {
   args.pop();
 
   return args.reduce((sum, curr) => sum + curr, 0);
 });
 
-handlebar.registerHelper('$join', function(src, delimiter) {
+handlebar.registerHelper('$join', function (src, delimiter) {
   if (!Array.isArray(src)) {
     return src;
   }
@@ -21,16 +21,16 @@ handlebar.registerHelper('$join', function(src, delimiter) {
   return src.join(delimiter);
 });
 
-handlebar.registerHelper('$or', function(...args) {
+handlebar.registerHelper('$or', function (...args) {
   args.pop();
 
-  return args.some(value => !!value);
+  return args.some((value) => !!value);
 });
 
 const extensionMimeTypeMp = new Map<string, string>([['.png', 'image/png']]);
 const base64Cache = new Map<string, Buffer>();
 
-handlebar.registerHelper('$readAsBase64', function(path: string) {
+handlebar.registerHelper('$readAsBase64', function (path: string) {
   let contentBuff = base64Cache.get(path);
 
   if (contentBuff === undefined) {
