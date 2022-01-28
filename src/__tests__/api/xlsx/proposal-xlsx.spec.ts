@@ -7,11 +7,10 @@ import app from '../../../app';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/xlsx-payloads.json';
 
+// NOTE: This is just to make sure everything is up and running before we start.
 beforeAll(() => {
-  return new Promise((done) => {
-    setTimeout(done, 5000);
-  });
-}, 10000);
+  //
+}, 15000);
 
 describe('Proposal XLSX', () => {
   test(
