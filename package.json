@@ -1,4 +1,5 @@
 {
+  "name": "user-office-factory",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
