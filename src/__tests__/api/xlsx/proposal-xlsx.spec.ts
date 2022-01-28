@@ -1,4 +1,5 @@
 import { createWriteStream, unlink } from 'fs';
+import { setTimeout } from 'timers/promises';
 
 import request from 'supertest';
 import XLSX from 'xlsx';
@@ -8,9 +9,9 @@ import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/xlsx-payloads.json';
 
 // NOTE: This is just to make sure everything is up and running before we start.
-beforeAll(() => {
-  //
-}, 15000);
+beforeAll(async () => {
+  await setTimeout(5000);
+}, 10000);
 
 describe('Proposal XLSX', () => {
   test(
