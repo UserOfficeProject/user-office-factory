@@ -1,4 +1,4 @@
-import { logger } from '@esss-swap/duo-logger';
+import { logger } from '@user-office-software/duo-logger';
 import { Canvas } from 'canvas';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
@@ -56,12 +56,12 @@ export class ShipmentPdfFactory extends PdfFactory<
 
     this.once('render:shipment', this.renderShipment);
 
-    this.once('rendered:shipment', pdfPath => {
+    this.once('rendered:shipment', (pdfPath) => {
       this.meta.files.shipment = pdfPath;
       this.emit('taskFinished', 'render:shipment');
     });
 
-    this.on('taskFinished', task => {
+    this.on('taskFinished', (task) => {
       logger.logDebug(this.logPrefix + 'task finished', { task });
       tasksNeeded.splice(tasksNeeded.indexOf(task), 1);
 
@@ -125,7 +125,7 @@ export default function newShipmentPdfWorkflowManager(data: ShipmentPDFData[]) {
     ShipmentPDFData,
     ShipmentPDFMeta,
     ShipmentPdfFactory
-  >(ShipmentPdfFactory, data, data => data.shipment.id);
+  >(ShipmentPdfFactory, data, (data) => data.shipment.id);
 
   manager.onFinalizePDF(({ meta, filePaths }) => {
     filePaths.push(meta.files.shipment);

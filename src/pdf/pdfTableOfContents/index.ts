@@ -35,7 +35,7 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   const parser = copyCtx.getSourceDocumentParser();
 
   // translate numbers from index to PDF object IDs
-  const translatedOutline = origOutline.map(childOutline =>
+  const translatedOutline = origOutline.map((childOutline) =>
     translatePageNumbers(parser, childOutline, howManyPages)
   );
 

@@ -1,4 +1,4 @@
-FROM node:16-alpine AS build-stage
+FROM node:16.13-alpine AS build-stage
 
 RUN apk add --no-cache \
   python3 \
@@ -26,11 +26,11 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
-FROM alpine:3.13
+FROM alpine:3.15
 
-# Installs  Chromium (86) package.
+# Installs  Chromium (93) package.
 RUN apk add --no-cache \
-  "chromium~=86.0.4240.111-r0" \
+  "chromium~=93.0.4577.82-r2" \
   nss \
   freetype \
   freetype-dev \
@@ -54,7 +54,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
   PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Add user so we don't need --no-sandbox.
-RUN addgroup -S pptruser && adduser -S -g pptruser pptruser \
+RUN addgroup -S -g 1000 pptruser && adduser -S -u 1000 -g pptruser pptruser \
   && mkdir -p /home/pptruser/Downloads /app \
   && chown -R pptruser:pptruser /home/pptruser \
   && chown -R pptruser:pptruser /app

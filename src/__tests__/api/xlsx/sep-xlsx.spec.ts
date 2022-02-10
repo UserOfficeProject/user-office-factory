@@ -1,4 +1,5 @@
 import { createWriteStream, unlink } from 'fs';
+import { setTimeout } from 'timers/promises';
 
 import request from 'supertest';
 import XLSX from 'xlsx';
@@ -7,15 +8,16 @@ import app from '../../../app';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/xlsx-payloads.json';
 
-beforeAll(done => {
-  setTimeout(done, 5000);
+// NOTE: This is just to make sure everything is up and running before we start.
+beforeAll(async () => {
+  await setTimeout(5000);
 }, 10000);
 
 describe('SEP XLSX', () => {
   test(
     'should create SEP XLSX with the provided values',
     () => {
-      return new Promise(done => {
+      return new Promise((done) => {
         const xlsxPath = `${generateTmpPath()}.xlsx`;
         const ws = createWriteStream(xlsxPath);
 
@@ -23,7 +25,7 @@ describe('SEP XLSX', () => {
           .post('/generate/xlsx/sep')
           .send(testPayloads.sep_test_1);
 
-        r.on('response', resp => {
+        r.on('response', (resp) => {
           expect(resp.status).toBe(200);
         });
 
@@ -48,14 +50,14 @@ describe('SEP XLSX', () => {
             );
           });
 
-          unlink(xlsxPath, err => {
+          unlink(xlsxPath, (err) => {
             expect(err).toBe(null);
 
-            done();
+            done(true);
           });
         });
       });
     },
-    20 * 1000
+    30 * 1000
   );
 });

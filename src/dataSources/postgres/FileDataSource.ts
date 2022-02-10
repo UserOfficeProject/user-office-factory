@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import fs from 'fs';
 
 import to from 'await-to-js';
@@ -40,19 +39,19 @@ export default class PostgresFileDataSource implements FileDataSource {
         'created_at',
       ])
       .whereIn('file_id', fileIds)
-      .modify(query => {
+      .modify((query) => {
         if (filter?.mimeType) {
           query.whereRaw(
             // eslint-disable-next-line quotes
             `mime_type ~* '(${filter.mimeType
-              .map(r => r.replace(/\//, '\\/'))
+              .map((r) => r.replace(/\//, '\\/'))
               .join('|')})'`
           );
         }
       })
       .orderBy('file_id', 'asc')
       .then((records: FileRecord[]) => {
-        return records.map(record => createFileMetadata(record));
+        return records.map((record) => createFileMetadata(record));
       });
   }
 
@@ -164,7 +163,7 @@ export default class PostgresFileDataSource implements FileDataSource {
 
       console.log('Streaming a large object with a total size of', size);
 
-      stream.on('end', function() {
+      stream.on('end', function () {
         connection?.query('COMMIT', () => resolve());
         database.client.releaseConnection(connection);
       });

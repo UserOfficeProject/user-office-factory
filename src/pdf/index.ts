@@ -1,6 +1,6 @@
 import { promises } from 'fs';
 
-import { logger } from '@esss-swap/duo-logger';
+import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
 import puppeteer, { Browser } from 'puppeteer';
 
@@ -27,8 +27,8 @@ logger.logInfo('Launching puppeteer with ', { args: launchOptions });
 // so we don't end up with dozens of browsers
 puppeteer
   .launch({ args: launchOptions })
-  .then(inst => (browser = inst))
-  .catch(e => {
+  .then((inst) => (browser = inst))
+  .catch((e) => {
     logger.logException('Failed to start browser puppeteer', e);
   });
 
@@ -85,8 +85,8 @@ export async function generatePdfFromLink(
   await page.goto(link, { waitUntil: 'load' });
 
   const imgHandle = await page.$('img');
-  const width = await page.evaluate(img => img.width, imgHandle);
-  const height = await page.evaluate(img => img.height, imgHandle);
+  const width = await page.evaluate((img) => img.width, imgHandle);
+  const height = await page.evaluate((img) => img.height, imgHandle);
 
   await page.pdf({
     path: pdfPath,
@@ -115,7 +115,7 @@ export function mergePDF(filePaths: string[]): string {
 
   const pdfWriter = muhammara.createWriter(pdfPath);
 
-  filePaths.forEach(filePath => pdfWriter.appendPDFPagesFromPDF(filePath));
+  filePaths.forEach((filePath) => pdfWriter.appendPDFPagesFromPDF(filePath));
 
   logger.logDebug('[mergePDF] PDFs merged', { filePaths, pdfPath });
 
