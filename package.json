@@ -39,7 +39,7 @@
     "muhammara": "^2.2.0",
     "pg": "^8.7.3",
     "pg-large-object": "^2.0.0",
-    "puppeteer": "^13.4.1",
+    "puppeteer": "^13.7.0",
     "qrcode": "^1.5.0",
     "xlsx": "^0.18.5",
     "xmldom": "^0.6.0"
