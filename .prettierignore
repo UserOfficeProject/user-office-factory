@@ -2,3 +2,5 @@ package-lock.json
 .next
 node_modules/
 scripts/
+.github/workflows/
+templates/css/bootstrap.min.css
