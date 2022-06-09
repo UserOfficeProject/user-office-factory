@@ -82,19 +82,14 @@
                 "dataType": "SELECTION_FROM_OPTIONS",
                 "question": "Selection from options"
               },
-              "value": [
-                "Selected answer"
-              ]
+              "value": ["Selected answer"]
             },
             {
               "question": {
                 "dataType": "SELECTION_FROM_OPTIONS",
                 "question": "Selection from options with multiple select"
               },
-              "value": [
-                "foo",
-                "bar"
-              ]
+              "value": ["foo", "bar"]
             },
             {
               "question": {
