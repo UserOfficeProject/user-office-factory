@@ -26,7 +26,7 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
-FROM alpine:3.15
+FROM alpine:3.16
 
 # Installs  Chromium (99) package.
 RUN apk add --no-cache \
