@@ -1,9 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import muhammara from 'muhammara';
+
+import { TableOfContents } from '..';
+
 export default function translatePageNumbers(
-  parser: any,
-  outline: any,
+  parser: muhammara.PDFReader,
+  outline: TableOfContents,
   offset = 0
-) {
+): TableOfContents {
   return outline.children
     ? {
         ...outline,
@@ -11,7 +14,7 @@ export default function translatePageNumbers(
           outline.page || outline.page === 0
             ? parser.getPageObjectID(outline.page + offset - 1)
             : undefined,
-        children: outline.children.map((childOutline: any) =>
+        children: outline.children.map((childOutline) =>
           translatePageNumbers(parser, childOutline, offset)
         ),
       }
