@@ -10,7 +10,6 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   const newPDFWriter = muhammara.createWriter(outFile);
   const outlineSize = countOutline(origOutline);
   const howManyPages = countPages(outlineSize);
-  // const howManyPages = 1;
 
   newPDFWriter.appendPDFPagesFromPDF(inFile);
   newPDFWriter.end();
@@ -32,7 +31,6 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
     translatePageNumbers(parser, childOutline, howManyPages)
   );
 
-  console.log(translatedOutline);
   // write bookmarks
   const outline = writeOutline(ctx, translatedOutline);
 
