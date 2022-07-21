@@ -17,14 +17,11 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
 
   // Start final PDF containing bookmarks as well as TOC pages
   const mergingWriter = muhammara.createWriterToModify(outFile);
-  // FIXME: https://github.com/julianhille/MuhammaraJS/issues/107
-  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   const ctx = mergingWriter.getObjectsContext();
-  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   const events = mergingWriter.getEvents();
-  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   const copyCtx = mergingWriter.createPDFCopyingContextForModifiedFile();
-  const parser = copyCtx.getSourceDocumentParser();
+
+  const parser = copyCtx.getSourceDocumentParser(outFile);
 
   // translate numbers from index to PDF object IDs
   const translatedOutline = origOutline.map((childOutline) =>
@@ -35,7 +32,7 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   const outline = writeOutline(ctx, translatedOutline);
 
   // before writer closes, add outline to PDF
-  events.on('OnCatalogWrite', (e: any) => {
+  events.on('OnCatalogWrite', (e) => {
     const d = e.catalogDictionaryContext;
     if (outline !== null) {
       d.writeKey('Outlines')
@@ -46,7 +43,6 @@ export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   });
 
   // force update, in case it is necessary
-  // @ts-expect-error Expecting this ts error because getObjectsContext is commented in muhammara.d.ts file. They might add it back soon.
   mergingWriter.requireCatalogUpdate();
   mergingWriter.end();
   // End Final PDF
