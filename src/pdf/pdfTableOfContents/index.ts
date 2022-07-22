@@ -1,23 +1,16 @@
 import muhammara from 'muhammara';
 
-import { TableOfContents } from '..';
-import getTOCText from './getTOCText';
+import countOutline from './countOutline';
+import countPages from './countPages';
 import translatePageNumbers from './translatePageNumbers';
-import writeLinks from './writeLinks';
 import writeOutline from './writeOutline';
 
-export function createToC(
-  inFile: string,
-  outFile: string,
-  origOutline: TableOfContents[]
-) {
+export function createToC(inFile: string, outFile: string, origOutline: any[]) {
   // Start new PDF to contain TOC pages only
   const newPDFWriter = muhammara.createWriter(outFile);
-  // const outlineSize = countOutline(origOutline);
-  // const howManyPages = countPages(outlineSize);
-  const howManyPages = 1;
-  const tocText = getTOCText(origOutline, howManyPages);
-  //const tocPageSize = addTOCPages(newPDFWriter, tocText, font)
+  const outlineSize = countOutline(origOutline);
+  const howManyPages = countPages(outlineSize);
+
   newPDFWriter.appendPDFPagesFromPDF(inFile);
   newPDFWriter.end();
   // End TOC PDF
@@ -37,11 +30,6 @@ export function createToC(
 
   // write bookmarks
   const outline = writeOutline(ctx, translatedOutline);
-
-  // create link annotations for TOC to locations in file
-  for (let i = 0; i < howManyPages; i++) {
-    writeLinks(ctx, copyCtx, parser, i, tocText, howManyPages, 0);
-  }
 
   // before writer closes, add outline to PDF
   events.on('OnCatalogWrite', (e) => {

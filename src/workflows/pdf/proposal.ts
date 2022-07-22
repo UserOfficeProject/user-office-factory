@@ -359,7 +359,7 @@ export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
     ProposalPDFData,
     ProposalPDFMeta,
     ProposalPdfFactory
-  >(ProposalPdfFactory, data, (data) => data.proposal.id);
+  >(ProposalPdfFactory, data, (data) => data.proposal.primaryKey);
 
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
