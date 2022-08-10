@@ -40,7 +40,7 @@ export type ProposalSampleData = Pick<
 >;
 
 export interface Proposal {
-  id: number;
+  primaryKey: number;
   title: string;
   abstract: string;
   proposerId: number;
