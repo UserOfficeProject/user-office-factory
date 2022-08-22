@@ -22,6 +22,7 @@ export type ProposalPDFData = {
     timeAllocation: number;
     publicComment: string;
   };
+  pdfTemplateId: number | undefined;
 };
 
 export type SamplePDFData = {
