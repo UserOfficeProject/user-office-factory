@@ -85,7 +85,7 @@ function extractGenericTemplateAnswerMap(
             };
           }
         })
-        .reduce((p: Record<string, string>, v: any) => {
+        .reduce((p: Record<string, unknown>, v) => {
           p[v.key] = v.value;
 
           return p;
