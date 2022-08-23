@@ -159,10 +159,12 @@ export class CustomProposalPdfFactory extends PdfFactory<
       return;
     }
 
+    const answers = extractAnswerMap(data);
+
     try {
       const renderedProposalHtml = await render(
         this.template,
-        data
+        Object.assign({}, data, { answers })
       );
       const renderedHeaderFooter = await renderHeaderFooter();
 
@@ -178,3 +180,66 @@ export class CustomProposalPdfFactory extends PdfFactory<
   }
 }
 
+type ValueHandler = (data: ProposalPDFData, questionaryStep: Answer) => unknown;
+
+const valueHandlers: Record<string, ValueHandler> = {
+  GENERIC_TEMPLATE: (data, q) => extractGenericTemplateAnswerMap(data, q),
+};
+
+function getValueHandlerOrDefault(type: string): ValueHandler {
+  const handler = valueHandlers[type];
+  if (handler === undefined) {
+    return (_, q) => q.value;
+  } else {
+    return valueHandlers[type];
+  }
+}
+
+function extractAnswerMap(data: ProposalPDFData) {
+  return data.questionarySteps
+    .flatMap((questionaryStep) => questionaryStep.fields)
+    .flatMap((answer) => ({
+      key: answer.question.naturalKey,
+      value: getValueHandlerOrDefault(answer.question.dataType)(data, answer),
+    }))
+    .reduce((p: Record<string, unknown>, v) => {
+      p[v.key] = v.value;
+
+      return p;
+    }, {});
+}
+
+function extractGenericTemplateAnswerMap(
+  data: ProposalPDFData,
+  answer: Answer
+) {
+  return answer.value
+    .map((a: GenericTemplateAnswer) =>
+      data.genericTemplates.find(
+        (g) =>
+          g.genericTemplate.questionaryId === a.questionaryId &&
+          g.genericTemplate.questionId === a.questionId
+      )
+    )
+    .map((g: GenericTemplate) =>
+      g.genericTemplateQuestionaryFields
+        .map((f) => {
+          if (f.question.dataType === 'GENERIC_TEMPLATE_BASIS') {
+            return {
+              key: 'generic_template_basis',
+              value: g.genericTemplate.title,
+            };
+          } else {
+            return {
+              key: f.question.naturalKey,
+              value: f.value,
+            };
+          }
+        })
+        .reduce((p: Record<string, string>, v: any) => {
+          p[v.key] = v.value;
+
+          return p;
+        }, {})
+    );
+}
