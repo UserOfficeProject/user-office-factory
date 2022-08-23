@@ -1,6 +1,7 @@
 import { ProposalPDFData } from '../../../types';
 import { PdfFactoryPicker } from '../PdfFactory';
 import { AutoProposalPdfFactory } from './AutoProposalPdfFactory';
+import { CustomProposalPdfFactory } from './CustomProposalPdfFactory';
 import { ProposalPDFMeta } from './ProposalPDFMeta';
 
 export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
@@ -8,6 +9,11 @@ export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
   ProposalPDFMeta
 > {
   public getFactory(data: ProposalPDFData, entityId: number) {
-    return new AutoProposalPdfFactory(entityId);
+    const template = data.pdfTemplate?.templateData;
+    if (template === undefined) {
+      return new AutoProposalPdfFactory(entityId);
+    } else {
+      return new CustomProposalPdfFactory(entityId, template);
+    }
   }
 }
