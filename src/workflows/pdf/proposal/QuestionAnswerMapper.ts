@@ -1,4 +1,5 @@
 import { SafeString } from 'handlebars';
+
 import {
   Answer,
   GenericTemplate,

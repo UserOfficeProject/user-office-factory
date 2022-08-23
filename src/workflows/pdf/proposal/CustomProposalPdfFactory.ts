@@ -56,13 +56,22 @@ export class CustomProposalPdfFactory extends PdfFactory<
       technicalReview: Object.assign({}, noRenders),
       samples: Object.assign({}, noRenders),
       genericTemplates: Object.assign({}, noRenders),
-      attachments: Object.assign({}, noRenders),
+      attachments: {
+        waitFor: 0 /* set by fetched:attachmentsFileMeta */,
+        countedPagesPerPdf: {},
+      },
     };
 
     /**
      * Generate task list to track what needs to be done
      */
     const tasksNeeded = ['render:proposal', 'count-pages:proposal'];
+
+    if (attachments.length > 0) {
+      tasksNeeded.push('fetch:attachments');
+      tasksNeeded.push('fetch:attachmentsFileMeta');
+      tasksNeeded.push('count-pages:attachments');
+    }
 
     logger.logDebug(this.logPrefix + 'tasks needed to complete', {
       tasksNeeded,
