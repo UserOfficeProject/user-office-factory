@@ -2,15 +2,14 @@ import { logger } from '@user-office-software/duo-logger';
 
 import { generatePdfFromHtml } from '../../../pdf';
 import { render, renderHeaderFooter } from '../../../template';
-import {
-  Answer,
-  GenericTemplate,
-  GenericTemplateAnswer,
-  ProposalPDFData,
-} from '../../../types';
+import { ProposalPDFData } from '../../../types';
 import PdfFactory from '../PdfFactory';
 import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
+import { extractAnswerMap } from './QuestionAnswerMapper';
 
+/**
+ * Generates PDFs based on a user officer defined template.
+ */
 export class CustomProposalPdfFactory extends PdfFactory<
   ProposalPDFData,
   ProposalPDFMeta
@@ -178,68 +177,4 @@ export class CustomProposalPdfFactory extends PdfFactory<
       this.emit('error', e, 'renderProposal');
     }
   }
-}
-
-type ValueHandler = (data: ProposalPDFData, questionaryStep: Answer) => unknown;
-
-const valueHandlers: Record<string, ValueHandler> = {
-  GENERIC_TEMPLATE: (data, q) => extractGenericTemplateAnswerMap(data, q),
-};
-
-function getValueHandlerOrDefault(type: string): ValueHandler {
-  const handler = valueHandlers[type];
-  if (handler === undefined) {
-    return (_, q) => q.value;
-  } else {
-    return valueHandlers[type];
-  }
-}
-
-function extractAnswerMap(data: ProposalPDFData) {
-  return data.questionarySteps
-    .flatMap((questionaryStep) => questionaryStep.fields)
-    .flatMap((answer) => ({
-      key: answer.question.naturalKey,
-      value: getValueHandlerOrDefault(answer.question.dataType)(data, answer),
-    }))
-    .reduce((p: Record<string, unknown>, v) => {
-      p[v.key] = v.value;
-
-      return p;
-    }, {});
-}
-
-function extractGenericTemplateAnswerMap(
-  data: ProposalPDFData,
-  answer: Answer
-) {
-  return answer.value
-    .map((a: GenericTemplateAnswer) =>
-      data.genericTemplates.find(
-        (g) =>
-          g.genericTemplate.questionaryId === a.questionaryId &&
-          g.genericTemplate.questionId === a.questionId
-      )
-    )
-    .map((g: GenericTemplate) =>
-      g.genericTemplateQuestionaryFields
-        .map((f) => {
-          if (f.question.dataType === 'GENERIC_TEMPLATE_BASIS') {
-            return {
-              key: 'generic_template_basis',
-              value: g.genericTemplate.title,
-            };
-          } else {
-            return {
-              key: f.question.naturalKey,
-              value: f.value,
-            };
-          }
-        })
-        .reduce((p: Record<string, string>, v: any) => {
-          p[v.key] = v.value;
-
-          return p;
-        }, {})
-    );
 }

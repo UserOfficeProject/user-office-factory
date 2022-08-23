@@ -4,6 +4,10 @@ import { AutoProposalPdfFactory } from './AutoProposalPdfFactory';
 import { CustomProposalPdfFactory } from './CustomProposalPdfFactory';
 import { ProposalPDFMeta } from './ProposalPDFMeta';
 
+/**
+ * Picks between custom and auto generate PDF generator based on the
+ * proposal's call's PDF template.
+ */
 export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
   ProposalPDFData,
   ProposalPDFMeta
