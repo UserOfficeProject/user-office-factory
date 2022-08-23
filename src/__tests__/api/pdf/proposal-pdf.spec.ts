@@ -14,7 +14,7 @@ beforeAll(async () => {
   await setTimeout(5000);
 }, 10000);
 
-describe('Proposal PDF', () => {
+describe('Auto Proposal PDF', () => {
   test(
     'should create proposal PDF with the provided values',
     () => {

@@ -1,3 +1,4 @@
+import { SafeString } from 'handlebars';
 import {
   Answer,
   GenericTemplate,
@@ -41,6 +42,7 @@ export function extractAnswerMap(data: ProposalPDFData) {
 function getValueExtractor(type: string): ValueExtractor {
   const valueExtractors: Record<string, ValueExtractor> = {
     GENERIC_TEMPLATE: (data, q) => extractGenericTemplateAnswerMap(data, q),
+    RICH_TEXT_INPUT: (_, q) => new SafeString(q.value),
   };
   const handler = valueExtractors[type];
   if (handler === undefined) {
