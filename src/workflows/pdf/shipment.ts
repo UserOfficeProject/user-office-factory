@@ -121,11 +121,11 @@ export class ShipmentPdfFactory extends PdfFactory<
 }
 
 export default function newShipmentPdfWorkflowManager(data: ShipmentPDFData[]) {
-  const manager = new PdfWorkflowManager<
-    ShipmentPDFData,
-    ShipmentPDFMeta,
-    ShipmentPdfFactory
-  >(ShipmentPdfFactory, data, (data) => data.shipment.id);
+  const manager = new PdfWorkflowManager<ShipmentPDFData, ShipmentPDFMeta>(
+    ShipmentPdfFactory,
+    data,
+    (data) => data.shipment.id
+  );
 
   manager.onFinalizePDF(({ meta, filePaths }) => {
     filePaths.push(meta.files.shipment);

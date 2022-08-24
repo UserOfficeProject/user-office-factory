@@ -20,6 +20,16 @@ export type PdfFactoryMeta = {
   attachments: Attachment[];
 };
 
+export abstract class PdfFactoryPicker<
+  TFactoryData,
+  TPdfFactoryMeta extends PdfFactoryMeta
+> {
+  public abstract getFactory(
+    data: TFactoryData,
+    entityId: number
+  ): PdfFactory<TFactoryData, TPdfFactoryMeta>;
+}
+
 export type PdfFactoryCountedPagesMeta<T extends PdfFactoryMeta> = Record<
   keyof T['files'],
   { waitFor: number; countedPagesPerPdf: Record<string, number> }

@@ -166,11 +166,11 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
 }
 
 export default function newSamplePdfWorkflowManager(data: SamplePDFData[]) {
-  const manager = new PdfWorkflowManager<
-    SamplePDFData,
-    SamplePDFMeta,
-    SamplePdfFactory
-  >(SamplePdfFactory, data, (data) => data.sample.id);
+  const manager = new PdfWorkflowManager<SamplePDFData, SamplePDFMeta>(
+    SamplePdfFactory,
+    data,
+    (data) => data.sample.id
+  );
 
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
