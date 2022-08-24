@@ -181,14 +181,9 @@ export interface GenericTemplateInfo {
   created: Date;
 }
 
-export interface GenericTemplateQuestionaryField {
-  question: Question;
-  value: any;
-}
-
 export interface GenericTemplate {
   genericTemplate: GenericTemplateInfo;
-  genericTemplateQuestionaryFields: GenericTemplateQuestionaryField[];
+  genericTemplateQuestionaryFields: Answer[];
 }
 
 export interface GenericTemplateAnswer {
