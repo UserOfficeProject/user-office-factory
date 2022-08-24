@@ -75,16 +75,16 @@ function extractGenericTemplateAnswerMap(
     )
     .map((g: GenericTemplate) =>
       g.genericTemplateQuestionaryFields
-        .map((f) => {
-          if (f.question.dataType === 'GENERIC_TEMPLATE_BASIS') {
+        .map((answer) => {
+          if (answer.question.dataType === 'GENERIC_TEMPLATE_BASIS') {
             return {
               key: 'generic_template_basis',
               value: g.genericTemplate.title,
             };
           } else {
             return {
-              key: f.question.naturalKey,
-              value: f.value,
+              key: answer.question.naturalKey,
+              value: getValueExtractor(answer.question.dataType)(data, answer),
             };
           }
         })
