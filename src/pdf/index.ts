@@ -9,7 +9,7 @@ import { createToC } from './pdfTableOfContents';
 
 export type TableOfContents = {
   title: string;
-  page: number;
+  page: number | undefined;
   children: TableOfContents[];
 };
 

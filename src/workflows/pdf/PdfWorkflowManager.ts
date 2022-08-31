@@ -9,6 +9,7 @@ import { WorkflowManager } from '../WorkflowManager';
 import PdfFactory, {
   PdfFactoryMeta,
   PdfFactoryCountedPagesMeta,
+  PdfFactoryPicker,
 } from './PdfFactory';
 
 type Constructable<T> = {
@@ -32,14 +33,17 @@ type FinalizePdfHandler<
   } & FactoryMeta<TPdfFactoryMeta>
 ) => number /* pageNumber */;
 
+type FactoryGenerator<TFactoryData, TPdfFactoryMeta extends PdfFactoryMeta> =
+  | Constructable<PdfFactory<TFactoryData, TPdfFactoryMeta>>
+  | PdfFactoryPicker<TFactoryData, TPdfFactoryMeta>;
+
 export default class PdfWorkflowManager<
   TFactoryData,
-  TPdfFactoryMeta extends PdfFactoryMeta,
-  TFactory extends PdfFactory<TFactoryData, TPdfFactoryMeta>
+  TPdfFactoryMeta extends PdfFactoryMeta
 > extends WorkflowManager {
   protected data: TFactoryData[];
   protected entityIds: number[] = [];
-  protected factories: TFactory[] = [];
+  protected factories: PdfFactory<TFactoryData, TPdfFactoryMeta>[] = [];
   protected factoriesMeta: Map<number, FactoryMeta<TPdfFactoryMeta>> =
     new Map();
 
@@ -59,7 +63,7 @@ export default class PdfWorkflowManager<
   }
 
   constructor(
-    factory: Constructable<TFactory>,
+    factory: FactoryGenerator<TFactoryData, TPdfFactoryMeta>,
     data: TFactoryData[],
     extractEntityId: (data: TFactoryData) => number
   ) {
@@ -69,7 +73,13 @@ export default class PdfWorkflowManager<
 
     for (let i = 0; i < data.length; i++) {
       const entityId = extractEntityId(this.data[i]);
-      const inst = new factory(entityId);
+
+      let inst;
+      if (factory instanceof PdfFactoryPicker) {
+        inst = factory.getFactory(this.data[i], entityId);
+      } else {
+        inst = new factory(entityId);
+      }
 
       this.entityIds.push(entityId);
 

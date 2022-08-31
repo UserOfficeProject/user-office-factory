@@ -9,6 +9,10 @@ export type SEPXLSXData = Array<{
 
 export type Attachment = { id: string; figure?: string; caption?: string };
 
+export type PdfTemplate = {
+  templateData: string;
+};
+
 export type ProposalPDFData = {
   proposal: Proposal;
   questionarySteps: QuestionaryStep[];
@@ -22,6 +26,7 @@ export type ProposalPDFData = {
     timeAllocation: number;
     publicComment: string;
   };
+  pdfTemplate: PdfTemplate | null;
 };
 
 export type SamplePDFData = {
@@ -40,7 +45,7 @@ export type ProposalSampleData = Pick<
 >;
 
 export interface Proposal {
-  id: number;
+  primaryKey: number;
   title: string;
   abstract: string;
   proposerId: number;
@@ -108,7 +113,7 @@ export interface QuestionTemplateRelation {
 
 export interface Answer extends QuestionTemplateRelation {
   answerId: number;
-  value?: any;
+  value?: GenericTemplateAnswer | any;
 }
 
 export interface BasicUser {
@@ -167,11 +172,21 @@ export enum ShipmentStatus {
   SUBMITTED = 'SUBMITTED',
 }
 
-export interface GenericTemplate {
+export interface GenericTemplateInfo {
   id: number;
   title: string;
   creatorId: number;
   questionaryId: number;
   questionId: string;
   created: Date;
+}
+
+export interface GenericTemplate {
+  genericTemplate: GenericTemplateInfo;
+  genericTemplateQuestionaryFields: Answer[];
+}
+
+export interface GenericTemplateAnswer {
+  questionId: string;
+  questionaryId: number;
 }

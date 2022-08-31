@@ -16,6 +16,15 @@ type TemplateNames =
 
 const templatesFolder = join(__dirname, '..', '..', 'templates');
 
+export async function render(
+  pdfTemplate: string,
+  payload: any
+): Promise<string> {
+  const template = handlebar.compile(pdfTemplate);
+
+  return template(payload);
+}
+
 export async function renderTemplate(
   templateName: TemplateNames,
   payload: any
