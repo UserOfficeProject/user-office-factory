@@ -37,7 +37,7 @@
     "knex": "^1.0.7",
     "morgan": "^1.10.0",
     "muhammara": "^2.6.0",
-    "pg": "^8.7.3",
+    "pg": "^8.8.0",
     "pg-large-object": "^2.0.0",
     "puppeteer": "^13.4.1",
     "qrcode": "^1.5.1",
