@@ -47,7 +47,9 @@ jobs:
         with:
           build-args: BUILD_VERSION=${{ github.sha }}
           push: true
-          tags: dmsc/duo-factory:${{ steps.extract_branch.outputs.branch }}
+          tags: |
+            dmsc/duo-factory:${{ steps.extract_branch.outputs.branch }}
+            ghcr.io/userofficeproject/user-office-factory:${{ steps.extract_branch.outputs.branch }}
 
       - name: Trigger pipeline
         run: |
