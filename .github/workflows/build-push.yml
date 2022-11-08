@@ -4,10 +4,9 @@ name: Build && Push
 # events but only for the develop branch
 on:
   push:
-    branches: 
+    branches:
       - develop
       - staging
-      - master
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
