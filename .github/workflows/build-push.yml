@@ -19,9 +19,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
-      - name: Check src/dst branch requirements
-        if: ${{ steps.extract_branch.outputs.branch == 'develop' }} # Only trigger Jenkins for develop branch
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
