@@ -41,7 +41,7 @@ jobs:
 
       # For debugging capture the selected branch
       - name: Print extracted branch name
-        run: echo "Extracted branch ${{ steps.extract_branch.outputs.branch }}"
+        run: echo "Extracted branch ${{ toJson(steps.extract_branch) }}"
 
       - name: Build and push
         id: docker_build
