@@ -41,7 +41,7 @@ jobs:
 
       # For debugging capture the selected branch
       - name: Print extracted branch name
-        run: echo "Extracted branch ${{ toJson(steps.extract_branch) }}"
+        run: echo "Extracted branch ${{ toJson(steps.extract_branch.outputs.branch) }}"
 
       - name: Build and push
         id: docker_build
@@ -54,23 +54,12 @@ jobs:
             ghcr.io/userofficeproject/user-office-factory:${{ steps.extract_branch.outputs.branch }}
 
       - name: Trigger pipeline
-        run: |
-          REPOSITORY=${{ github.repository }}
-          RESULT=$(curl -X POST \
-            -F token="${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
-            -F ref=master \
-            -F "variables[RUN_DEPLOY]=1" \
-            -F "variables[ENVIRONMENT]=${{ steps.extract_branch.outputs.branch }}" \
-            -F "variables[REPOSITORY]=${REPOSITORY#UserOfficeProject/}" \
-            -o /dev/null \
-            --silent \
-            --write-out '%{http_code}' \
-            ${{ secrets.GITLAB_TRIGGER_URL }})
-
-          if [[ $RESULT != "201" ]]; then
-            echo "Failed to trigger Gitlab pipeline: $RESULT"
-            exit 1
-          fi
+        uses: swapActions/trigger-useroffice-deployment@v1
+        with:
+          repository: ${{ github.repository }}
+          environment: ${{ steps.extract_branch.outputs.branch }}
+          gh-trigger-url: ${{ secrets.GITLAB_TRIGGER_URL }}
+          gh-token: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
 
       - name: Trigger Jenkins
         run: | 
