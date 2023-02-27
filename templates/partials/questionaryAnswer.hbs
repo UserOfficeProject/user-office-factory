@@ -80,6 +80,13 @@
       <em>Left blank</em>
     {{/if}}
 
+  {{else if ($eq this.step.question.dataType 'DYNAMIC_MULTIPLE_CHOICE')}}
+    <span class="bold">{{this.step.question.question}}</span>
+    {{#if this.step.value}}
+      {{$join this.value ', '}}
+    {{else}}
+      <em>Left blank</em>
+    {{/if}}
   {{else if ($eq this.step.question.dataType 'SAMPLE_BASIS')}}
     <div class="bold">{{this.step.question.question}}</div>
     {{!
