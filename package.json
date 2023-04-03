@@ -23,7 +23,7 @@
     "lint:fix": "tsc --noEmit && eslint ./src --ext .js,.ts --fix --quiet"
   },
   "dependencies": {
-    "@user-office-software/duo-logger": "^1.2.0",
+    "@user-office-software/duo-logger": "^2.1.1",
     "await-to-js": "^3.0.0",
     "canvas": "^2.11.0",
     "cookie-parser": "^1.4.6",
