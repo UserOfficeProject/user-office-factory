@@ -55,7 +55,7 @@
     "@types/node": "^16.0.0",
     "@types/pg": "^8.6.4",
     "@types/pg-large-object": "^2.0.2",
-    "@types/qrcode": "^1.4.2",
+    "@types/qrcode": "^1.5.0",
     "@types/supertest": "^2.0.10",
     "@types/xmldom": "^0.1.30",
     "@typescript-eslint/eslint-plugin": "^5.9.1",
