@@ -3,12 +3,12 @@ import { Canvas } from 'canvas';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
 
+import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
+import PdfWorkflowManager from './PdfWorkflowManager';
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml } from '../../pdf';
 import { renderTemplate } from '../../template';
 import { Attachment, Shipment, ShipmentPDFData } from '../../types';
-import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
-import PdfWorkflowManager from './PdfWorkflowManager';
 
 type ShipmentPDFMeta = {
   files: {

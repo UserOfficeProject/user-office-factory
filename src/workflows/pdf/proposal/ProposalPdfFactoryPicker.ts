@@ -1,8 +1,8 @@
-import { ProposalPDFData } from '../../../types';
-import { PdfFactoryPicker } from '../PdfFactory';
 import { AutoProposalPdfFactory } from './AutoProposalPdfFactory';
 import { CustomProposalPdfFactory } from './CustomProposalPdfFactory';
 import { ProposalPDFMeta } from './ProposalPDFMeta';
+import { ProposalPDFData } from '../../../types';
+import { PdfFactoryPicker } from '../PdfFactory';
 
 /**
  * Picks between custom and auto generate PDF generator based on the

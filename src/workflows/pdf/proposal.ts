@@ -1,8 +1,8 @@
-import { TableOfContents } from '../../pdf';
-import { ProposalPDFData } from '../../types';
 import PdfWorkflowManager from './PdfWorkflowManager';
 import { AutoProposalPdfFactoryPicker } from './proposal/ProposalPdfFactoryPicker';
 import { ProposalPDFMeta } from './proposal/ProposalPDFMeta';
+import { TableOfContents } from '../../pdf';
+import { ProposalPDFData } from '../../types';
 
 export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
   const manager = new PdfWorkflowManager<ProposalPDFData, ProposalPDFMeta>(

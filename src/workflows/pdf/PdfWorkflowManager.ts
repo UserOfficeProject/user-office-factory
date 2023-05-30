@@ -3,14 +3,14 @@ import { Readable } from 'stream';
 
 import { logger } from '@user-office-software/duo-logger';
 
-import { TableOfContents, mergePDF, writeToC } from '../../pdf';
-import { failSafeDeleteFiles } from '../../util/fileSystem';
-import { WorkflowManager } from '../WorkflowManager';
 import PdfFactory, {
   PdfFactoryMeta,
   PdfFactoryCountedPagesMeta,
   PdfFactoryPicker,
 } from './PdfFactory';
+import { TableOfContents, mergePDF, writeToC } from '../../pdf';
+import { failSafeDeleteFiles } from '../../util/fileSystem';
+import { WorkflowManager } from '../WorkflowManager';
 
 type Constructable<T> = {
   new (entityId: number): T;
