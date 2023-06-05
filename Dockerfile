@@ -1,4 +1,4 @@
-FROM node:16.13-alpine AS build-stage
+FROM node:18.16.0-alpine3.18 AS build-stage
 
 RUN apk add --no-cache \
   python3 \
@@ -26,11 +26,11 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
-FROM alpine:3.15
+FROM alpine:3.18
 
 # Installs  Chromium (99) package.
 RUN apk add --no-cache \
-  "chromium~=114.0.5735.90-r1" \
+  "chromium~=114.0.5735.90-r0" \
   nss \
   freetype \
   freetype-dev \
