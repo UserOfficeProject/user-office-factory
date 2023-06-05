@@ -50,7 +50,7 @@
     "@types/gm": "^1.25.1",
     "@types/http-errors": "^2.0.1",
     "@types/jest": "^27.4.0",
-    "@types/lodash": "^4.14.194",
+    "@types/lodash": "^4.14.195",
     "@types/morgan": "^1.9.4",
     "@types/node": "^20.2.5",
     "@types/pg": "^8.10.1",
