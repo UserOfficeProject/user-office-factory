@@ -1,5 +1,6 @@
 import { logger } from '@user-office-software/duo-logger';
 
+import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
 import { FileMetadata } from '../../../models/File';
 import { generatePdfFromHtml } from '../../../pdf';
 import { renderTemplate, renderHeaderFooter } from '../../../template';
@@ -12,7 +13,6 @@ import {
   GenericTemplate,
 } from '../../../types';
 import PdfFactory from '../PdfFactory';
-import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
 
 export class AutoProposalPdfFactory extends PdfFactory<
   ProposalPDFData,

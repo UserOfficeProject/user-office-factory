@@ -4,8 +4,8 @@ import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
 import puppeteer, { Browser } from 'puppeteer';
 
-import { generateTmpPath } from '../util/fileSystem';
 import { createToC } from './pdfTableOfContents';
+import { generateTmpPath } from '../util/fileSystem';
 
 export type TableOfContents = {
   title: string;
