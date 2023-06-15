@@ -1,11 +1,11 @@
 import { logger } from '@user-office-software/duo-logger';
 
+import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
+import { extractAnswerMap } from './QuestionAnswerMapper';
 import { generatePdfFromHtml } from '../../../pdf';
 import { render, renderHeaderFooter } from '../../../template';
 import { ProposalPDFData } from '../../../types';
 import PdfFactory from '../PdfFactory';
-import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
-import { extractAnswerMap } from './QuestionAnswerMapper';
 
 /**
  * Generates PDFs based on a user officer defined template.

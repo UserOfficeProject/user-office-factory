@@ -1,11 +1,11 @@
 import { logger } from '@user-office-software/duo-logger';
 
+import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
+import PdfWorkflowManager from './PdfWorkflowManager';
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml, TableOfContents } from '../../pdf';
 import { renderTemplate, renderHeaderFooter } from '../../template';
 import { Answer, Sample, SamplePDFData, Attachment } from '../../types';
-import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
-import PdfWorkflowManager from './PdfWorkflowManager';
 
 type SamplePDFMeta = {
   files: {

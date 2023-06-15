@@ -4,10 +4,10 @@ import to from 'await-to-js';
 import { Client } from 'pg';
 import { LargeObjectManager } from 'pg-large-object';
 
-import { FileMetadata } from '../../models/File';
-import { FileDataSource } from '../FileDataSource';
 import database from './database';
 import { FileRecord, createFileMetadata } from './records';
+import { FileMetadata } from '../../models/File';
+import { FileDataSource } from '../FileDataSource';
 
 export default class PostgresFileDataSource implements FileDataSource {
   public async prepare(fileId: string, output: string): Promise<string> {
