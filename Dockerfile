@@ -30,7 +30,7 @@ FROM alpine:3.18
 
 # Installs  Chromium (99) package.
 RUN apk add --no-cache \
-  "chromium~=114.0.5735.90-r0" \
+  "chromium~=114.0.5735.133-r0" \
   nss \
   freetype \
   freetype-dev \
