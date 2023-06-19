@@ -48,6 +48,11 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: amd64,arm64
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -80,5 +85,6 @@ jobs:
           push: ${{ !startsWith(github.head_ref, 'dependabot') }}
           platforms: linux/amd64,linux/arm64/v8
           tags: ghcr.io/userofficeproject/user-office-factory:${{ github.head_ref }}
-          cache-from: type=local,src=/tmp/.buildx-layer-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-layer-cache
+          cache-from: |
+            type=gha,scope=${{ github.workflow }}:linux/amd64
+            type=gha,scope=${{ github.workflow }}:linux/arm64/v8
