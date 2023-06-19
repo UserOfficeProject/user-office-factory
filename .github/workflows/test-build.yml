@@ -78,6 +78,7 @@ jobs:
         with:
           # Don't push if dependabot is creating the PR
           push: ${{ !startsWith(github.head_ref, 'dependabot') }}
+          platforms: linux/amd64,linux/arm64/v8
           tags: ghcr.io/userofficeproject/user-office-factory:${{ github.head_ref }}
           cache-from: type=local,src=/tmp/.buildx-layer-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-layer-cache
