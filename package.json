@@ -15,7 +15,7 @@
     "test:watch": "jest --watchAll --runInBand --detectOpenHandles",
     "build": "rm -rf ./build && tsc",
     "prod": "npm run build && env NODE_ENV=production node ./build/index.js",
-    "dev": "ts-node-dev --rs --trace-warnings --respawn ./src/index.ts",
+    "dev": "ts-node-dev --rs --trace-warnings --respawn --exit-child ./src/index.ts",
     "dev:docker": "npm install && ts-node-dev --inspect=0.0.0.0:9229 --rs --respawn ./src/index.ts",
     "debug": "ts-node-dev --rs --trace-warnings --inspect --respawn ./src/index.ts",
     "lint": "tsc --noEmit && eslint ./src --ext .js,.ts --quiet",
