@@ -29,6 +29,7 @@ app.use(
   })
 );
 app.use(express.json({ limit: '5mb' }));
+
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', express.static(join(__dirname, '..', 'templates')));
