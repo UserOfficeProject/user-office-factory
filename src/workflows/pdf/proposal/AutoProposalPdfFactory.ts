@@ -232,7 +232,9 @@ export class AutoProposalPdfFactory extends PdfFactory<
         principalInvestigator,
         coProposers,
       });
-      const renderedHeaderFooter = await renderHeaderFooter();
+      const renderedHeaderFooter = await renderHeaderFooter(
+        proposal.proposalId
+      );
 
       const pdfPath = await generatePdfFromHtml(renderedProposalHtml, {
         pdfOptions: renderedHeaderFooter,
@@ -246,6 +248,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
   }
 
   private async renderQuestionarySteps(
+    proposal: Proposal,
     questionarySteps: QuestionaryStep[],
     genericTemplates: GenericTemplate[],
     attachmentsFileMeta: FileMetadata[]
@@ -261,7 +264,9 @@ export class AutoProposalPdfFactory extends PdfFactory<
         'questionary-step.hbs',
         { steps: questionarySteps, genericTemplates, attachmentsFileMeta }
       );
-      const renderedHeaderFooter = await renderHeaderFooter();
+      const renderedHeaderFooter = await renderHeaderFooter(
+        proposal.proposalId
+      );
 
       const pdfPath = await generatePdfFromHtml(renderedProposalQuestion, {
         pdfOptions: renderedHeaderFooter,
@@ -274,11 +279,14 @@ export class AutoProposalPdfFactory extends PdfFactory<
     }
   }
 
-  private async renderTechnicalReview(technicalReview: {
-    status: string;
-    timeAllocation: number;
-    publicComment: string;
-  }) {
+  private async renderTechnicalReview(
+    proposal: Proposal,
+    technicalReview: {
+      status: string;
+      timeAllocation: number;
+      publicComment: string;
+    }
+  ) {
     if (this.stopped) {
       this.emit('aborted', 'renderTechnicalReview');
 
@@ -290,7 +298,9 @@ export class AutoProposalPdfFactory extends PdfFactory<
         'technical-review.hbs',
         { technicalReview }
       );
-      const renderedHeaderFooter = await renderHeaderFooter();
+      const renderedHeaderFooter = await renderHeaderFooter(
+        proposal.proposalId
+      );
 
       const pdfPath = await generatePdfFromHtml(renderedTechnicalReview, {
         pdfOptions: renderedHeaderFooter,
@@ -304,6 +314,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
   }
 
   private async renderSamples(
+    proposal: Proposal,
     samples: ProposalSampleData[],
     attachmentsFileMeta: FileMetadata[]
   ) {
@@ -320,7 +331,9 @@ export class AutoProposalPdfFactory extends PdfFactory<
           sampleQuestionaryFields,
           attachmentsFileMeta,
         });
-        const renderedHeaderFooter = await renderHeaderFooter();
+        const renderedHeaderFooter = await renderHeaderFooter(
+          proposal.proposalId
+        );
 
         const pdfPath = await generatePdfFromHtml(renderedProposalSample, {
           pdfOptions: renderedHeaderFooter,
