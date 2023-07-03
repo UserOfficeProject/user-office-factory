@@ -165,7 +165,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
         }
 
         if (samples.length > 0) {
-          this.emit('render:samples', samples, attachmentsFileMeta);
+          this.emit('render:samples', proposal, samples, attachmentsFileMeta);
         }
 
         if (this.countedPagesMeta.attachments.waitFor === 0) {
