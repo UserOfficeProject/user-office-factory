@@ -193,7 +193,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
     this.emit('render:proposal', proposal, principalInvestigator, coProposers);
 
     if (technicalReview) {
-      this.emit('render:technicalReview', technicalReview);
+      this.emit('render:technicalReview', proposal, technicalReview);
     }
 
     if (attachments.length > 0) {
@@ -203,6 +203,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
       if (questionarySteps.length > 0) {
         this.emit(
           'render:questionnaires',
+          proposal,
           questionarySteps,
           genericTemplates,
           []
@@ -210,7 +211,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
       }
 
       if (samples.length > 0) {
-        this.emit('render:samples', samples, []);
+        this.emit('render:samples', proposal, samples, []);
       }
     }
   }
