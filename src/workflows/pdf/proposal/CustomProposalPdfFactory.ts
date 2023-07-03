@@ -141,18 +141,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
       this.meta.attachments = attachments;
       this.emit('fetch:attachmentsFileMeta', attachments);
     } else {
-      if (questionarySteps.length > 0) {
-        this.emit(
-          'render:questionnaires',
-          questionarySteps,
-          genericTemplates,
-          []
-        );
-      }
-
-      if (samples.length > 0) {
-        this.emit('render:samples', samples, []);
-      }
+      this.emit('render:proposal', data);
     }
   }
 
