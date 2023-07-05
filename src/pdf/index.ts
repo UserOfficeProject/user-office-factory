@@ -2,7 +2,7 @@ import { promises } from 'fs';
 
 import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
-import puppeteer, { Browser } from 'puppeteer';
+import puppeteer, { Browser, PDFOptions } from 'puppeteer';
 
 import { createToC } from './pdfTableOfContents';
 import { generateTmpPath } from '../util/fileSystem';
@@ -26,7 +26,7 @@ logger.logInfo('Launching puppeteer with ', { args: launchOptions });
 // TODO: create browser lazily while keeping track of it
 // so we don't end up with dozens of browsers
 puppeteer
-  .launch({ args: launchOptions })
+  .launch({ args: launchOptions, headless: 'new' })
   .then((inst) => (browser = inst))
   .catch((e) => {
     logger.logException('Failed to start browser puppeteer', e);
@@ -34,7 +34,7 @@ puppeteer
 
 export async function generatePdfFromHtml(
   html: string,
-  { pdfOptions }: { pdfOptions?: puppeteer.PDFOptions } = {}
+  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ) {
   const name = generateTmpPath();
 
@@ -69,7 +69,7 @@ export async function generatePdfFromHtml(
 
 export async function generatePdfFromLink(
   link: string,
-  { pdfOptions }: { pdfOptions?: puppeteer.PDFOptions } = {}
+  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ) {
   const name = generateTmpPath();
 
@@ -85,8 +85,8 @@ export async function generatePdfFromLink(
   await page.goto(link, { waitUntil: 'load' });
 
   const imgHandle = await page.$('img');
-  const width = await page.evaluate((img) => img.width, imgHandle);
-  const height = await page.evaluate((img) => img.height, imgHandle);
+  const width = (await page.evaluate((img) => img?.width, imgHandle)) || 0;
+  const height = (await page.evaluate((img) => img?.height, imgHandle)) || 0;
 
   await page.pdf({
     path: pdfPath,

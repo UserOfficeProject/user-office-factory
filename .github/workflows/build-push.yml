@@ -20,6 +20,11 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: amd64,arm64
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -35,11 +40,15 @@ jobs:
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           build-args: BUILD_VERSION=${{ github.sha }}
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ghcr.io/userofficeproject/user-office-factory:${{ steps.extract_branch.outputs.branch }}
+          cache-from: |
+            type=gha,scope=${{ github.workflow }}:linux/amd64
+            type=gha,scope=${{ github.workflow }}:linux/arm64/v8
 
       - name: Trigger pipeline
         uses: swapActions/trigger-useroffice-deployment@v1
