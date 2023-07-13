@@ -313,6 +313,7 @@ export default {
       pdfTemplate: {
         templateData: template,
       },
+      sepReviews: [],
     },
   ],
 };
