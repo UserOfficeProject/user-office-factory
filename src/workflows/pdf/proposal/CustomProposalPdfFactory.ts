@@ -112,6 +112,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
         this.countedPagesMeta.attachments.waitFor = attachmentsFileMeta.length;
 
         this.emit('taskFinished', 'fetch:attachmentsFileMeta');
+        this.emit('render:proposal', { ...data, attachmentsFileMeta });
 
         if (this.countedPagesMeta.attachments.waitFor === 0) {
           this.emit('taskFinished', 'fetch:attachments');
@@ -135,28 +136,12 @@ export class CustomProposalPdfFactory extends PdfFactory<
     /**
      * Emitters
      */
-    this.emit('render:proposal', data);
-
-    if (technicalReview) {
-      this.emit('render:technicalReview', technicalReview);
-    }
 
     if (attachments.length > 0) {
       this.meta.attachments = attachments;
       this.emit('fetch:attachmentsFileMeta', attachments);
     } else {
-      if (questionarySteps.length > 0) {
-        this.emit(
-          'render:questionnaires',
-          questionarySteps,
-          genericTemplates,
-          []
-        );
-      }
-
-      if (samples.length > 0) {
-        this.emit('render:samples', samples, []);
-      }
+      this.emit('render:proposal', data);
     }
   }
 
@@ -174,7 +159,9 @@ export class CustomProposalPdfFactory extends PdfFactory<
         this.template,
         Object.assign({}, data, { answers })
       );
-      const renderedHeaderFooter = await renderHeaderFooter();
+      const renderedHeaderFooter = await renderHeaderFooter(
+        data.proposal.proposalId
+      );
 
       const pdfPath = await generatePdfFromHtml(renderedProposalHtml, {
         pdfOptions: renderedHeaderFooter,

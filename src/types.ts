@@ -26,6 +26,7 @@ export type ProposalPDFData = {
     timeAllocation: number;
     publicComment: string;
   };
+  sepReviews?: Review[];
   pdfTemplate: PdfTemplate | null;
 };
 
@@ -61,6 +62,16 @@ export interface Proposal {
   commentForManagement: string;
   notified: boolean;
   submitted: boolean;
+}
+
+export interface Review {
+  id: number;
+  proposalPk: number;
+  userID: number;
+  comment: string;
+  grade: number;
+  status: number;
+  sepID: number;
 }
 
 export interface Topic {
