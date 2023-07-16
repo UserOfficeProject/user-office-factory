@@ -1,7 +1,7 @@
 import { AutoProposalPdfFactory } from './AutoProposalPdfFactory';
 import { CustomProposalPdfFactory } from './CustomProposalPdfFactory';
 import { ProposalPDFMeta } from './ProposalPDFMeta';
-import { ProposalPDFData } from '../../../types';
+import { ProposalPDFData, Role } from '../../../types';
 import { PdfFactoryPicker } from '../PdfFactory';
 
 /**
@@ -12,12 +12,12 @@ export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
   ProposalPDFData,
   ProposalPDFMeta
 > {
-  public getFactory(data: ProposalPDFData, entityId: number) {
+  public getFactory(data: ProposalPDFData, entityId: number, userRole: Role) {
     const template = data.pdfTemplate?.templateData;
     if (template === undefined) {
-      return new AutoProposalPdfFactory(entityId);
+      return new AutoProposalPdfFactory(entityId, userRole);
     } else {
-      return new CustomProposalPdfFactory(entityId, template);
+      return new CustomProposalPdfFactory(entityId, template, userRole);
     }
   }
 }

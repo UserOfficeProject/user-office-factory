@@ -4,7 +4,7 @@ import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
 import { extractAnswerMap } from './QuestionAnswerMapper';
 import { generatePdfFromHtml } from '../../../pdf';
 import { render, renderHeaderFooter } from '../../../template';
-import { ProposalPDFData } from '../../../types';
+import { ProposalPDFData, Role } from '../../../types';
 import PdfFactory from '../PdfFactory';
 
 /**
@@ -31,8 +31,8 @@ export class CustomProposalPdfFactory extends PdfFactory<
 
   static ENTITY_NAME = 'Proposal';
 
-  constructor(entityId: number, template: string) {
-    super(entityId);
+  constructor(entityId: number, template: string, userRole: Role) {
+    super(entityId, userRole);
     this.template = template;
   }
 
@@ -112,7 +112,11 @@ export class CustomProposalPdfFactory extends PdfFactory<
         this.countedPagesMeta.attachments.waitFor = attachmentsFileMeta.length;
 
         this.emit('taskFinished', 'fetch:attachmentsFileMeta');
-        this.emit('render:proposal', { ...data, attachmentsFileMeta });
+        this.emit('render:proposal', {
+          ...data,
+          attachmentsFileMeta,
+          userRole: this.userRole,
+        });
 
         if (this.countedPagesMeta.attachments.waitFor === 0) {
           this.emit('taskFinished', 'fetch:attachments');
