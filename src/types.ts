@@ -11,6 +11,8 @@ export type Attachment = { id: string; figure?: string; caption?: string };
 
 export type PdfTemplate = {
   templateData: string;
+  templateHeader: string;
+  templateFooter: string;
 };
 
 export type ProposalPDFData = {

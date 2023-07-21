@@ -13,11 +13,20 @@ export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
   ProposalPDFMeta
 > {
   public getFactory(data: ProposalPDFData, entityId: number, userRole: Role) {
-    const template = data.pdfTemplate?.templateData;
-    if (template === undefined) {
+    const templateBody = data.pdfTemplate?.templateData;
+    const templateHeader = data.pdfTemplate?.templateHeader;
+    const templateFooter = data.pdfTemplate?.templateFooter;
+
+    if (templateBody === undefined) {
       return new AutoProposalPdfFactory(entityId, userRole);
     } else {
-      return new CustomProposalPdfFactory(entityId, template, userRole);
+      return new CustomProposalPdfFactory(
+        entityId,
+        userRole,
+        templateBody,
+        templateHeader,
+        templateFooter
+      );
     }
   }
 }
