@@ -53,9 +53,9 @@ export default class ZipWorkflowManager<
     if (!data) {
       throw new Error('There is no data to process');
     }
-    this.data = data;
+    this.data = [...data];
 
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 0; i < this.data.length; i++) {
       const entityId = extractEntityId(this.data[i]);
 
       const inst = new factory(entityId);
@@ -142,17 +142,6 @@ export default class ZipWorkflowManager<
           {}
         );
       });
-      archive.on('warning', (err) => {
-        if (err.code === 'ENOENT') {
-          logger.logException(
-            this.logPrefix + 'error while creating zip file',
-            err
-          );
-        } else {
-          return reject(err);
-        }
-      });
-
       archive.on('error', (err) => {
         return reject(err);
       });
@@ -170,13 +159,9 @@ export default class ZipWorkflowManager<
 
         const { meta } = this.factoriesMeta.get(rootIdx)!;
         for (const file of meta.files) {
-          archive
-            .file(file.path, {
-              name: `/${meta.proposal}/${file.name}`,
-            })
-            .on('error', (err) => {
-              return reject(err);
-            });
+          archive.file(file.path, {
+            name: `/${meta.proposal}/${file.name}`,
+          });
         }
       }
       archive.pipe(stream);
