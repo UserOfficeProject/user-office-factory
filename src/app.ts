@@ -56,8 +56,13 @@ app.post(
       if (req.aborted || rs.destroyed || res.destroyed) {
         return;
       }
-
-      res.setHeader('content-type', manager.MIME_TYPE);
+      res.setHeader('content-type', manager.responseHeader.MIME_TYPE);
+      if (manager.responseHeader.CONTENT_DISPOSITION) {
+        res.setHeader(
+          'content-disposition',
+          manager.responseHeader.CONTENT_DISPOSITION
+        );
+      }
       rs.pipe(res);
     });
 
