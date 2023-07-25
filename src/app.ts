@@ -14,6 +14,7 @@ import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
 import { WorkflowManager } from './workflows/WorkflowManager';
 import getXLSXWorkflowManager from './workflows/xlsx';
+import getZIPWorkflowManager from './workflows/zip';
 
 const app = express();
 
@@ -45,6 +46,9 @@ app.post(
         break;
       case 'xlsx':
         manager = getXLSXWorkflowManager(type, req.body);
+        break;
+      case 'zip':
+        manager = getZIPWorkflowManager(type, req.body);
         break;
       default:
         return next(new Error(`Unknown 'downloadType': ${downloadType}`));
