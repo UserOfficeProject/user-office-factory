@@ -1,10 +1,12 @@
+import { join } from 'path';
+
 import { logger } from '@user-office-software/duo-logger';
 
 import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
 import { extractAnswerMap } from './QuestionAnswerMapper';
 import { generatePdfFromHtml } from '../../../pdf';
-import { render, renderHeaderFooter } from '../../../template';
-import { ProposalPDFData } from '../../../types';
+import { render, renderFooter, renderHeader } from '../../../template';
+import { ProposalPDFData, Role } from '../../../types';
 import PdfFactory from '../PdfFactory';
 
 /**
@@ -14,7 +16,10 @@ export class CustomProposalPdfFactory extends PdfFactory<
   ProposalPDFData,
   ProposalPDFMeta
 > {
-  protected template: string;
+  protected templateBody: string;
+  protected templateHeader?: string;
+  protected templateFooter?: string;
+
   protected countedPagesMeta: ProposalCountedPagesMeta;
   protected meta: ProposalPDFMeta = {
     files: {
@@ -31,9 +36,17 @@ export class CustomProposalPdfFactory extends PdfFactory<
 
   static ENTITY_NAME = 'Proposal';
 
-  constructor(entityId: number, template: string) {
-    super(entityId);
-    this.template = template;
+  constructor(
+    entityId: number,
+    userRole: Role,
+    templateBody: string,
+    templateHeader?: string,
+    templateFooter?: string
+  ) {
+    super(entityId, userRole);
+    this.templateBody = templateBody;
+    this.templateHeader = templateHeader;
+    this.templateFooter = templateFooter;
   }
 
   init(data: ProposalPDFData) {
@@ -156,15 +169,37 @@ export class CustomProposalPdfFactory extends PdfFactory<
 
     try {
       const renderedProposalHtml = await render(
-        this.template,
+        this.templateBody,
         Object.assign({}, data, { answers })
       );
-      const renderedHeaderFooter = await renderHeaderFooter(
-        data.proposal.proposalId
-      );
+
+      const headerTemplate = this.templateHeader
+        ? await render(this.templateHeader, {
+            ...data,
+            logoPath: process.env.HEADER_LOGO_PATH
+              ? process.env.HEADER_LOGO_PATH
+              : join(process.cwd(), './templates/images/ESS.png'),
+          })
+        : await renderHeader(data.proposal.proposalId);
+
+      const footerTemplate = this.templateFooter
+        ? await render(this.templateFooter, data)
+        : await renderFooter();
+
+      const pdfOptions = {
+        margin: {
+          top: 82,
+          left: 72,
+          bottom: 72,
+          right: 72,
+        },
+        displayHeaderFooter: true,
+        headerTemplate: headerTemplate,
+        footerTemplate: footerTemplate,
+      };
 
       const pdfPath = await generatePdfFromHtml(renderedProposalHtml, {
-        pdfOptions: renderedHeaderFooter,
+        pdfOptions: pdfOptions,
       });
 
       this.emit('countPages', pdfPath, 'proposal');

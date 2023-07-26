@@ -5,7 +5,7 @@ import PdfWorkflowManager from './PdfWorkflowManager';
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml, TableOfContents } from '../../pdf';
 import { renderTemplate, renderHeaderFooter } from '../../template';
-import { Answer, Sample, SamplePDFData, Attachment } from '../../types';
+import { Answer, Sample, SamplePDFData, Attachment, Role } from '../../types';
 
 type SamplePDFMeta = {
   files: {
@@ -165,11 +165,15 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
   }
 }
 
-export default function newSamplePdfWorkflowManager(data: SamplePDFData[]) {
+export default function newSamplePdfWorkflowManager(
+  data: SamplePDFData[],
+  userRole: Role
+) {
   const manager = new PdfWorkflowManager<SamplePDFData, SamplePDFMeta>(
     SamplePdfFactory,
     data,
-    (data) => data.sample.id
+    (data) => data.sample.id,
+    userRole
   );
 
   manager.onFinalizePDF(

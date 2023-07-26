@@ -11,6 +11,8 @@ export type Attachment = { id: string; figure?: string; caption?: string };
 
 export type PdfTemplate = {
   templateData: string;
+  templateHeader: string;
+  templateFooter: string;
 };
 
 export type ProposalPDFData = {
@@ -200,4 +202,10 @@ export interface GenericTemplate {
 export interface GenericTemplateAnswer {
   questionId: string;
   questionaryId: number;
+}
+
+export interface Role {
+  shortCode: string;
+  title: string;
+  id: number;
 }
