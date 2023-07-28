@@ -47,6 +47,18 @@ const template = `
 <p>Extra line for tests
 `;
 
+const header = `
+<div>
+  Header
+</div>
+`;
+
+const footer = `
+<div>
+  Footer
+</div>
+`;
+
 export default {
   proposal_test_1: [
     {
@@ -312,6 +324,8 @@ export default {
       ],
       pdfTemplate: {
         templateData: template,
+        templateHeader: header,
+        templateFootyer: footer,
       },
       sepReviews: [],
     },
