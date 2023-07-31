@@ -22,7 +22,7 @@ export type PdfFactoryMeta = {
 
 export abstract class PdfFactoryPicker<
   TFactoryData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > {
   public abstract getFactory(
     data: TFactoryData,
@@ -38,7 +38,7 @@ export type PdfFactoryCountedPagesMeta<T extends PdfFactoryMeta> = Record<
 
 export default abstract class PdfFactory<
   TData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > extends EventEmitter {
   static ENTITY_NAME: string;
 
