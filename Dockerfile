@@ -28,9 +28,8 @@ RUN npm run build
 
 FROM alpine:3.18
 
-# Installs  Chromium (99) package.
 RUN apk add --no-cache \
-  "chromium~=114.0.5735.198-r0" \
+  chromium \
   nss \
   freetype \
   freetype-dev \

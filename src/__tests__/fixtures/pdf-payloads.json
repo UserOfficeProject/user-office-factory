@@ -208,7 +208,8 @@
             }
           ]
         }
-      ]
+      ],
+      "sepReviews": []
     },
     {
       "samples": [
@@ -293,7 +294,8 @@
           ]
         }
       ],
-      "genericTemplates": []
+      "genericTemplates": [],
+      "sepReviews": []
     }
   ],
   "sample_test_1": [

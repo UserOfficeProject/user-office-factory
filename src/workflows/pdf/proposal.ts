@@ -2,13 +2,17 @@ import PdfWorkflowManager from './PdfWorkflowManager';
 import { AutoProposalPdfFactoryPicker } from './proposal/ProposalPdfFactoryPicker';
 import { ProposalPDFMeta } from './proposal/ProposalPDFMeta';
 import { TableOfContents } from '../../pdf';
-import { ProposalPDFData } from '../../types';
+import { ProposalPDFData, Role } from '../../types';
 
-export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
+export default function newProposalPdfWorkflowManager(
+  data: ProposalPDFData[],
+  userRole: Role
+) {
   const manager = new PdfWorkflowManager<ProposalPDFData, ProposalPDFMeta>(
     new AutoProposalPdfFactoryPicker(),
     data,
-    (data) => data.proposal.primaryKey
+    (data) => data.proposal.primaryKey,
+    userRole
   );
 
   manager.onFinalizePDF(

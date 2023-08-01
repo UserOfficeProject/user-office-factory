@@ -40,7 +40,7 @@ export async function renderTemplate(
   return template(payload);
 }
 
-export async function renderHeaderFooter() {
+export async function renderHeaderFooter(proposalId?: string) {
   const htmlHeaderTemplate = await promises.readFile(
     join(templatesFolder, 'pdf', 'header.hbs'),
     'utf-8'
@@ -62,6 +62,7 @@ export async function renderHeaderFooter() {
     logoPath: process.env.HEADER_LOGO_PATH
       ? process.env.HEADER_LOGO_PATH
       : join(process.cwd(), './templates/images/ESS.png'),
+    proposalId,
   };
 
   return {
@@ -69,4 +70,29 @@ export async function renderHeaderFooter() {
     headerTemplate: handlebar.compile(htmlHeaderTemplate)(headerData),
     footerTemplate: handlebar.compile(htmlFooterTemplate)(null),
   };
+}
+
+export async function renderHeader(proposalId?: string) {
+  const htmlHeaderTemplate = await promises.readFile(
+    join(templatesFolder, 'pdf', 'header.hbs'),
+    'utf-8'
+  );
+
+  const headerData = {
+    logoPath: process.env.HEADER_LOGO_PATH
+      ? process.env.HEADER_LOGO_PATH
+      : join(process.cwd(), './templates/images/ESS.png'),
+    proposalId,
+  };
+
+  return handlebar.compile(htmlHeaderTemplate)(headerData);
+}
+
+export async function renderFooter() {
+  const htmlFooterTemplate = await promises.readFile(
+    join(templatesFolder, 'pdf', 'footer.hbs'),
+    'utf-8'
+  );
+
+  return handlebar.compile(htmlFooterTemplate)(null);
 }
