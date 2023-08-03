@@ -153,12 +153,12 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
       });
       const renderedHeaderFooter = await renderHeaderFooter();
 
-      const pdfPath = await generatePdfFromHtml(renderedSampleHtml, {
+      const pdf = await generatePdfFromHtml(renderedSampleHtml, {
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdfPath, 'sample');
-      this.emit('rendered:sample', pdfPath);
+      this.emit('countPages', pdf.pdfPath, 'sample');
+      this.emit('rendered:sample', pdf);
     } catch (e) {
       this.emit('error', e, 'renderSample');
     }

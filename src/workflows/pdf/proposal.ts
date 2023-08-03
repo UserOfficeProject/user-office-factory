@@ -15,12 +15,25 @@ export default function newProposalPdfWorkflowManager(
     userRole
   );
 
+  //Increase the page number by the step.
+  function stepUpToc(toc: TableOfContents[], step: number): TableOfContents[] {
+    if (!toc) {
+      return [];
+    }
+
+    return toc.map((t) => ({
+      ...t,
+      page: t.page != undefined ? t.page + step : undefined, // Todo: Should it be undefined or step?
+      children: stepUpToc(t.children, step),
+    }));
+  }
+
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
       const toc: TableOfContents = {
         title: `Proposal number: ${data.proposal.proposalId}`,
         page: pageNumber,
-        children: [],
+        children: stepUpToc(meta.toc.proposal, pageNumber) || [],
       };
 
       pageNumber +=
@@ -28,12 +41,12 @@ export default function newProposalPdfWorkflowManager(
 
       filePaths.push(meta.files.proposal);
 
-      meta.files.questionnaires.forEach((questionary) => {
+      meta.files.questionnaires.forEach((questionary, index) => {
         filePaths.push(questionary);
         toc.children.push({
           title: 'Questionary', // data.questionarySteps[qIdx].topic.title,
           page: pageNumber,
-          children: [],
+          children: stepUpToc(meta.toc.questionnaires[index], pageNumber),
         });
 
         pageNumber +=
@@ -52,7 +65,7 @@ export default function newProposalPdfWorkflowManager(
           sampleToC.children.push({
             title: `Sample: ${data.samples[qIdx].sample.title}`,
             page: pageNumber,
-            children: [],
+            children: stepUpToc(meta.toc.samples[qIdx], pageNumber),
           });
 
           pageNumber += metaCountedPages.samples.countedPagesPerPdf[sample];
@@ -96,7 +109,7 @@ export default function newProposalPdfWorkflowManager(
         toc.children.push({
           title: 'Technical Review',
           page: pageNumber,
-          children: [],
+          children: stepUpToc(meta.toc.technicalReview, pageNumber),
         });
 
         pageNumber +=
