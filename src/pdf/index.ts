@@ -26,7 +26,7 @@ logger.logInfo('Launching puppeteer with ', { args: launchOptions });
 // TODO: create browser lazily while keeping track of it
 // so we don't end up with dozens of browsers
 puppeteer
-  .launch({ args: launchOptions })
+  .launch({ args: launchOptions, headless: true })
   .then((inst) => (browser = inst))
   .catch((e) => {
     logger.logException('Failed to start browser puppeteer', e);

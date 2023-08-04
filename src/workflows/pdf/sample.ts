@@ -73,8 +73,8 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
 
-    this.once('rendered:sample', (pdfPath) => {
-      this.meta.files.sample = pdfPath;
+    this.once('rendered:sample', (pdf) => {
+      this.meta.files.sample = pdf.pdfPath;
       this.emit('taskFinished', 'render:sample');
     });
 
