@@ -52,40 +52,7 @@ export async function generatePdfFromHtml(
   await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.emulateMediaType('screen');
 
-  // Extract information about headings and their positions using page.evaluate()
-  const headingsInfo = await page.evaluate(() => {
-    const headings = document.querySelectorAll('li.list-index-element');
-    const headingsInfo: {
-      pageTitle: string;
-      pageNumber: string;
-      pageParent: string | null;
-    }[] = [];
-    if (!headings) return headingsInfo;
-
-    headings.forEach((heading) => {
-      const pageTitleElement =
-        heading.querySelector<HTMLElement>('span.index-value');
-      const pageNumberElement = heading
-        .querySelector<HTMLElement>('span.links-pages')
-        ?.querySelector<HTMLElement>('span.link-page')
-        ?.querySelector<HTMLElement>('a');
-
-      if (!pageTitleElement || !pageNumberElement) return;
-      const pageTitle = pageTitleElement.innerText;
-      const pageNumber = window
-        .getComputedStyle(pageNumberElement, ':after')
-        .counterReset?.split(' ')[1];
-      const pageParent = heading.getAttribute('data-list-index-parent');
-      headingsInfo.push({ pageTitle, pageNumber, pageParent });
-    });
-
-    const toc = document.querySelector('div#page-1');
-    if (toc) {
-      toc.remove();
-    }
-
-    return headingsInfo;
-  });
+  const headingsInfo = await page.evaluate(extractHeadingsInfo);
 
   await page.pdf({
     path: pdfPath,
@@ -104,6 +71,41 @@ export async function generatePdfFromHtml(
   const toc = generateToc(headingsInfo);
 
   return { pdfPath, toc };
+}
+
+// Utility function to extract information about headings and their positions using page.evaluate()
+function extractHeadingsInfo() {
+  const headings = document.querySelectorAll('li.list-index-element');
+  const headingsInfo: {
+    pageTitle: string;
+    pageNumber: string;
+    pageParent: string | null;
+  }[] = [];
+  if (!headings) return headingsInfo;
+
+  headings.forEach((heading) => {
+    const pageTitleElement =
+      heading.querySelector<HTMLElement>('span.index-value');
+    const pageNumberElement = heading
+      .querySelector<HTMLElement>('span.links-pages')
+      ?.querySelector<HTMLElement>('span.link-page')
+      ?.querySelector<HTMLElement>('a');
+
+    if (!pageTitleElement || !pageNumberElement) return;
+    const pageTitle = pageTitleElement.innerText;
+    const pageNumber = window
+      .getComputedStyle(pageNumberElement, ':after')
+      .counterReset?.split(' ')[1];
+    const pageParent = heading.getAttribute('data-list-index-parent');
+    headingsInfo.push({ pageTitle, pageNumber, pageParent });
+  });
+
+  const toc = document.querySelector('div#page-1');
+  if (toc) {
+    toc.remove();
+  }
+
+  return headingsInfo;
 }
 
 //utility function to generate toc based on headingsInfo. The headingsinfo also contains the link to the parent heading as well. The parent can be found at any level

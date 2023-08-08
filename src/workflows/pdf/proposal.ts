@@ -23,7 +23,7 @@ export default function newProposalPdfWorkflowManager(
 
     return toc.map((t) => ({
       ...t,
-      page: t.page != undefined ? t.page + step : undefined, // Todo: Should it be undefined or step?
+      page: t.page != undefined ? t.page + step : undefined,
       children: stepUpToc(t.children, step),
     }));
   }
