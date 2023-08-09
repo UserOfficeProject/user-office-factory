@@ -158,6 +158,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
         if (questionarySteps.length > 0) {
           this.emit(
             'render:questionnaires',
+            proposal,
             questionarySteps,
             genericTemplates,
             attachmentsFileMeta

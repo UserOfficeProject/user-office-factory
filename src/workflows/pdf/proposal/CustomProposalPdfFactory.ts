@@ -50,13 +50,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
   }
 
   init(data: ProposalPDFData) {
-    const {
-      questionarySteps,
-      technicalReview,
-      attachments,
-      samples,
-      genericTemplates,
-    } = data;
+    const { attachments } = data;
 
     const noRenders = {
       waitFor: 0,
