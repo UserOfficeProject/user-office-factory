@@ -12,7 +12,7 @@ export type AttachmentFactoryMeta = {
 
 export default abstract class ZipFactory<
   TData,
-  TAttachmentFactoryMeta extends AttachmentFactoryMeta
+  TAttachmentFactoryMeta extends AttachmentFactoryMeta,
 > extends EventEmitter {
   static ENTITY_NAME: string;
 

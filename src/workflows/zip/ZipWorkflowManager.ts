@@ -17,12 +17,12 @@ type FactoryMeta<TZipFactoryMeta extends AttachmentFactoryMeta> = {
 
 type FactoryGenerator<
   TFactoryData,
-  TVFactoryMeta extends AttachmentFactoryMeta
+  TVFactoryMeta extends AttachmentFactoryMeta,
 > = Constructable<AttachmentFactory<TFactoryData, TVFactoryMeta>>;
 
 export default class ZipWorkflowManager<
   TFactoryData,
-  TZipFactoryMeta extends AttachmentFactoryMeta
+  TZipFactoryMeta extends AttachmentFactoryMeta,
 > extends WorkflowManager {
   protected data: TFactoryData[];
   protected entityIds: number[] = [];

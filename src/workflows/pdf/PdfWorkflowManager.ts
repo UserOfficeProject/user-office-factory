@@ -9,11 +9,12 @@ import PdfFactory, {
   PdfFactoryPicker,
 } from './PdfFactory';
 import { TableOfContents, mergePDF, writeToC } from '../../pdf';
+import { Role } from '../../types';
 import { failSafeDeleteFiles } from '../../util/fileSystem';
 import { ResponseHeader, WorkflowManager } from '../WorkflowManager';
 
 type Constructable<T> = {
-  new (entityId: number): T;
+  new (entityId: number, userRole: Role): T;
 };
 
 type FactoryMeta<TPdfFactoryMeta extends PdfFactoryMeta> = {
@@ -23,7 +24,7 @@ type FactoryMeta<TPdfFactoryMeta extends PdfFactoryMeta> = {
 
 type FinalizePdfHandler<
   TFactoryData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > = (
   params: {
     rootToC: TableOfContents[];
@@ -39,7 +40,7 @@ type FactoryGenerator<TFactoryData, TPdfFactoryMeta extends PdfFactoryMeta> =
 
 export default class PdfWorkflowManager<
   TFactoryData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > extends WorkflowManager {
   protected data: TFactoryData[];
   protected entityIds: number[] = [];
@@ -68,7 +69,8 @@ export default class PdfWorkflowManager<
   constructor(
     factory: FactoryGenerator<TFactoryData, TPdfFactoryMeta>,
     data: TFactoryData[],
-    extractEntityId: (data: TFactoryData) => number
+    extractEntityId: (data: TFactoryData) => number,
+    userRole: Role
   ) {
     super();
 
@@ -79,9 +81,9 @@ export default class PdfWorkflowManager<
 
       let inst;
       if (factory instanceof PdfFactoryPicker) {
-        inst = factory.getFactory(this.data[i], entityId);
+        inst = factory.getFactory(this.data[i], entityId, userRole);
       } else {
-        inst = new factory(entityId);
+        inst = new factory(entityId, userRole);
       }
 
       this.entityIds.push(entityId);
