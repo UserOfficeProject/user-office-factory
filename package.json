@@ -39,7 +39,7 @@
     "muhammara": "^4.0.0",
     "pg": "^8.11.1",
     "pg-large-object": "^2.0.0",
-    "puppeteer": "^21.0.2",
+    "puppeteer": "^21.0.3",
     "qrcode": "^1.5.3",
     "xlsx": "^0.18.5",
     "xmldom": "^0.6.0"
@@ -50,7 +50,7 @@
     "@types/gm": "^1.25.1",
     "@types/http-errors": "^2.0.1",
     "@types/jest": "^29.5.3",
-    "@types/lodash": "^4.14.195",
+    "@types/lodash": "^4.14.197",
     "@types/morgan": "^1.9.4",
     "@types/node": "^20.4.8",
     "@types/pg": "^8.10.2",
