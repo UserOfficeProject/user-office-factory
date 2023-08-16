@@ -128,7 +128,11 @@ export class CustomProposalPdfFactory extends PdfFactory<
         this.countedPagesMeta.attachments.waitFor = attachmentsFileMeta.length;
 
         this.emit('taskFinished', 'fetch:attachmentsFileMeta');
-        this.emit('render:proposal', { ...data, attachmentsFileMeta });
+        this.emit('render:proposal', {
+          ...data,
+          attachmentsFileMeta,
+          userRole: this.userRole,
+        });
 
         if (this.countedPagesMeta.attachments.waitFor === 0) {
           this.emit('taskFinished', 'fetch:attachments');
