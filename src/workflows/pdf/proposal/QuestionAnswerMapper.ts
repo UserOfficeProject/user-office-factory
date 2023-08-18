@@ -44,6 +44,7 @@ function getValueExtractor(type: string): ValueExtractor {
   const valueExtractors: Record<string, ValueExtractor> = {
     GENERIC_TEMPLATE: (data, q) => extractGenericTemplateAnswerMap(data, q),
     RICH_TEXT_INPUT: (_, q) => new SafeString(q.value),
+    DATE: (_, q) => dateTransformer(_, q),
   };
   const handler = valueExtractors[type];
   if (handler === undefined) {
@@ -94,4 +95,12 @@ function extractGenericTemplateAnswerMap(
           return p;
         }, {})
     );
+}
+
+function dateTransformer(_: ProposalPDFData, answer: Answer) {
+  const date = new Date(answer.value);
+
+  return answer.config.includeTime
+    ? date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+    : date.toLocaleDateString();
 }
