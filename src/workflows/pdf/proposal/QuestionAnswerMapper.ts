@@ -101,6 +101,6 @@ function dateTransformer(_: ProposalPDFData, answer: Answer) {
   const date = new Date(answer.value);
 
   return answer.config.includeTime
-    ? date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
-    : date.toLocaleDateString();
+    ? date.toISOString().split('T')[0] + ' ' + date.toLocaleTimeString()
+    : date.toISOString().split('T')[0];
 }
