@@ -30,6 +30,14 @@ export class CustomProposalPdfFactory extends PdfFactory<
       attachments: [],
       technicalReview: '',
     },
+    toc: {
+      proposal: [],
+      questionnaires: [],
+      samples: [],
+      genericTemplates: [],
+      attachments: [],
+      technicalReview: [],
+    },
     attachmentsFileMeta: [],
     attachments: [],
   };
@@ -50,13 +58,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
   }
 
   init(data: ProposalPDFData) {
-    const {
-      questionarySteps,
-      technicalReview,
-      attachments,
-      samples,
-      genericTemplates,
-    } = data;
+    const { attachments } = data;
 
     const noRenders = {
       waitFor: 0,
@@ -102,8 +104,9 @@ export class CustomProposalPdfFactory extends PdfFactory<
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
 
-    this.once('rendered:proposal', (pdfPath) => {
-      this.meta.files.proposal = pdfPath;
+    this.once('rendered:proposal', (pdf) => {
+      this.meta.files.proposal = pdf.pdfPath;
+      this.meta.toc.proposal = pdf.toc;
       this.emit('taskFinished', 'render:proposal');
     });
 
@@ -125,7 +128,11 @@ export class CustomProposalPdfFactory extends PdfFactory<
         this.countedPagesMeta.attachments.waitFor = attachmentsFileMeta.length;
 
         this.emit('taskFinished', 'fetch:attachmentsFileMeta');
-        this.emit('render:proposal', { ...data, attachmentsFileMeta });
+        this.emit('render:proposal', {
+          ...data,
+          attachmentsFileMeta,
+          userRole: this.userRole,
+        });
 
         if (this.countedPagesMeta.attachments.waitFor === 0) {
           this.emit('taskFinished', 'fetch:attachments');
@@ -198,12 +205,12 @@ export class CustomProposalPdfFactory extends PdfFactory<
         footerTemplate: footerTemplate,
       };
 
-      const pdfPath = await generatePdfFromHtml(renderedProposalHtml, {
+      const pdf = await generatePdfFromHtml(renderedProposalHtml, {
         pdfOptions: pdfOptions,
       });
 
-      this.emit('countPages', pdfPath, 'proposal');
-      this.emit('rendered:proposal', pdfPath);
+      this.emit('countPages', pdf.pdfPath, 'proposal');
+      this.emit('rendered:proposal', pdf);
     } catch (e) {
       this.emit('error', e, 'renderProposal');
     }

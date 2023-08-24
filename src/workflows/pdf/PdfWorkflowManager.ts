@@ -24,7 +24,7 @@ type FactoryMeta<TPdfFactoryMeta extends PdfFactoryMeta> = {
 
 type FinalizePdfHandler<
   TFactoryData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > = (
   params: {
     rootToC: TableOfContents[];
@@ -40,7 +40,7 @@ type FactoryGenerator<TFactoryData, TPdfFactoryMeta extends PdfFactoryMeta> =
 
 export default class PdfWorkflowManager<
   TFactoryData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > extends WorkflowManager {
   protected data: TFactoryData[];
   protected entityIds: number[] = [];

@@ -109,11 +109,11 @@ export class ShipmentPdfFactory extends PdfFactory<
         containerIdQRCode,
       });
 
-      const pdfPath = await generatePdfFromHtml(renderedShipmentHtml, {
+      const pdf = await generatePdfFromHtml(renderedShipmentHtml, {
         pdfOptions: { printBackground: true },
       });
 
-      this.emit('rendered:shipment', pdfPath);
+      this.emit('rendered:shipment', pdf.pdfPath);
     } catch (e) {
       this.emit('error', e, 'renderShipment');
     }
