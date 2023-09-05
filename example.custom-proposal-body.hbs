@@ -126,67 +126,70 @@
             <div class="col">
               <table class="border w-100">
                 <tbody class="border">
-                  {{#each this.fields}} {{#if ($eq this.question.dataType
-                  'EMBELLISHMENT')}}
-                  <tr class="border-bottom">
-                    <td class="p-3 border-right" colspan="2">
-                      <h5 class="bold m-0">{{ this.config.plain }}</h5>
-                    </td>
-                  </tr>
-                  {{ else }}
-                  <tr class="border-bottom no-break-inside">
-                    <td class="p-3 border-right w-40">
-                      <h6 class="bold m-0">{{ this.question.question }}</h6>
-                    </td>
-                    <td class="p-3 w-60">
-                      {{#if ($eq this.question.dataType 'SAMPLE_DECLARATION')}}
-                      {{#unless this.value}}
-                      <div class="mb-2"><em>Left blank</em></div>
-                      {{/unless}} {{#each this.value}} {{ this.title }} -
-                      <em>See appendix</em>
-                      <br /><br />
-                      {{/each}} {{else if ($eq this.question.dataType
-                      'NUMBER_INPUT')}} {{#if this.value.value}} {{
-                      this.value.value }} {{ this.value.unit.unit }} {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType 'BOOLEAN')}}
-                      {{#if this.value}}Yes{{else}}No{{/if}} {{else if ($eq
-                      this.question.dataType 'INTERVAL')}} {{#if ($or
-                      this.value.min this.value.max)}} {{ this.value.min }} - {{
-                      this.value.max }} {{#if this.value.unit}} {{
-                      this.value.unit.unit }} {{/if}} {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType 'DATE')}}
-                      {{#if this.value}} {{$utcDate this.value}} {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType
-                      'DYNAMIC_MULTIPLE_CHOICE')}} {{#if this.value}} {{$join
-                      this.value ', '}} {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType
-                      'SELECTION_FROM_OPTIONS')}} {{#if this.value}} {{$join
-                      this.value ', '}} {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType
-                      'TEXT_INPUT')}} {{#if this.value}} {{ this.value }}
-                      {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType
-                      'RICH_TEXT_INPUT')}} {{#if this.value}} {{{this.value}}}
-                      {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType
-                      'INSTRUMENT_PICKER')}} {{#if this.value}} {{{this.value}}}
-                      {{else}}
-                      <em>Left blank</em>
-                      {{/if}} {{else if ($eq this.question.dataType
-                      'FILE_UPLOAD')}} {{!-- {{#if this.value}} {{{$attachment
-                      this.value ../../attachmentsFileMeta}}} {{else}}
-                      <em>Left blank</em>
-                      {{/if}} --}} {{/if}}
-                    </td>
-                  </tr>
-                  {{/if}} {{/each}}
+                  {{#each this.fields}} 
+                    {{#if ($eq this.question.dataType 'EMBELLISHMENT')}}
+                      {{#if ($notEq this.config.omitFromPdf true )}}
+                        <tr class="border-bottom">
+                          <td class="p-3 border-right" colspan="2">
+                            <h5 class="bold m-0">{{ this.config.plain }}</h5>
+                          </td>
+                        </tr>
+                      {{/if}}
+                    {{ else }}
+                      <tr class="border-bottom no-break-inside">
+                      <td class="p-3 border-right w-40">
+                        <h6 class="bold m-0">{{ this.question.question }}</h6>
+                      </td>
+                      <td class="p-3 w-60">
+                        {{#if ($eq this.question.dataType 'SAMPLE_DECLARATION')}}
+                        {{#unless this.value}}
+                        <div class="mb-2"><em>Left blank</em></div>
+                        {{/unless}} {{#each this.value}} {{ this.title }} -
+                        <em>See appendix</em>
+                        <br /><br />
+                        {{/each}} {{else if ($eq this.question.dataType
+                        'NUMBER_INPUT')}} {{#if this.value.value}} {{
+                        this.value.value }} {{ this.value.unit.unit }} {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType 'BOOLEAN')}}
+                        {{#if this.value}}Yes{{else}}No{{/if}} {{else if ($eq
+                        this.question.dataType 'INTERVAL')}} {{#if ($or
+                        this.value.min this.value.max)}} {{ this.value.min }} - {{
+                        this.value.max }} {{#if this.value.unit}} {{
+                        this.value.unit.unit }} {{/if}} {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType 'DATE')}}
+                        {{#if this.value}} {{$utcDate this.value}} {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType
+                        'DYNAMIC_MULTIPLE_CHOICE')}} {{#if this.value}} {{$join
+                        this.value ', '}} {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType
+                        'SELECTION_FROM_OPTIONS')}} {{#if this.value}} {{$join
+                        this.value ', '}} {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType
+                        'TEXT_INPUT')}} {{#if this.value}} {{ this.value }}
+                        {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType
+                        'RICH_TEXT_INPUT')}} {{#if this.value}} {{{this.value}}}
+                        {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType
+                        'INSTRUMENT_PICKER')}} {{#if this.value}} {{{this.value}}}
+                        {{else}}
+                        <em>Left blank</em>
+                        {{/if}} {{else if ($eq this.question.dataType
+                        'FILE_UPLOAD')}} {{!-- {{#if this.value}} {{{$attachment
+                        this.value ../../attachmentsFileMeta}}} {{else}}
+                        <em>Left blank</em>
+                        {{/if}} --}} {{/if}}
+                      </td>
+                    </tr>
+                    {{/if}} 
+                  {{/each}}
                 </tbody>
               </table>
             </div>
@@ -203,7 +206,9 @@
               {{#each this.fields}}
               <div class="no-break-inside">
                 {{#if ($eq this.question.dataType 'EMBELLISHMENT')}}
-                <h5 class="bold my-3">{{ this.config.plain }}</h5>
+                  {{#if ($notEq this.config.omitFromPdf true )}}
+                    <h5 class="bold my-3">{{ this.config.plain }}</h5>
+                  {{/if}}
                 {{ else }}
                 <div class="no-break-inside">
                   <h5 class="bold my-3">{{ this.question.question }}</h5>
