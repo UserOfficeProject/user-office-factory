@@ -4,68 +4,15 @@
 
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      href="http://localhost:4501/static/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
       crossorigin="anonymous"
     />
 
+    <link href="http://localhost:4501/fonts/segoeui" rel="stylesheet">
+
     <style>
-      @font-face {
-        font-family: SegoeUI;
-        src: local('Segoe UI Light'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/light/latest.woff2)
-            format('woff2'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/light/latest.woff)
-            format('woff'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/light/latest.ttf)
-            format('truetype');
-        font-weight: 100;
-      }
-      @font-face {
-        font-family: SegoeUI;
-        src: local('Segoe UI Semilight'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/semilight/latest.woff2)
-            format('woff2'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/semilight/latest.woff)
-            format('woff'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/semilight/latest.ttf)
-            format('truetype');
-        font-weight: 200;
-      }
-      @font-face {
-        font-family: SegoeUI;
-        src: local('Segoe UI'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/normal/latest.woff2)
-            format('woff2'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/normal/latest.woff)
-            format('woff'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/normal/latest.ttf)
-            format('truetype');
-        font-weight: 400;
-      }
-      @font-face {
-        font-family: SegoeUI;
-        src: local('Segoe UI Bold'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/bold/latest.woff2)
-            format('woff2'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/bold/latest.woff)
-            format('woff'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/bold/latest.ttf)
-            format('truetype');
-        font-weight: 600;
-      }
-      @font-face {
-        font-family: SegoeUI;
-        src: local('Segoe UI Semibold'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/semibold/latest.woff2)
-            format('woff2'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/semibold/latest.woff)
-            format('woff'),
-          url(https://c.s-microsoft.com/static/fonts/segoe-ui/west-european/semibold/latest.ttf)
-            format('truetype');
-        font-weight: 700;
-      }
       body {
         font-size: 16px;
         line-height: 2;
@@ -106,22 +53,24 @@
         content: ' – ';
       }
     </style>
-    <script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script>
+    <script src="http://localhost:4501/static/js/paged.polyfill.min.js"></script>
   </head>
 
   <body>
-    <div id="book-index"></div>
+    <div id="bookIndex"></div>
     <div id="listindexgenerated"></div>
     <div class="root break-before" style="background: 'red'">
       <div class="container-fluid m-0 p-0">
-        <div class="row book-index" data-book-index="Proposal Summary">
+        <div class="row" data-book-index="Proposal Summary">
           <div class="col">
             <h2 class="text-center mb-4 bold">{{ proposal.title }}</h2>
             <div class="mb-4">
               <h4 class="bold">Proposal ID</h4>
-              {{ proposal.proposalId }}
+              {{ proposal.proposalId }} {{userRole.shortCode}}
             </div>
-
+            {{#if ($eq userRole.shortCode "user_officers")}}
+              Visible to User officer
+            {{/if}}
             <div class="mb-4">
               <h4 class="bold">Brief Summary</h4>
               {{ proposal.abstract }}
@@ -162,12 +111,12 @@
         </div>
 
         <div
-          class="break-before book-index"
+          class="break-before"
           data-book-index="Proposal Questionary"
         >
           {{#each questionarySteps}} {{#unless ($eq this.topic.title "Proposal text") }}
           <h4
-            class="bold my-3 book-index"
+            class="bold my-3"
             data-book-index-parent="Proposal Questionary"
             data-book-index="{{{this.topic.title}}}"
           >
@@ -247,7 +196,7 @@
 
         {{#each questionarySteps}} {{#if ($eq this.topic.title "Proposal text")
         }}
-        <div class="break-before book-index" data-book-index="Proposal Text">
+        <div class="break-before" data-book-index="Proposal Text">
           <h4 class="bold" class="my-3">{{ this.topic.title }}</h4>
           <div class="row my-3">
             <div class="col">
@@ -312,7 +261,7 @@
         {{/if}} {{/each}}
 
         <div
-          class="row mt-4 my-3 book-index"
+          class="row mt-4 my-3"
           data-book-index="Technical Review"
         >
           <div class="col">
@@ -336,7 +285,7 @@
         </div>
 
         {{#if sepReviews}} {{#each sepReviews}}
-        <div class="row mt-4 my-3 book-index" data-book-index="SEP Reviews">
+        <div class="row mt-4 my-3" data-book-index="SEP Reviews">
           <div class="col">
             <h4 class="bold" class="mb-4">SEP REVIEW {{ $sum @index 1 }}</h4>
 
@@ -357,9 +306,7 @@
   </body>
   <script>
     function createIndex(config) {
-      let indexElements = document.getElementsByClassName(
-        config.spanClassIndex
-      );
+      let indexElements = document.querySelectorAll("[data-book-index]");
       let indices = [];
       let num = 0;
       for (let i = 0; i < indexElements.length; ++i) {
@@ -427,8 +374,7 @@
       }
     }
     createIndex({
-      spanClassIndex: 'book-index',
-      indexElement: '#book-index',
+      indexElement: '#bookIndex',
     });
   </script>
 </html>
