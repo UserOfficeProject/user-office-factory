@@ -11,7 +11,7 @@ import PdfFactory, {
 import { TableOfContents, mergePDF, writeToC } from '../../pdf';
 import { Role } from '../../types';
 import { failSafeDeleteFiles } from '../../util/fileSystem';
-import { WorkflowManager } from '../WorkflowManager';
+import { ResponseHeader, WorkflowManager } from '../WorkflowManager';
 
 type Constructable<T> = {
   new (entityId: number, userRole: Role): T;
@@ -55,8 +55,11 @@ export default class PdfWorkflowManager<
     TPdfFactoryMeta
   > | null = null;
 
-  get MIME_TYPE() {
-    return 'application/pdf';
+  get responseHeader(): ResponseHeader {
+    return {
+      MIME_TYPE: 'application/pdf',
+      CONTENT_DISPOSITION: '',
+    };
   }
 
   get logPrefix() {
