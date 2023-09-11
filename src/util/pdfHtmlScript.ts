@@ -1,5 +1,6 @@
-export const pagedJs =
-  '<script src="http://localhost:4501/static/js/paged.polyfill.min.js"></script>';
+export const pagedJs = `<script src="http://localhost:${
+  process.env.NODE_PORT || 4500
+}/static/js/paged.polyfill.min.js"></script>`;
 
 export const computeTableOfContents = `
   <script>
