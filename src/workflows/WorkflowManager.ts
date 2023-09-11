@@ -1,8 +1,12 @@
 import { EventEmitter } from 'events';
 import { Readable } from 'stream';
+export type ResponseHeader = {
+  MIME_TYPE: string;
+  CONTENT_DISPOSITION: string;
+};
 
 export abstract class WorkflowManager {
-  abstract get MIME_TYPE(): string;
+  abstract get responseHeader(): ResponseHeader;
 
   protected ee = new EventEmitter();
 
