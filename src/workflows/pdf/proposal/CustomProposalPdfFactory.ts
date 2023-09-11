@@ -7,6 +7,8 @@ import { extractAnswerMap } from './QuestionAnswerMapper';
 import { generatePdfFromHtml } from '../../../pdf';
 import { render, renderFooter, renderHeader } from '../../../template';
 import { ProposalPDFData, Role } from '../../../types';
+import { insertScriptInBottom, insertScriptInTop } from '../../../util/pdfHtml';
+import { computeTableOfContents, pagedJs } from '../../../util/pdfHtmlScript';
 import PdfFactory from '../PdfFactory';
 
 /**
@@ -175,8 +177,18 @@ export class CustomProposalPdfFactory extends PdfFactory<
     const answers = extractAnswerMap(data);
 
     try {
-      const renderedProposalHtml = await render(
+      let templateBodyAfterInjectingScript = insertScriptInTop(
         this.templateBody,
+        pagedJs
+      );
+
+      templateBodyAfterInjectingScript = insertScriptInBottom(
+        templateBodyAfterInjectingScript,
+        computeTableOfContents
+      );
+
+      const renderedProposalHtml = await render(
+        templateBodyAfterInjectingScript,
         Object.assign({}, data, { answers })
       );
 
