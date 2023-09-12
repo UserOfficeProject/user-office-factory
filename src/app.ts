@@ -132,45 +132,46 @@ app.get(['/', '/health-check'], (req, res) => {
 app.get('/favicon.ico', (req, res) => res.end());
 
 app.get('/fonts/segoeui', cors(), (req: Request, res: Response) => {
+  const port = process.env.NODE_PORT || 4500;
   const font = `@font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:4501/static/fonts/segoe-ui/segoeui-light.ttf)
+    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-light.ttf)
         format('truetype');
     font-weight: 100;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:4501/static/fonts/segoe-ui/segoeui-semi-light.ttf)
+    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-semi-light.ttf)
         format('truetype');
     font-weight: 200;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:4501/static/fonts/segoe-ui/segoeui-normal.ttf)
+    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-normal.ttf)
         format('truetype');
     font-weight: 400;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:4501/static/fonts/segoe-ui/segoeui-bold.ttf)
+    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-bold.ttf)
         format('truetype');
     font-weight: 600;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:4501/static/fonts/segoe-ui/segoeui-semi-bold.ttf)
+    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-semi-bold.ttf)
         format('truetype');
     font-weight: 700;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:4501/static/fonts/segoe-ui/segoeuii.ttf)
+    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeuii.ttf)
         format('truetype');
     font-style: italic;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:4501/static/fonts/segoe-ui/segoeuiz.ttf)
+    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeuiz.ttf)
         format('truetype');
     font-weight: 600;
     font-style: italic;
