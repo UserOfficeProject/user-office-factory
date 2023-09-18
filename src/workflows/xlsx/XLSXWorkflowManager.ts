@@ -1,11 +1,16 @@
 import { Readable } from 'stream';
 
-import { WorkflowManager } from '../WorkflowManager';
+import { ResponseHeader, WorkflowManager } from '../WorkflowManager';
 
 export default class XLSXWorkflowManager extends WorkflowManager {
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-  get MIME_TYPE() {
-    return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+  get responseHeader(): ResponseHeader {
+    return {
+      MIME_TYPE:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      CONTENT_DISPOSITION: '',
+    };
   }
 
   private cbOnError: (e: Error) => void;
