@@ -4,9 +4,10 @@ import { logger } from '@user-office-software/duo-logger';
 
 import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
 import { extractAnswerMap } from './QuestionAnswerMapper';
+import { FileMetadata } from '../../../models/File';
 import { generatePdfFromHtml } from '../../../pdf';
 import { render, renderFooter, renderHeader } from '../../../template';
-import { ProposalPDFData, Role } from '../../../types';
+import { ProposalPDFData, ProposalSampleData, Role } from '../../../types';
 import { insertScriptInBottom, insertScriptInTop } from '../../../util/pdfHtml';
 import { computeTableOfContents, pagedJs } from '../../../util/pdfHtmlScript';
 import PdfFactory from '../PdfFactory';
@@ -21,6 +22,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
   protected templateBody: string;
   protected templateHeader?: string;
   protected templateFooter?: string;
+  protected sampleDeclaration?: string;
 
   protected countedPagesMeta: ProposalCountedPagesMeta;
   protected meta: ProposalPDFMeta = {
@@ -51,16 +53,18 @@ export class CustomProposalPdfFactory extends PdfFactory<
     userRole: Role,
     templateBody: string,
     templateHeader?: string,
-    templateFooter?: string
+    templateFooter?: string,
+    sampleDeclaration?: string
   ) {
     super(entityId, userRole);
     this.templateBody = templateBody;
     this.templateHeader = templateHeader;
     this.templateFooter = templateFooter;
+    this.sampleDeclaration = sampleDeclaration;
   }
 
   init(data: ProposalPDFData) {
-    const { attachments } = data;
+    const { samples, attachments } = data;
 
     const noRenders = {
       waitFor: 0,
@@ -71,7 +75,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
       proposal: { waitFor: 1, countedPagesPerPdf: {} },
       questionnaires: Object.assign({}, noRenders),
       technicalReview: Object.assign({}, noRenders),
-      samples: Object.assign({}, noRenders),
+      samples: { waitFor: samples.length, countedPagesPerPdf: {} },
       genericTemplates: Object.assign({}, noRenders),
       attachments: {
         waitFor: 0 /* set by fetched:attachmentsFileMeta */,
@@ -89,6 +93,11 @@ export class CustomProposalPdfFactory extends PdfFactory<
       tasksNeeded.push('fetch:attachmentsFileMeta');
       tasksNeeded.push('count-pages:attachments');
     }
+    // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then push the job
+    if (samples.length > 0 && this.sampleDeclaration) {
+      tasksNeeded.push('render:samples');
+      tasksNeeded.push('count-pages:samples');
+    }
 
     logger.logDebug(this.logPrefix + 'tasks needed to complete', {
       tasksNeeded,
@@ -100,6 +109,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
     this.on('countPages', this.countPages);
 
     this.once('render:proposal', this.renderProposal);
+    this.once('render:samples', this.renderSamples);
     this.once('fetch:attachments', this.fetchAttachments);
     this.once(
       'fetch:attachmentsFileMeta',
@@ -110,6 +120,15 @@ export class CustomProposalPdfFactory extends PdfFactory<
       this.meta.files.proposal = pdf.pdfPath;
       this.meta.toc.proposal = pdf.toc;
       this.emit('taskFinished', 'render:proposal');
+    });
+
+    this.on('rendered:sample', (pdf) => {
+      this.meta.files.samples.push(pdf.pdfPath);
+      this.meta.toc.samples.push(pdf.toc);
+
+      if (this.meta.files.samples.length === samples.length) {
+        this.emit('taskFinished', 'render:samples');
+      }
     });
 
     this.on('fetched:attachment', (attachmentPath) => {
@@ -135,6 +154,16 @@ export class CustomProposalPdfFactory extends PdfFactory<
           attachmentsFileMeta,
           userRole: this.userRole,
         });
+
+        // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then start the job
+        if (samples.length > 0 && this.sampleDeclaration) {
+          this.emit(
+            'render:samples',
+            { ...data, userRole: this.userRole },
+            samples,
+            attachmentsFileMeta
+          );
+        }
 
         if (this.countedPagesMeta.attachments.waitFor === 0) {
           this.emit('taskFinished', 'fetch:attachments');
@@ -164,6 +193,16 @@ export class CustomProposalPdfFactory extends PdfFactory<
       this.emit('fetch:attachmentsFileMeta', attachments);
     } else {
       this.emit('render:proposal', data);
+
+      // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then start the job
+      if (samples.length > 0 && this.sampleDeclaration) {
+        this.emit(
+          'render:samples',
+          { ...data, userRole: this.userRole },
+          samples,
+          []
+        );
+      }
     }
   }
 
@@ -225,6 +264,66 @@ export class CustomProposalPdfFactory extends PdfFactory<
       this.emit('rendered:proposal', pdf);
     } catch (e) {
       this.emit('error', e, 'renderProposal');
+    }
+  }
+
+  private async renderSamples(
+    data: ProposalPDFData,
+    samples: ProposalSampleData[],
+    attachmentsFileMeta: FileMetadata[]
+  ) {
+    // TODO: This needs to be tested
+    if (this.sampleDeclaration) {
+      try {
+        for (const { sample, sampleQuestionaryFields } of samples) {
+          if (this.stopped) {
+            this.emit('aborted', 'renderSamples');
+
+            return;
+          }
+
+          const renderedProposalSample = await render(this.sampleDeclaration, {
+            sample,
+            sampleQuestionaryFields,
+            attachmentsFileMeta,
+          });
+
+          // TODO: This needs to be optimised, as this is a redundant code from renderProposal method
+          const headerTemplate = this.templateHeader
+            ? await render(this.templateHeader, {
+                ...data,
+                logoPath: process.env.HEADER_LOGO_PATH
+                  ? process.env.HEADER_LOGO_PATH
+                  : join(process.cwd(), './templates/images/ESS.png'),
+              })
+            : await renderHeader(data.proposal.proposalId);
+
+          const footerTemplate = this.templateFooter
+            ? await render(this.templateFooter, data)
+            : await renderFooter();
+
+          const pdfOptions = {
+            margin: {
+              top: 82,
+              left: 72,
+              bottom: 72,
+              right: 72,
+            },
+            displayHeaderFooter: true,
+            headerTemplate: headerTemplate,
+            footerTemplate: footerTemplate,
+          };
+
+          const pdf = await generatePdfFromHtml(renderedProposalSample, {
+            pdfOptions: pdfOptions,
+          });
+          console.info({ pdfPath: pdf.pdfPath });
+          this.emit('countPages', pdf.pdfPath, 'samples');
+          this.emit('rendered:sample', pdf);
+        }
+      } catch (e) {
+        this.emit('error', e, 'renderSamples');
+      }
     }
   }
 }
