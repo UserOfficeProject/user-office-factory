@@ -16,6 +16,8 @@ export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
     const templateBody = data.pdfTemplate?.templateData;
     const templateHeader = data.pdfTemplate?.templateHeader;
     const templateFooter = data.pdfTemplate?.templateFooter;
+    const templateSampleDeclaration =
+      data.pdfTemplate?.templateSampleDeclaration;
 
     if (templateBody === undefined) {
       return new AutoProposalPdfFactory(entityId, userRole);
@@ -25,7 +27,8 @@ export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
         userRole,
         templateBody,
         templateHeader,
-        templateFooter
+        templateFooter,
+        templateSampleDeclaration
       );
     }
   }

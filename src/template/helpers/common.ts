@@ -7,6 +7,10 @@ handlebar.registerHelper('$eq', function (a, b) {
   return a === b;
 });
 
+handlebar.registerHelper('$notEq', function (a, b) {
+  return a != b;
+});
+
 handlebar.registerHelper('$sum', function (...args) {
   args.pop();
 
