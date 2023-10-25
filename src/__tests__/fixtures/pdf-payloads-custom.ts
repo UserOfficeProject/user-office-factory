@@ -125,6 +125,9 @@ export default {
                 question: 'Date question',
                 naturalKey: 'date_1',
               },
+              config: {
+                includeTime: true,
+              },
               value: '2020-10-27T15:06:23.849Z',
             },
             {

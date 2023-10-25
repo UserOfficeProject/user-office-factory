@@ -13,6 +13,7 @@ export type PdfTemplate = {
   templateData: string;
   templateHeader: string;
   templateFooter: string;
+  templateSampleDeclaration: string;
 };
 
 export type ProposalPDFData = {
