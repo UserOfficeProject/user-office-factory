@@ -1,6 +1,6 @@
 FROM alpine:3.18
 
-# Installs  Chromium (115) package.
+# Installs  Chromium (117) package.
 RUN apk add --no-cache \
   "chromium~=117.0.5938.62-r0" \
   nss \
