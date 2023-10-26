@@ -18,6 +18,7 @@ RUN apk add --no-cache \
   jpeg-dev \
   pango-dev \
   giflib-dev \
+  gcompat\
   && addgroup -S -g 1000 pptruser && adduser -S -u 1000 -g pptruser pptruser \
   && mkdir -p /home/pptruser/Downloads /app \
   && chown -R pptruser:pptruser /home/pptruser \
