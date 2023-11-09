@@ -11,7 +11,7 @@ import {
   getTotalPages,
 } from '../../pdf';
 import services from '../../services';
-import { Attachment } from '../../types';
+import { Attachment, Role } from '../../types';
 import { generateTmpPath, failSafeDeleteFiles } from '../../util/fileSystem';
 
 export type PdfFactoryMeta = {
@@ -22,11 +22,12 @@ export type PdfFactoryMeta = {
 
 export abstract class PdfFactoryPicker<
   TFactoryData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > {
   public abstract getFactory(
     data: TFactoryData,
-    entityId: number
+    entityId: number,
+    userRole: Role
   ): PdfFactory<TFactoryData, TPdfFactoryMeta>;
 }
 
@@ -37,11 +38,12 @@ export type PdfFactoryCountedPagesMeta<T extends PdfFactoryMeta> = Record<
 
 export default abstract class PdfFactory<
   TData,
-  TPdfFactoryMeta extends PdfFactoryMeta
+  TPdfFactoryMeta extends PdfFactoryMeta,
 > extends EventEmitter {
   static ENTITY_NAME: string;
 
   protected entityId: number;
+  protected userRole: Role;
   protected stopped = false;
   protected aborted = false;
 
@@ -56,10 +58,11 @@ export default abstract class PdfFactory<
     return `[${this.constructor.name}] ${entityName}, ${this.entityId}: `;
   }
 
-  constructor(entityId: number) {
+  constructor(entityId: number, userRole: Role) {
     super();
 
     this.entityId = entityId;
+    this.userRole = userRole;
     this.on('aborted', (action, ctx: Record<string, unknown>) => {
       logger.logWarn(this.logPrefix + `${action} was aborted`, { ...ctx });
     });

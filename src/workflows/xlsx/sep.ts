@@ -1,8 +1,8 @@
 import { Readable } from 'stream';
 
+import XLSXWorkflowManager from './XLSXWorkflowManager';
 import { SEPXLSXData, XLSXMetaBase } from '../../types';
 import { newWorkBook, appendSheet, finalizeAndCreate } from '../../xlsx';
-import XLSXWorkflowManager from './XLSXWorkflowManager';
 
 const generateSEPXLSX =
   ({ data, meta }: { data: SEPXLSXData; meta: XLSXMetaBase }) =>

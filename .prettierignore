@@ -4,3 +4,4 @@ node_modules/
 scripts/
 .github/workflows/
 templates/css/bootstrap.min.css
+templates/js/paged.polyfill.min.js

@@ -1,5 +1,6 @@
 import { logger } from '@user-office-software/duo-logger';
 
+import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
 import { FileMetadata } from '../../../models/File';
 import { generatePdfFromHtml } from '../../../pdf';
 import { renderTemplate, renderHeaderFooter } from '../../../template';
@@ -12,7 +13,6 @@ import {
   GenericTemplate,
 } from '../../../types';
 import PdfFactory from '../PdfFactory';
-import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
 
 export class AutoProposalPdfFactory extends PdfFactory<
   ProposalPDFData,
@@ -27,6 +27,14 @@ export class AutoProposalPdfFactory extends PdfFactory<
       genericTemplates: [],
       attachments: [],
       technicalReview: '',
+    },
+    toc: {
+      proposal: [],
+      questionnaires: [],
+      samples: [],
+      genericTemplates: [],
+      attachments: [],
+      technicalReview: [],
     },
     attachmentsFileMeta: [],
     attachments: [],
@@ -112,24 +120,29 @@ export class AutoProposalPdfFactory extends PdfFactory<
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
 
-    this.once('rendered:proposal', (pdfPath) => {
-      this.meta.files.proposal = pdfPath;
+    this.once('rendered:proposal', (pdf) => {
+      this.meta.files.proposal = pdf.pdfPath;
+      this.meta.toc.proposal = pdf.toc;
       this.emit('taskFinished', 'render:proposal');
     });
 
-    this.once('rendered:technicalReview', (pdfPath) => {
-      this.meta.files.technicalReview = pdfPath;
+    this.once('rendered:technicalReview', (pdf) => {
+      this.meta.files.technicalReview = pdf.pdfPath;
+      this.meta.toc.technicalReview = pdf.toc;
+
       this.emit('taskFinished', 'render:technicalReview');
     });
 
-    this.on('rendered:questionary', (pdfPath) => {
-      this.meta.files.questionnaires.push(pdfPath);
+    this.on('rendered:questionary', (pdf) => {
+      this.meta.files.questionnaires.push(pdf.pdfPath);
+      this.meta.toc.questionnaires.push(pdf.toc);
 
       this.emit('taskFinished', 'render:questionnaires');
     });
 
-    this.on('rendered:sample', (pdfPath) => {
-      this.meta.files.samples.push(pdfPath);
+    this.on('rendered:sample', (pdf) => {
+      this.meta.files.samples.push(pdf.pdfPath);
+      this.meta.toc.samples.push(pdf.toc);
 
       if (this.meta.files.samples.length === samples.length) {
         this.emit('taskFinished', 'render:samples');
@@ -158,6 +171,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
         if (questionarySteps.length > 0) {
           this.emit(
             'render:questionnaires',
+            proposal,
             questionarySteps,
             genericTemplates,
             attachmentsFileMeta
@@ -165,7 +179,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
         }
 
         if (samples.length > 0) {
-          this.emit('render:samples', samples, attachmentsFileMeta);
+          this.emit('render:samples', proposal, samples, attachmentsFileMeta);
         }
 
         if (this.countedPagesMeta.attachments.waitFor === 0) {
@@ -193,7 +207,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
     this.emit('render:proposal', proposal, principalInvestigator, coProposers);
 
     if (technicalReview) {
-      this.emit('render:technicalReview', technicalReview);
+      this.emit('render:technicalReview', proposal, technicalReview);
     }
 
     if (attachments.length > 0) {
@@ -203,6 +217,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
       if (questionarySteps.length > 0) {
         this.emit(
           'render:questionnaires',
+          proposal,
           questionarySteps,
           genericTemplates,
           []
@@ -210,7 +225,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
       }
 
       if (samples.length > 0) {
-        this.emit('render:samples', samples, []);
+        this.emit('render:samples', proposal, samples, []);
       }
     }
   }
@@ -232,20 +247,23 @@ export class AutoProposalPdfFactory extends PdfFactory<
         principalInvestigator,
         coProposers,
       });
-      const renderedHeaderFooter = await renderHeaderFooter();
+      const renderedHeaderFooter = await renderHeaderFooter(
+        proposal.proposalId
+      );
 
-      const pdfPath = await generatePdfFromHtml(renderedProposalHtml, {
+      const pdf = await generatePdfFromHtml(renderedProposalHtml, {
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdfPath, 'proposal');
-      this.emit('rendered:proposal', pdfPath);
+      this.emit('countPages', pdf.pdfPath, 'proposal');
+      this.emit('rendered:proposal', pdf);
     } catch (e) {
       this.emit('error', e, 'renderProposal');
     }
   }
 
   private async renderQuestionarySteps(
+    proposal: Proposal,
     questionarySteps: QuestionaryStep[],
     genericTemplates: GenericTemplate[],
     attachmentsFileMeta: FileMetadata[]
@@ -261,24 +279,29 @@ export class AutoProposalPdfFactory extends PdfFactory<
         'questionary-step.hbs',
         { steps: questionarySteps, genericTemplates, attachmentsFileMeta }
       );
-      const renderedHeaderFooter = await renderHeaderFooter();
+      const renderedHeaderFooter = await renderHeaderFooter(
+        proposal.proposalId
+      );
 
-      const pdfPath = await generatePdfFromHtml(renderedProposalQuestion, {
+      const pdf = await generatePdfFromHtml(renderedProposalQuestion, {
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdfPath, 'questionnaires');
-      this.emit('rendered:questionary', pdfPath);
+      this.emit('countPages', pdf.pdfPath, 'questionnaires');
+      this.emit('rendered:questionary', pdf);
     } catch (e) {
       this.emit('error', e, 'renderQuestionarySteps');
     }
   }
 
-  private async renderTechnicalReview(technicalReview: {
-    status: string;
-    timeAllocation: number;
-    publicComment: string;
-  }) {
+  private async renderTechnicalReview(
+    proposal: Proposal,
+    technicalReview: {
+      status: string;
+      timeAllocation: number;
+      publicComment: string;
+    }
+  ) {
     if (this.stopped) {
       this.emit('aborted', 'renderTechnicalReview');
 
@@ -290,20 +313,23 @@ export class AutoProposalPdfFactory extends PdfFactory<
         'technical-review.hbs',
         { technicalReview }
       );
-      const renderedHeaderFooter = await renderHeaderFooter();
+      const renderedHeaderFooter = await renderHeaderFooter(
+        proposal.proposalId
+      );
 
-      const pdfPath = await generatePdfFromHtml(renderedTechnicalReview, {
+      const pdf = await generatePdfFromHtml(renderedTechnicalReview, {
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdfPath, 'technicalReview');
-      this.emit('rendered:technicalReview', pdfPath);
+      this.emit('countPages', pdf.pdfPath, 'technicalReview');
+      this.emit('rendered:technicalReview', pdf);
     } catch (e) {
       this.emit('error', e, 'renderTechnicalReview');
     }
   }
 
   private async renderSamples(
+    proposal: Proposal,
     samples: ProposalSampleData[],
     attachmentsFileMeta: FileMetadata[]
   ) {
@@ -320,14 +346,16 @@ export class AutoProposalPdfFactory extends PdfFactory<
           sampleQuestionaryFields,
           attachmentsFileMeta,
         });
-        const renderedHeaderFooter = await renderHeaderFooter();
+        const renderedHeaderFooter = await renderHeaderFooter(
+          proposal.proposalId
+        );
 
-        const pdfPath = await generatePdfFromHtml(renderedProposalSample, {
+        const pdf = await generatePdfFromHtml(renderedProposalSample, {
           pdfOptions: renderedHeaderFooter,
         });
 
-        this.emit('countPages', pdfPath, 'samples');
-        this.emit('rendered:sample', pdfPath);
+        this.emit('countPages', pdf.pdfPath, 'samples');
+        this.emit('rendered:sample', pdf);
       }
     } catch (e) {
       this.emit('error', e, 'renderSamples');

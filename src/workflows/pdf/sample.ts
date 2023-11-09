@@ -1,11 +1,11 @@
 import { logger } from '@user-office-software/duo-logger';
 
+import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
+import PdfWorkflowManager from './PdfWorkflowManager';
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml, TableOfContents } from '../../pdf';
 import { renderTemplate, renderHeaderFooter } from '../../template';
-import { Answer, Sample, SamplePDFData, Attachment } from '../../types';
-import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
-import PdfWorkflowManager from './PdfWorkflowManager';
+import { Answer, Sample, SamplePDFData, Attachment, Role } from '../../types';
 
 type SamplePDFMeta = {
   files: {
@@ -73,8 +73,8 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
 
-    this.once('rendered:sample', (pdfPath) => {
-      this.meta.files.sample = pdfPath;
+    this.once('rendered:sample', (pdf) => {
+      this.meta.files.sample = pdf.pdfPath;
       this.emit('taskFinished', 'render:sample');
     });
 
@@ -153,23 +153,27 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
       });
       const renderedHeaderFooter = await renderHeaderFooter();
 
-      const pdfPath = await generatePdfFromHtml(renderedSampleHtml, {
+      const pdf = await generatePdfFromHtml(renderedSampleHtml, {
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdfPath, 'sample');
-      this.emit('rendered:sample', pdfPath);
+      this.emit('countPages', pdf.pdfPath, 'sample');
+      this.emit('rendered:sample', pdf);
     } catch (e) {
       this.emit('error', e, 'renderSample');
     }
   }
 }
 
-export default function newSamplePdfWorkflowManager(data: SamplePDFData[]) {
+export default function newSamplePdfWorkflowManager(
+  data: SamplePDFData[],
+  userRole: Role
+) {
   const manager = new PdfWorkflowManager<SamplePDFData, SamplePDFMeta>(
     SamplePdfFactory,
     data,
-    (data) => data.sample.id
+    (data) => data.sample.id,
+    userRole
   );
 
   manager.onFinalizePDF(

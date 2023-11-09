@@ -1,8 +1,8 @@
 import { Readable } from 'stream';
 
+import XLSXWorkflowManager from './XLSXWorkflowManager';
 import { ProposalXLSXData, XLSXMetaBase } from '../../types';
 import { create } from '../../xlsx';
-import XLSXWorkflowManager from './XLSXWorkflowManager';
 
 const generateProposalXLSX =
   ({ data, meta }: { data: ProposalXLSXData[]; meta: XLSXMetaBase }) =>

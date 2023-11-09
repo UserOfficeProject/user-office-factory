@@ -47,6 +47,18 @@ const template = `
 <p>Extra line for tests
 `;
 
+const header = `
+<div>
+  Header
+</div>
+`;
+
+const footer = `
+<div>
+  Footer
+</div>
+`;
+
 export default {
   proposal_test_1: [
     {
@@ -112,6 +124,9 @@ export default {
                 dataType: 'DATE',
                 question: 'Date question',
                 naturalKey: 'date_1',
+              },
+              config: {
+                includeTime: true,
               },
               value: '2020-10-27T15:06:23.849Z',
             },
@@ -312,7 +327,10 @@ export default {
       ],
       pdfTemplate: {
         templateData: template,
+        templateHeader: header,
+        templateFootyer: footer,
       },
+      sepReviews: [],
     },
   ],
 };

@@ -11,6 +11,9 @@ export type Attachment = { id: string; figure?: string; caption?: string };
 
 export type PdfTemplate = {
   templateData: string;
+  templateHeader: string;
+  templateFooter: string;
+  templateSampleDeclaration: string;
 };
 
 export type ProposalPDFData = {
@@ -26,6 +29,7 @@ export type ProposalPDFData = {
     timeAllocation: number;
     publicComment: string;
   };
+  sepReviews?: Review[];
   pdfTemplate: PdfTemplate | null;
 };
 
@@ -61,6 +65,16 @@ export interface Proposal {
   commentForManagement: string;
   notified: boolean;
   submitted: boolean;
+}
+
+export interface Review {
+  id: number;
+  proposalPk: number;
+  userID: number;
+  comment: string;
+  grade: number;
+  status: number;
+  sepID: number;
 }
 
 export interface Topic {
@@ -189,4 +203,10 @@ export interface GenericTemplate {
 export interface GenericTemplateAnswer {
   questionId: string;
   questionaryId: number;
+}
+
+export interface Role {
+  shortCode: string;
+  title: string;
+  id: number;
 }

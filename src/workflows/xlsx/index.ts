@@ -1,6 +1,6 @@
-import { XLSXMetaBase } from '../../types';
 import newProposalXLSXWorkflowManager from './proposal';
 import newSEPXLSXWorkflowManager from './sep';
+import { XLSXMetaBase } from '../../types';
 
 export default function getXLSXWorkflowManager(
   xlsxType: string,

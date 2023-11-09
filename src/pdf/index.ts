@@ -2,10 +2,10 @@ import { promises } from 'fs';
 
 import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
-import puppeteer, { Browser } from 'puppeteer';
+import puppeteer, { Browser, PDFOptions } from 'puppeteer';
 
-import { generateTmpPath } from '../util/fileSystem';
 import { createToC } from './pdfTableOfContents';
+import { generateTmpPath } from '../util/fileSystem';
 
 export type TableOfContents = {
   title: string;
@@ -26,7 +26,7 @@ logger.logInfo('Launching puppeteer with ', { args: launchOptions });
 // TODO: create browser lazily while keeping track of it
 // so we don't end up with dozens of browsers
 puppeteer
-  .launch({ args: launchOptions })
+  .launch({ args: launchOptions, headless: 'new' })
   .then((inst) => (browser = inst))
   .catch((e) => {
     logger.logException('Failed to start browser puppeteer', e);
@@ -34,7 +34,7 @@ puppeteer
 
 export async function generatePdfFromHtml(
   html: string,
-  { pdfOptions }: { pdfOptions?: puppeteer.PDFOptions } = {}
+  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ) {
   const name = generateTmpPath();
 
@@ -49,10 +49,14 @@ export async function generatePdfFromHtml(
 
   const start = Date.now();
   const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'load' });
+  await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.emulateMediaType('screen');
+
+  const headingsInfo = await page.evaluate(extractHeadingsInfo);
+
   await page.pdf({
     path: pdfPath,
+    format: 'A4',
     margin: { top: 0, left: 0, bottom: 0, right: 0 },
     ...pdfOptions,
   });
@@ -64,12 +68,90 @@ export async function generatePdfFromHtml(
     runtime: Date.now() - start,
   });
 
-  return pdfPath;
+  const toc = generateToc(headingsInfo);
+
+  return { pdfPath, toc };
+}
+
+// Utility function to extract information about headings and their positions using page.evaluate()
+function extractHeadingsInfo() {
+  const headings = document.querySelectorAll('li.list-index-element');
+  const headingsInfo: {
+    pageTitle: string;
+    pageNumber: string;
+    pageParent: string | null;
+  }[] = [];
+  if (!headings) return headingsInfo;
+
+  headings.forEach((heading) => {
+    const pageTitleElement =
+      heading.querySelector<HTMLElement>('span.index-value');
+    const pageNumberElement = heading
+      .querySelector<HTMLElement>('span.links-pages')
+      ?.querySelector<HTMLElement>('span.link-page')
+      ?.querySelector<HTMLElement>('a');
+
+    if (!pageTitleElement || !pageNumberElement) return;
+    const pageTitle = pageTitleElement.innerText;
+    const pageNumber = window
+      .getComputedStyle(pageNumberElement, ':after')
+      .counterReset?.split(' ')[1];
+    const pageParent = heading.getAttribute('data-list-index-parent');
+    headingsInfo.push({ pageTitle, pageNumber, pageParent });
+  });
+
+  const toc = document.querySelector('div#page-1');
+  if (toc) {
+    toc.remove();
+  }
+
+  return headingsInfo;
+}
+
+//utility function to generate toc based on headingsInfo. The headingsinfo also contains the link to the parent heading as well. The parent can be found at any level
+function generateToc(
+  headingsInfo: {
+    pageTitle: string;
+    pageNumber: string;
+    pageParent: string | null;
+  }[]
+) {
+  const toc: TableOfContents[] = [];
+  headingsInfo.forEach((headingInfo) => {
+    const { pageTitle, pageNumber, pageParent } = headingInfo;
+    const page = {
+      title: pageTitle,
+      page: parseInt(pageNumber) - 2,
+      children: [],
+    };
+    if (pageParent) {
+      insertPageIntoParent(toc, pageParent, page);
+    } else {
+      toc.push(page);
+    }
+  });
+
+  return toc;
+}
+
+//utility function to insert a page into its parent
+function insertPageIntoParent(
+  toc: TableOfContents[],
+  parent: string,
+  child: TableOfContents
+) {
+  toc.forEach((tocItem) => {
+    if (tocItem.title === parent) {
+      tocItem.children.push(child);
+    } else {
+      insertPageIntoParent(tocItem.children, parent, child);
+    }
+  });
 }
 
 export async function generatePdfFromLink(
   link: string,
-  { pdfOptions }: { pdfOptions?: puppeteer.PDFOptions } = {}
+  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ) {
   const name = generateTmpPath();
 
@@ -85,8 +167,8 @@ export async function generatePdfFromLink(
   await page.goto(link, { waitUntil: 'load' });
 
   const imgHandle = await page.$('img');
-  const width = await page.evaluate((img) => img.width, imgHandle);
-  const height = await page.evaluate((img) => img.height, imgHandle);
+  const width = (await page.evaluate((img) => img?.width, imgHandle)) || 0;
+  const height = (await page.evaluate((img) => img?.height, imgHandle)) || 0;
 
   await page.pdf({
     path: pdfPath,

@@ -1,22 +1,39 @@
-import { TableOfContents } from '../../pdf';
-import { ProposalPDFData } from '../../types';
 import PdfWorkflowManager from './PdfWorkflowManager';
 import { AutoProposalPdfFactoryPicker } from './proposal/ProposalPdfFactoryPicker';
 import { ProposalPDFMeta } from './proposal/ProposalPDFMeta';
+import { TableOfContents } from '../../pdf';
+import { ProposalPDFData, Role } from '../../types';
 
-export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
+export default function newProposalPdfWorkflowManager(
+  data: ProposalPDFData[],
+  userRole: Role
+) {
   const manager = new PdfWorkflowManager<ProposalPDFData, ProposalPDFMeta>(
     new AutoProposalPdfFactoryPicker(),
     data,
-    (data) => data.proposal.primaryKey
+    (data) => data.proposal.primaryKey,
+    userRole
   );
+
+  //Increase the page number by the step.
+  function stepUpToc(toc: TableOfContents[], step: number): TableOfContents[] {
+    if (!toc) {
+      return [];
+    }
+
+    return toc.map((t) => ({
+      ...t,
+      page: t.page != undefined ? t.page + step : undefined,
+      children: stepUpToc(t.children, step),
+    }));
+  }
 
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
       const toc: TableOfContents = {
         title: `Proposal number: ${data.proposal.proposalId}`,
         page: pageNumber,
-        children: [],
+        children: stepUpToc(meta.toc.proposal, pageNumber) || [],
       };
 
       pageNumber +=
@@ -24,12 +41,12 @@ export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
 
       filePaths.push(meta.files.proposal);
 
-      meta.files.questionnaires.forEach((questionary) => {
+      meta.files.questionnaires.forEach((questionary, index) => {
         filePaths.push(questionary);
         toc.children.push({
           title: 'Questionary', // data.questionarySteps[qIdx].topic.title,
           page: pageNumber,
-          children: [],
+          children: stepUpToc(meta.toc.questionnaires[index], pageNumber),
         });
 
         pageNumber +=
@@ -48,7 +65,7 @@ export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
           sampleToC.children.push({
             title: `Sample: ${data.samples[qIdx].sample.title}`,
             page: pageNumber,
-            children: [],
+            children: stepUpToc(meta.toc.samples[qIdx], pageNumber),
           });
 
           pageNumber += metaCountedPages.samples.countedPagesPerPdf[sample];
@@ -92,7 +109,7 @@ export default function newProposalPdfWorkflowManager(data: ProposalPDFData[]) {
         toc.children.push({
           title: 'Technical Review',
           page: pageNumber,
-          children: [],
+          children: stepUpToc(meta.toc.technicalReview, pageNumber),
         });
 
         pageNumber +=

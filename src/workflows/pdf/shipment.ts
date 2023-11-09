@@ -3,12 +3,12 @@ import { Canvas } from 'canvas';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
 
+import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
+import PdfWorkflowManager from './PdfWorkflowManager';
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml } from '../../pdf';
 import { renderTemplate } from '../../template';
-import { Attachment, Shipment, ShipmentPDFData } from '../../types';
-import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
-import PdfWorkflowManager from './PdfWorkflowManager';
+import { Attachment, Role, Shipment, ShipmentPDFData } from '../../types';
 
 type ShipmentPDFMeta = {
   files: {
@@ -109,22 +109,26 @@ export class ShipmentPdfFactory extends PdfFactory<
         containerIdQRCode,
       });
 
-      const pdfPath = await generatePdfFromHtml(renderedShipmentHtml, {
+      const pdf = await generatePdfFromHtml(renderedShipmentHtml, {
         pdfOptions: { printBackground: true },
       });
 
-      this.emit('rendered:shipment', pdfPath);
+      this.emit('rendered:shipment', pdf.pdfPath);
     } catch (e) {
       this.emit('error', e, 'renderShipment');
     }
   }
 }
 
-export default function newShipmentPdfWorkflowManager(data: ShipmentPDFData[]) {
+export default function newShipmentPdfWorkflowManager(
+  data: ShipmentPDFData[],
+  userRole: Role
+) {
   const manager = new PdfWorkflowManager<ShipmentPDFData, ShipmentPDFMeta>(
     ShipmentPdfFactory,
     data,
-    (data) => data.shipment.id
+    (data) => data.shipment.id,
+    userRole
   );
 
   manager.onFinalizePDF(({ meta, filePaths }) => {
