@@ -13,17 +13,17 @@ beforeAll(async () => {
   await setTimeout(5000);
 }, 10000);
 
-describe('SEP XLSX', () => {
+describe('Fap XLSX', () => {
   test(
-    'should create SEP XLSX with the provided values',
+    'should create Fap XLSX with the provided values',
     () => {
       return new Promise((done) => {
         const xlsxPath = `${generateTmpPath()}.xlsx`;
         const ws = createWriteStream(xlsxPath);
 
         const r = request(app)
-          .post('/generate/xlsx/sep')
-          .send(testPayloads.sep_test_1);
+          .post('/generate/xlsx/fap')
+          .send(testPayloads.fap_test_1);
 
         r.on('response', (resp) => {
           expect(resp.status).toBe(200);
@@ -42,9 +42,9 @@ describe('SEP XLSX', () => {
               }
             );
 
-            expect(header).toEqual(testPayloads.sep_test_1.meta.columns);
+            expect(header).toEqual(testPayloads.fap_test_1.meta.columns);
 
-            const data = testPayloads.sep_test_1.data[sheetIndx];
+            const data = testPayloads.fap_test_1.data[sheetIndx];
             data.rows.forEach((dataRow, indx) =>
               expect(rows[indx]).toEqual(dataRow)
             );

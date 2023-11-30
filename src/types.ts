@@ -2,7 +2,7 @@ export type MetaBase = { collectionFilename: string; singleFilename: string };
 export type XLSXMetaBase = MetaBase & { columns: string[] };
 
 export type ProposalXLSXData = Array<string | number>;
-export type SEPXLSXData = Array<{
+export type FapXLSXData = Array<{
   sheetName: string;
   rows: Array<string | number>;
 }>;
@@ -29,7 +29,7 @@ export type ProposalPDFData = {
     timeAllocation: number;
     publicComment: string;
   };
-  sepReviews?: Review[];
+  fapReviews?: Review[];
   pdfTemplate: PdfTemplate | null;
 };
 
@@ -74,7 +74,7 @@ export interface Review {
   comment: string;
   grade: number;
   status: number;
-  sepID: number;
+  fapID: number;
 }
 
 export interface Topic {
