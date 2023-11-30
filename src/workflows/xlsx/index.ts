@@ -1,5 +1,5 @@
+import newFapXLSXWorkflowManager from './fap';
 import newProposalXLSXWorkflowManager from './proposal';
-import newSEPXLSXWorkflowManager from './sep';
 import { XLSXMetaBase } from '../../types';
 
 export default function getXLSXWorkflowManager(
@@ -9,8 +9,8 @@ export default function getXLSXWorkflowManager(
   switch (xlsxType) {
     case 'proposal':
       return newProposalXLSXWorkflowManager(properties);
-    case 'sep':
-      return newSEPXLSXWorkflowManager(properties);
+    case 'fap':
+      return newFapXLSXWorkflowManager(properties);
     default:
       throw new Error(`Unknown XLSX type: ${xlsxType}`);
   }
