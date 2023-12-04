@@ -35,7 +35,7 @@
     "gm": "^1.25.0",
     "handlebars": "^4.7.8",
     "http-errors": "^2.0.0",
-    "jsbarcode": "^3.11.5",
+    "jsbarcode": "^3.11.6",
     "knex": "^3.0.1",
     "morgan": "^1.10.0",
     "muhammara": "^4.0.0",
