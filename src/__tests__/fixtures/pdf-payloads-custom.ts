@@ -330,7 +330,7 @@ export default {
         templateHeader: header,
         templateFootyer: footer,
       },
-      sepReviews: [],
+      fapReviews: [],
     },
   ],
 };
