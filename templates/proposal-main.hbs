@@ -24,7 +24,7 @@
 
         <span class="bold">Co-proposer:</span><br />
         {{#each coProposers}}
-          {{this.firstname}} {{this.lastname}}, {{#if principalInvestigator.organisation}}{{principalInvestigator.organisation}}{{else}}{{principalInvestigator.institution}}{{/if}}<br />
+          {{this.firstname}} {{this.lastname}}, {{#if this.organisation}}{{this.organisation}}{{else}}{{this.institution}}{{/if}}<br />
         {{/each}}
 
       </div>
