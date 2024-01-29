@@ -24,11 +24,11 @@ export type ProposalPDFData = {
   attachments: Attachment[];
   samples: ProposalSampleData[];
   genericTemplates: GenericTemplate[];
-  technicalReview?: {
+  technicalReviews: {
     status: string;
     timeAllocation: number;
     publicComment: string;
-  };
+  }[];
   fapReviews?: Review[];
   pdfTemplate: PdfTemplate | null;
 };

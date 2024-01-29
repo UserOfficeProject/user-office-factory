@@ -1,25 +1,31 @@
 {{#> layout}}
 
   <div class="container-fluid">
-    <div class="row">
-      <div class="col">
-        <span class="title">Technical Review</span><br />
-        <br />
+    {{#each technicalReviews}}
+      <div class="row">
+        <div class="col">
+          <span class="title">Technical Review</span><br />
+          <br />
 
-        <span class="bold">Status</span><br />
-        {{technicalReview.status}}<br />
-        <br />
+          <span class="bold">Instrument</span><br />
+          {{this.instrumentId}}<br />
+          <br />
 
-        <span class="bold">Time Allocation</span><br />
-        {{technicalReview.timeAllocation}} Days<br />
-        <br />
+          <span class="bold">Status</span><br />
+          {{this.status}}<br />
+          <br />
 
-        <span class="bold">Comment</span><br />
-        {{{technicalReview.publicComment}}}<br />
-        <br />
+          <span class="bold">Time Allocation</span><br />
+          {{this.timeAllocation}} Days<br />
+          <br />
 
+          <span class="bold">Comment</span><br />
+          {{{this.publicComment}}}<br />
+          <br />
+
+        </div>
       </div>
-    </div>
+    {{/each}}
   </div>
 
 {{/layout}}

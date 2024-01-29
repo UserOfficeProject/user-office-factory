@@ -48,7 +48,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
       principalInvestigator,
       coProposers,
       questionarySteps,
-      technicalReview,
+      technicalReviews,
       attachments,
       samples,
       genericTemplates,
@@ -61,7 +61,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
         countedPagesPerPdf: {},
       },
       technicalReview: {
-        waitFor: technicalReview ? 1 : 0,
+        waitFor: technicalReviews.length ? 1 : 0,
         countedPagesPerPdf: {},
       },
       samples: { waitFor: samples.length, countedPagesPerPdf: {} },
@@ -85,7 +85,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
       tasksNeeded.push('count-pages:questionnaires');
     }
 
-    if (technicalReview) {
+    if (technicalReviews.length > 0) {
       tasksNeeded.push('render:technicalReview');
       tasksNeeded.push('count-pages:technicalReview');
     }
@@ -206,8 +206,8 @@ export class AutoProposalPdfFactory extends PdfFactory<
      */
     this.emit('render:proposal', proposal, principalInvestigator, coProposers);
 
-    if (technicalReview) {
-      this.emit('render:technicalReview', proposal, technicalReview);
+    if (technicalReviews) {
+      this.emit('render:technicalReview', proposal, technicalReviews);
     }
 
     if (attachments.length > 0) {
@@ -296,11 +296,11 @@ export class AutoProposalPdfFactory extends PdfFactory<
 
   private async renderTechnicalReview(
     proposal: Proposal,
-    technicalReview: {
+    technicalReviews: {
       status: string;
       timeAllocation: number;
       publicComment: string;
-    }
+    }[]
   ) {
     if (this.stopped) {
       this.emit('aborted', 'renderTechnicalReview');
@@ -311,7 +311,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
     try {
       const renderedTechnicalReview = await renderTemplate(
         'technical-review.hbs',
-        { technicalReview }
+        { technicalReviews }
       );
       const renderedHeaderFooter = await renderHeaderFooter(
         proposal.proposalId
