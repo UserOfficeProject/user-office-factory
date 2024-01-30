@@ -28,6 +28,7 @@ export type ProposalPDFData = {
     status: string;
     timeAllocation: number;
     publicComment: string;
+    instrumentName: string;
   }[];
   fapReviews?: Review[];
   pdfTemplate: PdfTemplate | null;

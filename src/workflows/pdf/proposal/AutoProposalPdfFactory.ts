@@ -300,6 +300,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
       status: string;
       timeAllocation: number;
       publicComment: string;
+      instrumentName: string;
     }[]
   ) {
     if (this.stopped) {
