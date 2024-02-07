@@ -6,7 +6,7 @@
     "lib": [
       "ES2019",
       "esnext.asynciterable",
-      "DOM"
+      "DOM",
     ] /* Specify library files to be included in the compilation. */,
     "allowJs": true /* Allow javascript files to be compiled. */,
     // "checkJs": true,                       /* Report errors in .js files. */
@@ -57,8 +57,8 @@
     /* Experimental Options */
     "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
     "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/*.spec.ts", "build", "coverage"]
+  "exclude": ["node_modules", "**/*.spec.ts", "build", "coverage"],
 }
