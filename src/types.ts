@@ -170,7 +170,7 @@ export class Shipment {
     public created: Date,
     public proposalId: string,
     public callShortCode: string,
-    public instrumentShortCode: string,
+    public instrumentShortCodes: string,
     public weight: number,
     public width: number,
     public height: number,
