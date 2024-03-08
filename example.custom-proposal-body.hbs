@@ -86,8 +86,8 @@
                   <span
                     >{{ principalInvestigator.firstname }} {{
                     principalInvestigator.lastname }}, {{
-                    principalInvestigator.position }}, {{
-                    principalInvestigator.organisation }}</span
+                    principalInvestigator.position }}, {{#if principalInvestigator.organisation }}{{
+                      principalInvestigator.organisation }}{{else}}{{ principalInvestigator.institution }}{{/if}}</span
                   >
                 </div>
               </div>
@@ -99,8 +99,7 @@
                 <div class="col-8">
                   {{#each coProposers}}
                   <span
-                    >{{ this.firstname }} {{ this.lastname }}, {{
-                    this.organisation }}</span
+                    >{{ this.firstname }} {{ this.lastname }}, {{#if this.organisation }}{{ this.organisation }}{{else}}{{ this.institution }}{{/if}}</span
                   >
                   {{/each}}
                 </div>
