@@ -135,7 +135,7 @@ export interface BasicUser {
   id: number;
   firstname: string;
   lastname: string;
-  organisation: string;
+  institution: string;
   position: string;
   created: Date;
   placeholder: boolean;

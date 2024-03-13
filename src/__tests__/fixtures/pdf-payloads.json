@@ -17,19 +17,19 @@
       "principalInvestigator": {
         "firstname": "Foo",
         "lastname": "Bar",
-        "organisation": "Baz",
+        "institution": "Baz",
         "position": "Foobar"
       },
       "coProposers": [
         {
           "firstname": "Co Foo 1",
           "lastname": "Co Bar 1",
-          "organisation": "Co Baz 1"
+          "institution": "Co Baz 1"
         },
         {
           "firstname": "Co Foo 2",
           "lastname": "Co Bar 2",
-          "organisation": "Co Baz 2"
+          "institution": "Co Baz 2"
         }
       ],
       "attachments": [],
@@ -256,14 +256,14 @@
       "principalInvestigator": {
         "firstname": "Bar",
         "lastname": "Baz",
-        "organisation": "Foo AB",
+        "institution": "Foo AB",
         "position": "Foo"
       },
       "coProposers": [
         {
           "firstname": "Co Foo",
           "lastname": "Co Bar",
-          "organisation": "Co Baz"
+          "institution": "Co Baz"
         }
       ],
       "attachments": [],
