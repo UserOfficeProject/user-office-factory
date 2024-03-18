@@ -152,7 +152,7 @@ describe('Auto Proposal PDF', () => {
           expect(text).toMatch(/Questionary 1/);
 
           expect(text).toMatch(/Choose instrument/);
-          expect(text).toMatch(/Instrument 1, Instrument2/);
+          expect(text).toMatch(/Instrument 1, Instrument 2/);
 
           expect(text).toMatch(/Status\nPartially feasible/);
           expect(text).toMatch(/Time Allocation\n0 Days/);
