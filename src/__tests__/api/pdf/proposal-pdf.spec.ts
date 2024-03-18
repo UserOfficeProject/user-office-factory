@@ -102,11 +102,7 @@ describe('Auto Proposal PDF', () => {
           expect(text).toMatch(/Status\nOkey-ish/);
           expect(text).toMatch(/Time Allocation\n0 Days/);
 
-          /**
-           * NOTE: for some reason the last line is not extracted
-           *  for now don't check the last line
-           */
-          // expect(text).toMatch(/Comment\nSecond technical review comment/);
+          expect(text).toMatch(/Comment\nSecond technical review comment/);
 
           unlink(pdfPath, (err) => {
             expect(err).toBe(null);
