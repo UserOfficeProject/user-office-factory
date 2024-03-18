@@ -206,7 +206,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
      */
     this.emit('render:proposal', proposal, principalInvestigator, coProposers);
 
-    if (technicalReviews) {
+    if (technicalReviews.length) {
       this.emit('render:technicalReview', proposal, technicalReviews);
     }
 
