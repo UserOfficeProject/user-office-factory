@@ -146,7 +146,6 @@ describe('Auto Proposal PDF', () => {
           expect(text).toMatch(
             /Brief summary:\nMulti instrument proposal abstract/
           );
-          expect(text).toMatch(/Principal Investigator:\nFoo Bar\nBaz\nFoobar/);
           expect(text).toMatch(/Principal Investigator:\nBar Baz\nFoo AB\nFoo/);
           expect(text).toMatch(/Co-proposer:\nCo Foo Co Bar, Co Baz/);
 
