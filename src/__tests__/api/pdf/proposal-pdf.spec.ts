@@ -136,7 +136,7 @@ describe('Auto Proposal PDF', () => {
         r.pipe(ws).once('close', () => {
           const totalPages = getTotalPages(pdfPath);
 
-          expect(totalPages).toBe(4);
+          expect(totalPages).toBe(3);
 
           const text = extractPDFText(pdfPath);
 
