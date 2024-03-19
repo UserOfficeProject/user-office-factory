@@ -24,8 +24,14 @@ export default function extractPDFText(fileToRun: string) {
 
       buffer.push(placement.text);
     });
+
   }
 
+  // NOTE: For some reason the last line is not pushed and here we check if there is data left into the buffer we push the last bits.
+  if (buffer.length) {
+    lines.push(buffer);
+  }
+  
   let mergedLines = '';
 
   for (const line of lines) {
