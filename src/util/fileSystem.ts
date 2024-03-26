@@ -15,6 +15,10 @@ export function generateTmpPath() {
   return join(tmpDir, `${name}`);
 }
 
+export function generateTmpPathWithName(name: string) {
+  return join(tmpDir, `${name}`);
+}
+
 export function failSafeDeleteFiles(filePaths: string[]) {
   filePaths.forEach((filePath) =>
     unlink(filePath, (err) => {
