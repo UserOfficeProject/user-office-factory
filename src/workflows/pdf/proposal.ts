@@ -6,7 +6,8 @@ import { ProposalPDFData, Role } from '../../types';
 
 export default function newProposalPdfWorkflowManager(
   data: ProposalPDFData[],
-  userRole: Role
+  userRole: Role,
+  zipDownload?: boolean
 ) {
   const manager = new PdfWorkflowManager<ProposalPDFData, ProposalPDFMeta>(
     new AutoProposalPdfFactoryPicker(),
@@ -123,6 +124,14 @@ export default function newProposalPdfWorkflowManager(
       return pageNumber;
     }
   );
+
+  manager.onFinalizeFileName(({ data }) => {
+    return `${data.proposal.proposalId}_${data.principalInvestigator.lastname}_${new Date(data.proposal.created).getUTCFullYear()}.pdf`;
+  });
+
+  manager.onFinalizeDownloadType(() => {
+    return zipDownload !== undefined ? zipDownload : false;
+  });
 
   manager.start();
 
