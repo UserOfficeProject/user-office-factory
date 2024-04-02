@@ -2,10 +2,10 @@ const template = `
 <p>Custom template
 <p>Proposal title: {{ proposal.title }}
 <p>Proposal ID: {{ proposal.proposalId }}
-<p>PI: {{ principalInvestigator.firstname }} {{ principalInvestigator.lastname }} {{ principalInvestigator.organisation }} {{ principalInvestigator.position }}
+<p>PI: {{ principalInvestigator.firstname }} {{ principalInvestigator.lastname }} {{ principalInvestigator.institution }} {{ principalInvestigator.position }}
 <p>CoIs:
 {{#each coProposers}}
-  {{ firstname }} {{ lastname }} ({{organisation}}){{#unless @last}},{{/unless}}
+  {{ firstname }} {{ lastname }} ({{institution}}){{#unless @last}},{{/unless}}
 {{/each}}
 
 <p>Boolean question 1: {{ answers.boolean_1 }}
@@ -67,6 +67,7 @@ export default {
         status: 'Okey',
         timeAllocation: 30,
         publicComment: 'Technical review lorem ipsum',
+        instrumentName: 'Instrument 1',
       },
       proposal: {
         id: 1,
@@ -77,19 +78,19 @@ export default {
       principalInvestigator: {
         firstname: 'Foo',
         lastname: 'Bar',
-        organisation: 'Baz',
+        institution: 'Baz',
         position: 'Foobar',
       },
       coProposers: [
         {
           firstname: 'Co Foo 1',
           lastname: 'Co Bar 1',
-          organisation: 'Co Baz 1',
+          institution: 'Co Baz 1',
         },
         {
           firstname: 'Co Foo 2',
           lastname: 'Co Bar 2',
-          organisation: 'Co Baz 2',
+          institution: 'Co Baz 2',
         },
       ],
       attachments: [],

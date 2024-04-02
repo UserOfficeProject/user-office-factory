@@ -44,11 +44,7 @@ describe('Sample PDF', () => {
           expect(text).toMatch(/Status:\nNot evaluated/);
           expect(text).toMatch(/Comment:/);
 
-          /**
-           * NOTE: for some reason the last line is not extracted
-           *  for now don't check the last line
-           */
-          // expect(text).toMatch(/Safety foo bar/);
+          expect(text).toMatch(/Safety foo bar/);
 
           unlink(pdfPath, (err) => {
             expect(err).toBe(null);

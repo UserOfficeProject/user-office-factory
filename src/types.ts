@@ -24,11 +24,12 @@ export type ProposalPDFData = {
   attachments: Attachment[];
   samples: ProposalSampleData[];
   genericTemplates: GenericTemplate[];
-  technicalReview?: {
+  technicalReviews: {
     status: string;
     timeAllocation: number;
     publicComment: string;
-  };
+    instrumentName: string;
+  }[];
   fapReviews?: Review[];
   pdfTemplate: PdfTemplate | null;
 };
@@ -134,7 +135,7 @@ export interface BasicUser {
   id: number;
   firstname: string;
   lastname: string;
-  organisation: string;
+  institution: string;
   position: string;
   created: Date;
   placeholder: boolean;
@@ -169,7 +170,7 @@ export class Shipment {
     public created: Date,
     public proposalId: string,
     public callShortCode: string,
-    public instrumentShortCode: string,
+    public instrumentShortCodes: string,
     public weight: number,
     public width: number,
     public height: number,

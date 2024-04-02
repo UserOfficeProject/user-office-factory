@@ -18,15 +18,15 @@
         <h2 class="m-0 text-left font-weight-bold">{{shipment.callShortCode}}</h2>
       </div>
       <div class="col xs-6 p-2">
-        <h2 class="m-0 text-right font-weight-bold">{{shipment.instrumentShortCode}}</h2>
+        <h2 class="m-0 text-right font-weight-bold">{{shipment.instrumentShortCodes}}</h2>
       </div>
     </div>
     <div class="row border border-dark border-left-0 border-right-0">
       <div class="col text-left p-3">
-        <img src="{{containerIdQRCode}}">
+        <img class="img-fluid" src="{{containerIdQRCode}}">
       </div>
-      <div class="col text-right p-3" style="background-color: :burlywood;">
-        <img src="{{containerIdBarcode}}">
+      <div class="col text-right p-3">
+        <img class="img-fluid" src="{{containerIdBarcode}}">
       </div>
     </div>
 

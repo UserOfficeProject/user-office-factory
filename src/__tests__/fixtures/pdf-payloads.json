@@ -2,11 +2,14 @@
   "proposal_test_1": [
     {
       "samples": [],
-      "technicalReview": {
-        "status": "Okey",
-        "timeAllocation": 30,
-        "publicComment": "Technical review lorem ipsum"
-      },
+      "technicalReviews": [
+        {
+          "status": "Okey",
+          "timeAllocation": 30,
+          "publicComment": "Technical review lorem ipsum",
+          "instrumentName": "Instrument 1"
+        }
+      ],
       "proposal": {
         "id": 1,
         "title": "Test proposal",
@@ -16,19 +19,19 @@
       "principalInvestigator": {
         "firstname": "Foo",
         "lastname": "Bar",
-        "organisation": "Baz",
+        "institution": "Baz",
         "position": "Foobar"
       },
       "coProposers": [
         {
           "firstname": "Co Foo 1",
           "lastname": "Co Bar 1",
-          "organisation": "Co Baz 1"
+          "institution": "Co Baz 1"
         },
         {
           "firstname": "Co Foo 2",
           "lastname": "Co Bar 2",
-          "organisation": "Co Baz 2"
+          "institution": "Co Baz 2"
         }
       ],
       "attachments": [],
@@ -240,11 +243,14 @@
           "sampleQuestionaryFields": []
         }
       ],
-      "technicalReview": {
-        "status": "Okey-ish",
-        "timeAllocation": 0,
-        "publicComment": "Second technical review comment"
-      },
+      "technicalReviews": [
+        {
+          "status": "Okey-ish",
+          "timeAllocation": 0,
+          "publicComment": "Second technical review comment",
+          "instrumentName": "Instrument 1"
+        }
+      ],
       "proposal": {
         "id": 2,
         "title": "Second proposal",
@@ -254,14 +260,14 @@
       "principalInvestigator": {
         "firstname": "Bar",
         "lastname": "Baz",
-        "organisation": "Foo AB",
+        "institution": "Foo AB",
         "position": "Foo"
       },
       "coProposers": [
         {
           "firstname": "Co Foo",
           "lastname": "Co Bar",
-          "organisation": "Co Baz"
+          "institution": "Co Baz"
         }
       ],
       "attachments": [],
@@ -290,6 +296,65 @@
                   "status": "Risky"
                 }
               ]
+            }
+          ]
+        }
+      ],
+      "genericTemplates": [],
+      "fapReviews": []
+    }
+  ],
+  "multi_instrument_proposal_1": [
+    {
+      "samples": [],
+      "technicalReviews": [
+        {
+          "status": "Partially feasible",
+          "timeAllocation": 0,
+          "publicComment": "First technical review comment",
+          "instrumentName": "Instrument 1"
+        },
+        {
+          "status": "Feasible",
+          "timeAllocation": 1,
+          "publicComment": "Second technical review comment",
+          "instrumentName": "Instrument 2"
+        }
+      ],
+      "proposal": {
+        "id": 3,
+        "title": "Multi instrument proposal",
+        "proposalId": "888888",
+        "abstract": "Multi instrument proposal abstract"
+      },
+      "principalInvestigator": {
+        "firstname": "Bar",
+        "lastname": "Baz",
+        "institution": "Foo AB",
+        "position": "Foo"
+      },
+      "coProposers": [
+        {
+          "firstname": "Co Foo",
+          "lastname": "Co Bar",
+          "institution": "Co Baz"
+        }
+      ],
+      "attachments": [],
+      "questionarySteps": [
+        {
+          "topic": {
+            "title": "Questionary 1"
+          },
+          "fields": [
+            {
+              "question": {
+                "id": "instrument_picker_1710514032862",
+                "naturalKey": "instrument_picker_1710514032862",
+                "dataType": "INSTRUMENT_PICKER",
+                "question": "Choose instrument"
+              },
+              "value": "Instrument 1, Instrument 2"
             }
           ]
         }
