@@ -223,7 +223,7 @@ export function writeToCWithName(
   const pdfPath = `${generateTmpPathWithName(name)}`;
   createToC(inPath, pdfPath, toc);
 
-  logger.logDebug('[writeToC] ToC created', { inPath, pdfPath });
+  logger.logDebug('[writeToCWithName] ToC created', { inPath, pdfPath });
 
   return pdfPath;
 }
