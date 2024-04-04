@@ -134,14 +134,6 @@ export default class ZipWorkflowManager<
     const stream = createWriteStream(outPath);
 
     return new Promise<string>(async (resolve, reject) => {
-      stream.on('close', () => {
-        logger.logDebug(
-          `${
-            this.logPrefix
-          } zip file has been finalized and is ${archive.pointer()} total bytes`,
-          {}
-        );
-      });
       archive.on('error', (err) => {
         return reject(err);
       });
@@ -166,6 +158,13 @@ export default class ZipWorkflowManager<
       }
       archive.pipe(stream);
       stream.on('close', () => {
+        logger.logDebug(
+          `${
+            this.logPrefix
+          } zip file has been finalized and is ${archive.pointer()} total bytes`,
+          {}
+        );
+
         return resolve(outPath);
       });
       archive.finalize();
