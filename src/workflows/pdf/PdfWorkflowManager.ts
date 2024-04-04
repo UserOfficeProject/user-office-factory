@@ -307,14 +307,6 @@ export default class PdfWorkflowManager<
     const stream = createWriteStream(outPath);
 
     return new Promise<string>(async (resolve, reject) => {
-      stream.on('close', () => {
-        logger.logDebug(
-          `${
-            this.logPrefix
-          } zip file has been finalized and is ${archive.pointer()} total bytes`,
-          {}
-        );
-      });
       archive.on('error', (err) => {
         return reject(err);
       });
@@ -327,6 +319,13 @@ export default class PdfWorkflowManager<
 
       archive.pipe(stream);
       stream.on('close', () => {
+        logger.logDebug(
+          `${
+            this.logPrefix
+          } zip file has been finalized and is ${archive.pointer()} total bytes`,
+          {}
+        );
+
         return resolve(outPath);
       });
       archive.finalize();
