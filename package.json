@@ -58,7 +58,7 @@
     "@types/lodash": "^4.17.0",
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.7",
-    "@types/pg": "^8.11.4",
+    "@types/pg": "^8.11.5",
     "@types/pg-large-object": "^2.0.7",
     "@types/qrcode": "^1.5.5",
     "@types/supertest": "^6.0.2",
