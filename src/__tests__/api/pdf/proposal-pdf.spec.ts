@@ -102,11 +102,61 @@ describe('Auto Proposal PDF', () => {
           expect(text).toMatch(/Status\nOkey-ish/);
           expect(text).toMatch(/Time Allocation\n0 Days/);
 
-          /**
-           * NOTE: for some reason the last line is not extracted
-           *  for now don't check the last line
-           */
-          // expect(text).toMatch(/Comment\nSecond technical review comment/);
+          expect(text).toMatch(/Comment\nSecond technical review comment/);
+
+          unlink(pdfPath, (err) => {
+            expect(err).toBe(null);
+
+            done(true);
+          });
+        });
+      });
+    },
+    20 * 1000
+  );
+  test(
+    'should create multi instrument proposal PDF with the provided values',
+    () => {
+      return new Promise((done) => {
+        const pdfPath = `${generateTmpPath()}.pdf`;
+        const ws = createWriteStream(pdfPath);
+
+        const r = request(app)
+          .post('/generate/pdf/proposal')
+          .send({ data: testPayloads.multi_instrument_proposal_1 });
+
+        r.on('response', (resp) => {
+          expect(resp.status).toBe(200);
+        });
+
+        r.pipe(ws).once('close', () => {
+          const totalPages = getTotalPages(pdfPath);
+
+          expect(totalPages).toBe(3);
+
+          const text = extractPDFText(pdfPath);
+
+          // first proposal
+          expect(text).toMatch(/Proposal: Multi instrument proposal/);
+          expect(text).toMatch(/Proposal ID:\n888888/);
+          expect(text).toMatch(
+            /Brief summary:\nMulti instrument proposal abstract/
+          );
+          expect(text).toMatch(/Principal Investigator:\nBar Baz\nFoo AB\nFoo/);
+          expect(text).toMatch(/Co-proposer:\nCo Foo Co Bar, Co Baz/);
+
+          expect(text).toMatch(/Questionary 1/);
+
+          expect(text).toMatch(/Choose instrument/);
+          expect(text).toMatch(/Instrument 1, Instrument 2/);
+
+          expect(text).toMatch(/Status\nPartially feasible/);
+          expect(text).toMatch(/Time Allocation\n0 Days/);
+          expect(text).toMatch(/Status\nFeasible/);
+          expect(text).toMatch(/Time Allocation\n1 Days/);
+
+          expect(text).toMatch(/Comment\nFirst technical review comment/);
+          expect(text).toMatch(/Comment\nSecond technical review comment/);
 
           unlink(pdfPath, (err) => {
             expect(err).toBe(null);

@@ -86,8 +86,8 @@
                   <span
                     >{{ principalInvestigator.firstname }} {{
                     principalInvestigator.lastname }}, {{
-                    principalInvestigator.position }}, {{
-                    principalInvestigator.organisation }}</span
+                    principalInvestigator.position }}, {{#if principalInvestigator.organisation }}{{
+                      principalInvestigator.organisation }}{{else}}{{ principalInvestigator.institution }}{{/if}}</span
                   >
                 </div>
               </div>
@@ -99,8 +99,7 @@
                 <div class="col-8">
                   {{#each coProposers}}
                   <span
-                    >{{ this.firstname }} {{ this.lastname }}, {{
-                    this.organisation }}</span
+                    >{{ this.firstname }} {{ this.lastname }}, {{#if this.organisation }}{{ this.organisation }}{{else}}{{ this.institution }}{{/if}}</span
                   >
                   {{/each}}
                 </div>
@@ -289,10 +288,10 @@
           </div>
         </div>
 
-        {{#if sepReviews}} {{#each sepReviews}}
-        <div class="row mt-4 my-3" data-book-index="SEP Reviews">
+        {{#if fapReviews}} {{#each fapReviews}}
+        <div class="row mt-4 my-3" data-book-index="Fap Reviews">
           <div class="col">
-            <h4 class="bold" class="mb-4">SEP REVIEW {{ $sum @index 1 }}</h4>
+            <h4 class="bold" class="mb-4">Fap Review {{ $sum @index 1 }}</h4>
 
             <div class="row my-2">
               <div class="col-4 bold">Grade:</div>

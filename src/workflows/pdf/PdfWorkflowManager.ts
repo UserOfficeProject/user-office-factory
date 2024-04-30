@@ -1,16 +1,22 @@
-import { ReadStream, createReadStream } from 'fs';
+import { ReadStream, createReadStream, createWriteStream } from 'fs';
 import { Readable } from 'stream';
 
 import { logger } from '@user-office-software/duo-logger';
+import archiver from 'archiver';
 
 import PdfFactory, {
   PdfFactoryMeta,
   PdfFactoryCountedPagesMeta,
   PdfFactoryPicker,
 } from './PdfFactory';
-import { TableOfContents, mergePDF, writeToC } from '../../pdf';
+import {
+  TableOfContents,
+  mergePDF,
+  writeToC,
+  writeToCWithName,
+} from '../../pdf';
 import { Role } from '../../types';
-import { failSafeDeleteFiles } from '../../util/fileSystem';
+import { failSafeDeleteFiles, generateTmpPath } from '../../util/fileSystem';
 import { ResponseHeader, WorkflowManager } from '../WorkflowManager';
 
 type Constructable<T> = {
@@ -34,9 +40,17 @@ type FinalizePdfHandler<
   } & FactoryMeta<TPdfFactoryMeta>
 ) => number /* pageNumber */;
 
+type FinalizePdfNameHandler<TFactoryData> = (params: {
+  data: TFactoryData;
+}) => string /* fileName */;
+
+type FinalizeDownloadTypeHandler = () => boolean;
+
 type FactoryGenerator<TFactoryData, TPdfFactoryMeta extends PdfFactoryMeta> =
   | Constructable<PdfFactory<TFactoryData, TPdfFactoryMeta>>
   | PdfFactoryPicker<TFactoryData, TPdfFactoryMeta>;
+
+type Files = { name: string; path: string };
 
 export default class PdfWorkflowManager<
   TFactoryData,
@@ -55,11 +69,21 @@ export default class PdfWorkflowManager<
     TPdfFactoryMeta
   > | null = null;
 
+  private cbFinalizePdfName: FinalizePdfNameHandler<TFactoryData> | null = null;
+  private cbFinalizeDownloadType: FinalizeDownloadTypeHandler | null = null;
+
   get responseHeader(): ResponseHeader {
-    return {
-      MIME_TYPE: 'application/pdf',
-      CONTENT_DISPOSITION: '',
-    };
+    if (this.cbFinalizeDownloadType !== null && this.cbFinalizeDownloadType()) {
+      return {
+        MIME_TYPE: 'application/zip',
+        CONTENT_DISPOSITION: 'attachment; filename=proposals.zip',
+      };
+    } else {
+      return {
+        MIME_TYPE: 'application/pdf',
+        CONTENT_DISPOSITION: '',
+      };
+    }
   }
 
   get logPrefix() {
@@ -161,55 +185,151 @@ export default class PdfWorkflowManager<
     this.cbFinalizePdf = cbFinalizePdf;
   }
 
+  onFinalizeFileName(cbFinalizePdfName: FinalizePdfNameHandler<TFactoryData>) {
+    this.cbFinalizePdfName = cbFinalizePdfName;
+  }
+
+  onFinalizeDownloadType(cbFinalizeDownloadType: FinalizeDownloadTypeHandler) {
+    this.cbFinalizeDownloadType = cbFinalizeDownloadType;
+  }
+
   private finalizePDF() {
     logger.logDebug(this.logPrefix + 'Finalizing PDF', {
       ids: this.entityIds,
     });
 
-    const filePaths: string[] = [];
+    if (this.cbFinalizeDownloadType !== null && this.cbFinalizeDownloadType()) {
+      const files: Files[] = [];
+      for (let rootIdx = 0; rootIdx < this.data.length; rootIdx++) {
+        const filePaths: string[] = [];
 
-    const rootToC: TableOfContents[] = [];
-    let pageNumber = 0;
+        const rootToC: TableOfContents[] = [];
+        let pageNumber = 0;
 
-    if (this.cbFinalizePdf === null) {
-      throw new Error('`cbFinalizePdf` is not defined!');
-    }
+        if (this.cbFinalizePdf === null) {
+          throw new Error('`cbFinalizePdf` is not defined!');
+        }
 
-    for (let rootIdx = 0; rootIdx < this.data.length; rootIdx++) {
-      if (!this.factoriesMeta.has(rootIdx)) {
-        logger.logError(
-          this.logPrefix + `'${rootIdx}' is missing from 'factoriesMeta'`,
-          {
-            factoriesMeta: this.factoriesMeta,
-          }
+        if (!this.factoriesMeta.has(rootIdx)) {
+          logger.logError(
+            this.logPrefix + `'${rootIdx}' is missing from 'factoriesMeta'`,
+            {
+              factoriesMeta: this.factoriesMeta,
+            }
+          );
+          throw new Error(`'${rootIdx}' is missing from 'factoriesMeta'`);
+        }
+
+        const { meta, metaCountedPages } = this.factoriesMeta.get(rootIdx)!;
+        const item = this.data[rootIdx];
+
+        pageNumber = this.cbFinalizePdf({
+          rootToC,
+          filePaths,
+          meta,
+          metaCountedPages,
+          data: item,
+          pageNumber,
+        });
+
+        if (this.cbFinalizePdfName === null) {
+          throw new Error('`cbFinalizePdfName` is not defined!');
+        }
+
+        const fileName = this.cbFinalizePdfName({ data: item });
+
+        const mergedPdfPath = mergePDF(filePaths);
+        const pdfWithToCPath = writeToCWithName(
+          mergedPdfPath,
+          rootToC,
+          fileName
         );
-        throw new Error(`'${rootIdx}' is missing from 'factoriesMeta'`);
+        const file: Files = {
+          name: fileName,
+          path: pdfWithToCPath,
+        };
+        files.push(file);
+      }
+      this.createZipFile(files)
+        .then((zipPath) => this.taskFinished(zipPath))
+        .catch((error) => this.ee.emit('error', error));
+    } else {
+      const filePaths: string[] = [];
+
+      const rootToC: TableOfContents[] = [];
+      let pageNumber = 0;
+
+      if (this.cbFinalizePdf === null) {
+        throw new Error('`cbFinalizePdf` is not defined!');
       }
 
-      const { meta, metaCountedPages } = this.factoriesMeta.get(rootIdx)!;
-      const item = this.data[rootIdx];
+      for (let rootIdx = 0; rootIdx < this.data.length; rootIdx++) {
+        if (!this.factoriesMeta.has(rootIdx)) {
+          logger.logError(
+            this.logPrefix + `'${rootIdx}' is missing from 'factoriesMeta'`,
+            {
+              factoriesMeta: this.factoriesMeta,
+            }
+          );
+          throw new Error(`'${rootIdx}' is missing from 'factoriesMeta'`);
+        }
 
-      pageNumber = this.cbFinalizePdf({
-        rootToC,
-        filePaths,
-        meta,
-        metaCountedPages,
-        data: item,
-        pageNumber,
+        const { meta, metaCountedPages } = this.factoriesMeta.get(rootIdx)!;
+        const item = this.data[rootIdx];
+
+        pageNumber = this.cbFinalizePdf({
+          rootToC,
+          filePaths,
+          meta,
+          metaCountedPages,
+          data: item,
+          pageNumber,
+        });
+      }
+
+      const mergedPdfPath = mergePDF(filePaths);
+      const pdfWithToCPath = writeToC(mergedPdfPath, rootToC);
+
+      failSafeDeleteFiles([mergedPdfPath]);
+
+      logger.logDebug(this.logPrefix + 'PDF merged', {
+        pdfWithToCPath,
+        ids: this.entityIds,
       });
+
+      this.taskFinished(pdfWithToCPath);
     }
+  }
 
-    const mergedPdfPath = mergePDF(filePaths);
-    const pdfWithToCPath = writeToC(mergedPdfPath, rootToC);
+  private createZipFile(fileList: Files[]) {
+    const outPath = `${generateTmpPath()}.zip`;
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    const stream = createWriteStream(outPath);
 
-    failSafeDeleteFiles([mergedPdfPath]);
+    return new Promise<string>(async (resolve, reject) => {
+      archive.on('error', (err) => {
+        return reject(err);
+      });
 
-    logger.logDebug(this.logPrefix + 'PDF merged', {
-      pdfWithToCPath,
-      ids: this.entityIds,
+      fileList.forEach((file) => {
+        archive.file(file.path, {
+          name: file.name,
+        });
+      });
+
+      archive.pipe(stream);
+      stream.on('close', () => {
+        logger.logDebug(
+          `${
+            this.logPrefix
+          } zip file has been finalized and is ${archive.pointer()} total bytes`,
+          {}
+        );
+
+        return resolve(outPath);
+      });
+      archive.finalize();
     });
-
-    this.taskFinished(pdfWithToCPath);
   }
 
   private taskFinished(pdfWithToCPath: string) {

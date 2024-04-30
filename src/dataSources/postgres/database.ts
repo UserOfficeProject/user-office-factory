@@ -13,6 +13,9 @@ const db = Knex({
         database: process.env.DATABASE_DATABASE,
         timezone: 'UTC',
       },
+  pool: {
+    min: 0, // Knex recommended minimum
+  },
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
