@@ -55,7 +55,7 @@
     "@types/gm": "^1.25.4",
     "@types/http-errors": "^2.0.4",
     "@types/jest": "^29.5.12",
-    "@types/lodash": "^4.17.6",
+    "@types/lodash": "^4.17.7",
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.14.10",
     "@types/pg": "^8.11.6",
