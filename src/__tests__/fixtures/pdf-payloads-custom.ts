@@ -67,6 +67,7 @@ export default {
         status: 'Okey',
         timeAllocation: 30,
         publicComment: 'Technical review lorem ipsum',
+        instrumentName: 'Instrument 1',
       },
       proposal: {
         id: 1,
