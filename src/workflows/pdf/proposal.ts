@@ -126,7 +126,9 @@ export default function newProposalPdfWorkflowManager(
   );
 
   manager.onFinalizeFileName(({ data }) => {
-    return `${data.proposal.proposalId}_${data.principalInvestigator.lastname}_${new Date(data.proposal.created).getUTCFullYear()}.pdf`;
+    return `${data.proposal.proposalId}_${
+      data.principalInvestigator.lastname
+    }_${new Date(data.proposal.created).getUTCFullYear()}.pdf`;
   });
 
   manager.onFinalizeDownloadType(() => {
