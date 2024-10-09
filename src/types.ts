@@ -2,7 +2,7 @@ export type MetaBase = { collectionFilename: string; singleFilename: string };
 export type XLSXMetaBase = MetaBase & { columns: string[] };
 
 export type ProposalXLSXData = Array<string | number>;
-export type SEPXLSXData = Array<{
+export type FapXLSXData = Array<{
   sheetName: string;
   rows: Array<string | number>;
 }>;
@@ -24,12 +24,13 @@ export type ProposalPDFData = {
   attachments: Attachment[];
   samples: ProposalSampleData[];
   genericTemplates: GenericTemplate[];
-  technicalReview?: {
+  technicalReviews: {
     status: string;
     timeAllocation: number;
     publicComment: string;
-  };
-  sepReviews?: Review[];
+    instrumentName: string;
+  }[];
+  fapReviews?: Review[];
   pdfTemplate: PdfTemplate | null;
 };
 
@@ -74,7 +75,7 @@ export interface Review {
   comment: string;
   grade: number;
   status: number;
-  sepID: number;
+  fapID: number;
 }
 
 export interface Topic {
@@ -134,7 +135,7 @@ export interface BasicUser {
   id: number;
   firstname: string;
   lastname: string;
-  organisation: string;
+  institution: string;
   position: string;
   created: Date;
   placeholder: boolean;
@@ -169,7 +170,7 @@ export class Shipment {
     public created: Date,
     public proposalId: string,
     public callShortCode: string,
-    public instrumentShortCode: string,
+    public instrumentShortCodes: string,
     public weight: number,
     public width: number,
     public height: number,

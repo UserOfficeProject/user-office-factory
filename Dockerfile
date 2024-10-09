@@ -1,4 +1,4 @@
-FROM node:18.16.0-alpine3.18 AS build-stage
+FROM node:18.19.0-alpine3.19 AS build-stage
 
 RUN apk add --no-cache \
   python3 \
@@ -26,7 +26,7 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
-FROM alpine:3.18
+FROM alpine:3.19
 
 RUN apk add --no-cache \
   chromium \
@@ -66,6 +66,9 @@ WORKDIR /app
 COPY --from=build-stage --chown=pptruser:pptruser /home/node/app/build ./build
 COPY --from=build-stage --chown=pptruser:pptruser /home/node/app/package*.json ./
 COPY --chown=pptruser:pptruser ./templates ./templates
+
+# Disable husky prepare script in production (https://github.com/typicode/husky/issues/920)
+RUN npm pkg delete scripts.prepare
 
 RUN npm ci --only=production --loglevel error --no-fund
 
