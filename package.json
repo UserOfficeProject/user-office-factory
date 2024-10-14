@@ -32,7 +32,7 @@
     "cors": "^2.8.5",
     "debug": "^4.3.7",
     "dotenv": "^16.4.5",
-    "express": "^4.21.0",
+    "express": "^4.21.1",
     "gm": "^1.25.0",
     "handlebars": "^4.7.8",
     "http-errors": "^2.0.0",
