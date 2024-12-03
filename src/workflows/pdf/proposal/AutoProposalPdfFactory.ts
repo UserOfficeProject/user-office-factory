@@ -242,14 +242,14 @@ export class AutoProposalPdfFactory extends PdfFactory<
     }
 
     try {
-      const renderedProposalHtml = await renderTemplate('proposal-main.hbs', {
-        proposal,
-        principalInvestigator,
-        coProposers,
-      });
-      const renderedHeaderFooter = await renderHeaderFooter(
-        proposal.proposalId
-      );
+      const [renderedProposalHtml, renderedHeaderFooter] = await Promise.all([
+        renderTemplate('proposal-main.hbs', {
+          proposal,
+          principalInvestigator,
+          coProposers,
+        }),
+        renderHeaderFooter(proposal.proposalId),
+      ]);
 
       const pdf = await generatePdfFromHtml(renderedProposalHtml, {
         pdfOptions: renderedHeaderFooter,
@@ -275,13 +275,15 @@ export class AutoProposalPdfFactory extends PdfFactory<
     }
 
     try {
-      const renderedProposalQuestion = await renderTemplate(
-        'questionary-step.hbs',
-        { steps: questionarySteps, genericTemplates, attachmentsFileMeta }
-      );
-      const renderedHeaderFooter = await renderHeaderFooter(
-        proposal.proposalId
-      );
+      const [renderedProposalQuestion, renderedHeaderFooter] =
+        await Promise.all([
+          renderTemplate('questionary-step.hbs', {
+            steps: questionarySteps,
+            genericTemplates,
+            attachmentsFileMeta,
+          }),
+          renderHeaderFooter(proposal.proposalId),
+        ]);
 
       const pdf = await generatePdfFromHtml(renderedProposalQuestion, {
         pdfOptions: renderedHeaderFooter,
@@ -310,12 +312,11 @@ export class AutoProposalPdfFactory extends PdfFactory<
     }
 
     try {
-      const renderedTechnicalReview = await renderTemplate(
-        'technical-review.hbs',
-        { technicalReviews }
-      );
-      const renderedHeaderFooter = await renderHeaderFooter(
-        proposal.proposalId
+      const [renderedTechnicalReview, renderedHeaderFooter] = await Promise.all(
+        [
+          renderTemplate('technical-review.hbs', { technicalReviews }),
+          renderHeaderFooter(proposal.proposalId),
+        ]
       );
 
       const pdf = await generatePdfFromHtml(renderedTechnicalReview, {
@@ -342,14 +343,15 @@ export class AutoProposalPdfFactory extends PdfFactory<
           return;
         }
 
-        const renderedProposalSample = await renderTemplate('sample.hbs', {
-          sample,
-          sampleQuestionaryFields,
-          attachmentsFileMeta,
-        });
-        const renderedHeaderFooter = await renderHeaderFooter(
-          proposal.proposalId
-        );
+        const [renderedProposalSample, renderedHeaderFooter] =
+          await Promise.all([
+            renderTemplate('sample.hbs', {
+              sample,
+              sampleQuestionaryFields,
+              attachmentsFileMeta,
+            }),
+            renderHeaderFooter(proposal.proposalId),
+          ]);
 
         const pdf = await generatePdfFromHtml(renderedProposalSample, {
           pdfOptions: renderedHeaderFooter,
