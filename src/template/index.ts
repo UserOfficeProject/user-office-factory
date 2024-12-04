@@ -1,11 +1,12 @@
-import { promises } from 'fs';
 import { join } from 'path';
 
 import handlebar from 'handlebars';
 import { PDFOptions } from 'puppeteer';
+
 // register helpers
 import './helpers';
 import './partials';
+import { getTemplateFile } from './getTemplateFile';
 
 type TemplateNames =
   | 'proposal-main.hbs'
@@ -13,8 +14,6 @@ type TemplateNames =
   | 'technical-review.hbs'
   | 'sample.hbs'
   | 'shipment-label.hbs';
-
-const templatesFolder = join(__dirname, '..', '..', 'templates');
 
 export async function render(
   pdfTemplate: string,
@@ -29,34 +28,22 @@ export async function renderTemplate(
   templateName: TemplateNames,
   payload: any
 ) {
-  const htmlTemplate = await promises.readFile(
-    join(templatesFolder, templateName),
-    'utf-8'
-  );
+  const htmlTemplate = await getTemplateFile(templateName);
 
-  // TODO: cache
   const template = handlebar.compile(htmlTemplate);
 
   return template(payload);
 }
 
 export async function renderHeaderFooter(proposalId?: string) {
-  const htmlHeaderTemplate = await promises.readFile(
-    join(templatesFolder, 'pdf', 'header.hbs'),
-    'utf-8'
-  );
+  const [htmlHeaderTemplate, htmlFooterTemplate, settingsContent] =
+    await Promise.all([
+      getTemplateFile('pdf/header.hbs'),
+      getTemplateFile('pdf/footer.hbs'),
+      getTemplateFile('pdf/settings.json'),
+    ]);
 
-  const htmlFooterTemplate = await promises.readFile(
-    join(templatesFolder, 'pdf', 'footer.hbs'),
-    'utf-8'
-  );
-
-  const settings: PDFOptions = JSON.parse(
-    await promises.readFile(
-      join(templatesFolder, 'pdf', 'settings.json'),
-      'utf-8'
-    )
-  );
+  const settings: PDFOptions = JSON.parse(settingsContent);
 
   const headerData = {
     logoPath: process.env.HEADER_LOGO_PATH
@@ -73,10 +60,7 @@ export async function renderHeaderFooter(proposalId?: string) {
 }
 
 export async function renderHeader(proposalId?: string) {
-  const htmlHeaderTemplate = await promises.readFile(
-    join(templatesFolder, 'pdf', 'header.hbs'),
-    'utf-8'
-  );
+  const htmlHeaderTemplate = await getTemplateFile('pdf/header.hbs');
 
   const headerData = {
     logoPath: process.env.HEADER_LOGO_PATH
@@ -89,10 +73,7 @@ export async function renderHeader(proposalId?: string) {
 }
 
 export async function renderFooter() {
-  const htmlFooterTemplate = await promises.readFile(
-    join(templatesFolder, 'pdf', 'footer.hbs'),
-    'utf-8'
-  );
+  const htmlFooterTemplate = await getTemplateFile('pdf/footer.hbs');
 
   return handlebar.compile(htmlFooterTemplate)(null);
 }
