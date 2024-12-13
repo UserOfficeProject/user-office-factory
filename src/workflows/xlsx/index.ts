@@ -10,6 +10,7 @@ export default function getXLSXWorkflowManager(
     case 'proposal':
       return newProposalXLSXWorkflowManager(properties);
     case 'fap':
+    case 'call_fap':
       return newFapXLSXWorkflowManager(properties);
     default:
       throw new Error(`Unknown XLSX type: ${xlsxType}`);

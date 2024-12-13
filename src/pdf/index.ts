@@ -5,7 +5,7 @@ import muhammara from 'muhammara';
 import puppeteer, { Browser, PDFOptions } from 'puppeteer';
 
 import { createToC } from './pdfTableOfContents';
-import { generateTmpPath } from '../util/fileSystem';
+import { generateTmpPath, generateTmpPathWithName } from '../util/fileSystem';
 
 export type TableOfContents = {
   title: string;
@@ -211,6 +211,19 @@ export function writeToC(inPath: string, toc: TableOfContents[]) {
   createToC(inPath, pdfPath, toc);
 
   logger.logDebug('[writeToC] ToC created', { inPath, pdfPath });
+
+  return pdfPath;
+}
+
+export function writeToCWithName(
+  inPath: string,
+  toc: TableOfContents[],
+  name: string
+) {
+  const pdfPath = `${generateTmpPathWithName(name)}`;
+  createToC(inPath, pdfPath, toc);
+
+  logger.logDebug('[writeToCWithName] ToC created', { inPath, pdfPath });
 
   return pdfPath;
 }
