@@ -50,7 +50,7 @@
     {{#if ($or this.step.value.min this.step.value.max) }}
     {{this.step.value.min}} - {{this.step.value.max}} 
       {{#if this.step.value.unit }}
-        {{this.step.value.unit}}
+        {{this.step.value.unit.unit }}
       {{/if}}
     {{else}}
       <em>Left blank</em>
