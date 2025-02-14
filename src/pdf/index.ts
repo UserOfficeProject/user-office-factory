@@ -17,7 +17,9 @@ let browser: Browser;
 
 const launchOptions = ['--disable-dev-shm-usage'];
 
-launchOptions.push('--no-sandbox');
+if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
+  launchOptions.push('--no-sandbox');
+}
 
 logger.logInfo('Launching puppeteer with ', { args: launchOptions });
 
