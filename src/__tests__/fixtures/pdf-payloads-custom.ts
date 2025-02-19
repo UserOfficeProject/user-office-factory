@@ -172,7 +172,7 @@ export default {
               value: {
                 min: -1,
                 max: 99,
-                unit: 'foo',
+                unit: { unit: 'foo' },
               },
             },
             {
