@@ -39,6 +39,8 @@ jobs:
       - run: npm ci --loglevel error --no-fund
       - run: npm run build
       - run: npm test
+        env:
+          UO_FEATURE_ALLOW_NO_SANDBOX: ${{ vars.UO_FEATURE_ALLOW_NO_SANDBOX }}
 
   build:
     runs-on: ubuntu-latest
