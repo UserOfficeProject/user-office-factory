@@ -9,8 +9,11 @@ import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
 import httpLogger from 'morgan';
-
 import './services';
+import './config';
+import { container } from 'tsyringe';
+
+import { Tokens } from './config/Tokens';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
 import { WorkflowManager } from './workflows/WorkflowManager';
@@ -88,7 +91,6 @@ app.post(
 app.get('/test-template/:template', (req, res, next) => {
   const { template } = req.params;
   const { data } = req.query;
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderTemplate(template as any, {
     ...JSON.parse(Buffer.from(data as string, 'base64').toString()),
@@ -208,5 +210,7 @@ app.use(function (
   res.status(err.status || 500);
   res.json(errorMessage);
 });
+
+container.resolve<(() => void) | undefined>(Tokens.ConfigureLogger)?.();
 
 export default app;
