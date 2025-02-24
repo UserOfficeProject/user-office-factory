@@ -31,7 +31,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "debug": "^4.3.7",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "gm": "^1.25.0",
     "handlebars": "^4.7.8",
