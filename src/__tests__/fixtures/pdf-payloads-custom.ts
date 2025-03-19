@@ -19,7 +19,7 @@ const template = `
 
 <p>Interval question 1:
   {{ answers.interval_1.min }} to {{ answers.interval_1.max }}
-  {{ answers.interval_1.unit }}
+  {{ answers.interval_1.unit.unit }}
 <p>Interval question 2:
   {{ answers.interval_2.min }} to {{ answers.interval_2.max }}
   {{ answers.interval_2.unit }}
@@ -172,7 +172,7 @@ export default {
               value: {
                 min: -1,
                 max: 99,
-                unit: 'foo',
+                unit: { unit: 'foo' },
               },
             },
             {
