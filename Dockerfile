@@ -1,4 +1,4 @@
-FROM node:18.19.0-alpine3.19 AS build-stage
+FROM node:22.14.0-alpine AS build-stage
 
 RUN apk add --no-cache \
   python3 \
@@ -26,7 +26,7 @@ COPY --chown=node:node . .
 
 RUN npm run build
 
-FROM alpine:3.19
+FROM alpine:3.21
 
 RUN apk add --no-cache \
   chromium \
