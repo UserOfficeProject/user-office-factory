@@ -10,6 +10,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
 import httpLogger from 'morgan';
 
+import './config';
 import './services';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
