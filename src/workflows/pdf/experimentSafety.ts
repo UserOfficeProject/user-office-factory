@@ -34,7 +34,7 @@ export default function newExperimentSafetyPdfWorkflowManager(
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
       const toc: TableOfContents = {
-        title: `Proposal number: ${data.proposal.proposalId}`,
+        title: `Experiment number: ${data.experiment.experimentId}`,
         page: pageNumber,
         children: stepUpToc(meta.toc.experimentSafety, pageNumber) || [],
       };
