@@ -183,7 +183,9 @@ export default abstract class PdfFactory<
       pdfOptions: generatePuppeteerPdfFooter(footer),
     });
 
-    deleteAttachment && failSafeDeleteFiles([attachmentPath]);
+    if (deleteAttachment) {
+      failSafeDeleteFiles([attachmentPath]);
+    }
 
     return pdfPath;
   }
@@ -237,9 +239,11 @@ export default abstract class PdfFactory<
         return;
       }
 
-      typeof filePaths === 'string'
-        ? failSafeDeleteFiles([filePaths])
-        : failSafeDeleteFiles(filePaths);
+      if (typeof filePaths === 'string') {
+        failSafeDeleteFiles([filePaths]);
+      } else {
+        failSafeDeleteFiles(filePaths);
+      }
     });
   }
 }
