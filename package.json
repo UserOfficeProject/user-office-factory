@@ -21,7 +21,8 @@
     "lint": "tsc --noEmit && eslint ./src --ext .js,.ts --quiet",
     "lint:all": "tsc --noEmit && eslint ./src --ext .js,.ts",
     "lint:fix": "tsc --noEmit && eslint ./src --ext .js,.ts --fix --quiet",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prettier": "prettier package.json --check --write"
   },
   "dependencies": {
     "@user-office-software/duo-logger": "^2.2.1",
@@ -45,7 +46,9 @@
     "puppeteer": "^23.3.0",
     "qrcode": "^1.5.4",
     "xlsx": "^0.18.5",
-    "xmldom": "^0.6.0"
+    "xmldom": "^0.6.0",
+    "reflect-metadata": "^0.2.1",
+    "tsyringe": "^4.8.0"
   },
   "devDependencies": {
     "@types/archiver": "^6.0.2",
