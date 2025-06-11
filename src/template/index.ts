@@ -13,7 +13,8 @@ type TemplateNames =
   | 'questionary-step.hbs'
   | 'technical-review.hbs'
   | 'sample.hbs'
-  | 'shipment-label.hbs';
+  | 'shipment-label.hbs'
+  | 'experiment-safety-main.hbs';
 
 export async function render(
   pdfTemplate: string,
