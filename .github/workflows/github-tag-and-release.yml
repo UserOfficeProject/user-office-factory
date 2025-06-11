@@ -38,5 +38,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           build-args: BUILD_VERSION=${{ github.sha }}
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ghcr.io/userofficeproject/user-office-factory:${{ steps.tag_version.outputs.new_tag }}
