@@ -91,7 +91,9 @@ export default abstract class PdfEmitter<T> extends EventEmitter {
       pdfOptions: generatePuppeteerPdfFooter(footer),
     });
 
-    deleteAttachment && failSafeDeleteFiles([attachmentPath]);
+    if (deleteAttachment) {
+      failSafeDeleteFiles([attachmentPath]);
+    }
 
     return pdfPath;
   }
