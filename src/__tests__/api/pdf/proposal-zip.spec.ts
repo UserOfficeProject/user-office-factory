@@ -31,9 +31,9 @@ describe('Auto Proposals ZIP', () => {
         });
 
         r.pipe(ws).once('close', () => {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const AdmZip = require('adm-zip');
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const path = require('path');
 
           const zip = new AdmZip(zipPath);
