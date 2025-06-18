@@ -18,7 +18,7 @@ const collectorTraceExporter = new OTLPTraceExporter(collectorOptions);
 const otelSDK = new NodeSDK({
   traceExporter: collectorTraceExporter,
   resource: resourceFromAttributes({
-    ['service.name']: process.env.OTEL_SERVICE_NAME || 'proposal-backend',
+    ['service.name']: process.env.OTEL_SERVICE_NAME || 'proposal-factory',
   }),
   spanProcessors: [
     new BatchSpanProcessor(collectorTraceExporter, {
@@ -37,7 +37,7 @@ const otelSDK = new NodeSDK({
       disableLogSending: true,
       logHook: (span, record) => {
         record['service_name'] =
-          process.env.OTEL_SERVICE_NAME || 'proposal-backend';
+          process.env.OTEL_SERVICE_NAME || 'proposal-factory';
       },
     }),
   ],
