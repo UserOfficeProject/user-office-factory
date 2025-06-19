@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { KnexInstrumentation } from '@opentelemetry/instrumentation-knex';
@@ -12,7 +13,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 const collectorOptions = {
   url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
 };
-
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 const collectorTraceExporter = new OTLPTraceExporter(collectorOptions);
 
 const otelSDK = new NodeSDK({
