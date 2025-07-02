@@ -18,13 +18,14 @@
         <br />
         <span class="bold">Principal Investigator:</span><br />
         {{principalInvestigator.firstname}} {{principalInvestigator.lastname}}<br />
-        {{#if principalInvestigator.organisation}}{{principalInvestigator.organisation}}{{else}}{{principalInvestigator.institution}}{{/if}}<br />
-        {{principalInvestigator.position}}<br />
+        {{#if principalInvestigator.organisation}}{{principalInvestigator.organisation}}{{else}}{{principalInvestigator.institution}}{{/if}}
+        {{#if principalInvestigator.position}}<br />{{ principalInvestigator.position }}{{/if}}
+        {{#if principalInvestigator.country}}<br />{{ principalInvestigator.country }}{{/if}}
         <br />
 
         <span class="bold">Co-proposer:</span><br />
         {{#each coProposers}}
-          {{this.firstname}} {{this.lastname}}, {{#if this.organisation}}{{this.organisation}}{{else}}{{this.institution}}{{/if}}<br />
+          {{this.firstname}} {{this.lastname}}, {{#if this.organisation}}{{this.organisation}}{{else}}{{this.institution}}{{/if}}{{#if country}}, {{ country }}{{/if}}<br />
         {{/each}}
 
       </div>

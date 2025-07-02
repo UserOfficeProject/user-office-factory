@@ -6,6 +6,10 @@ switch (process.env.DEPENDENCY_CONFIG) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('./dependencyConfigESS');
     break;
+  case 'stfc':
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('./dependencyConfigSTFC');
+    break;
   default:
     logger.logInfo(
       'Invalid or no value was provided for the DEPENDENCY_CONFIG. Using the default config',
