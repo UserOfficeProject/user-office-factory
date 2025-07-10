@@ -16,7 +16,7 @@ export type PdfTemplate = {
   templateSampleDeclaration: string;
 };
 
-export type ProposalPDFData = {
+export type FullProposalPDFData = {
   proposal: Proposal;
   questionarySteps: QuestionaryStep[];
   principalInvestigator: BasicUser;
@@ -32,7 +32,16 @@ export type ProposalPDFData = {
   }[];
   fapReviews?: Review[];
   pdfTemplate: PdfTemplate | null;
+  type: 'full';
 };
+
+export type PregeneratedProposalPDFData = {
+  proposal: Pick<Proposal, 'created' | 'primaryKey' | 'proposalId' | 'fileId'>;
+  principalInvestigator: BasicUser;
+  type: 'pregenerated';
+};
+
+export type ProposalPDFData = FullProposalPDFData | PregeneratedProposalPDFData;
 
 export type SamplePDFData = {
   sample: Sample & { status: string };
@@ -66,6 +75,7 @@ export interface Proposal {
   commentForManagement: string;
   notified: boolean;
   submitted: boolean;
+  fileId: string;
 }
 
 export interface Review {

@@ -14,6 +14,7 @@ type SamplePDFMeta = {
   };
   attachmentsFileMeta: FileMetadata[];
   attachments: Attachment[];
+  type: 'sample';
 };
 
 type SamplePDFPagesMeta = PdfFactoryCountedPagesMeta<SamplePDFMeta>;
@@ -27,6 +28,7 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
     },
     attachmentsFileMeta: [],
     attachments: [],
+    type: 'sample',
   };
 
   static ENTITY_NAME = 'Sample';

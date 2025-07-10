@@ -1,6 +1,6 @@
 import { logger } from '@user-office-software/duo-logger';
 
-import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
+import { FullProposalPDFMeta } from './ProposalPDFMeta';
 import { FileMetadata } from '../../../models/File';
 import { generatePdfFromHtml } from '../../../pdf';
 import { renderTemplate, renderHeaderFooter } from '../../../template';
@@ -8,18 +8,18 @@ import {
   BasicUser,
   Proposal,
   QuestionaryStep,
-  ProposalPDFData,
   ProposalSampleData,
   GenericTemplate,
+  FullProposalPDFData,
 } from '../../../types';
-import PdfFactory from '../PdfFactory';
+import PdfFactory, { PdfFactoryCountedPagesMeta } from '../PdfFactory';
 
 export class AutoProposalPdfFactory extends PdfFactory<
-  ProposalPDFData,
-  ProposalPDFMeta
+  FullProposalPDFData,
+  FullProposalPDFMeta
 > {
-  protected countedPagesMeta: ProposalCountedPagesMeta;
-  protected meta: ProposalPDFMeta = {
+  protected countedPagesMeta: PdfFactoryCountedPagesMeta<FullProposalPDFMeta>;
+  protected meta: FullProposalPDFMeta = {
     files: {
       proposal: '',
       questionnaires: [],
@@ -38,11 +38,12 @@ export class AutoProposalPdfFactory extends PdfFactory<
     },
     attachmentsFileMeta: [],
     attachments: [],
+    type: 'full',
   };
 
   static ENTITY_NAME = 'Proposal';
 
-  init(data: ProposalPDFData) {
+  init(data: FullProposalPDFData) {
     const {
       proposal,
       principalInvestigator,

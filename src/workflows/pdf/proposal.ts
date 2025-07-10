@@ -1,8 +1,13 @@
+import { PdfFactoryCountedPagesMeta } from './PdfFactory';
 import PdfWorkflowManager from './PdfWorkflowManager';
 import { AutoProposalPdfFactoryPicker } from './proposal/ProposalPdfFactoryPicker';
-import { ProposalPDFMeta } from './proposal/ProposalPDFMeta';
+import {
+  FullProposalPDFMeta,
+  PregeneratedProposalPDFMeta,
+  ProposalPDFMeta,
+} from './proposal/ProposalPDFMeta';
 import { TableOfContents } from '../../pdf';
-import { ProposalPDFData, Role } from '../../types';
+import { FullProposalPDFData, ProposalPDFData, Role } from '../../types';
 
 export default function newProposalPdfWorkflowManager(
   data: ProposalPDFData[],
@@ -31,97 +36,124 @@ export default function newProposalPdfWorkflowManager(
 
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
-      const toc: TableOfContents = {
-        title: `Proposal number: ${data.proposal.proposalId}`,
-        page: pageNumber,
-        children: stepUpToc(meta.toc.proposal, pageNumber) || [],
-      };
+      if (meta.type === 'pregenerated') {
+        const pregeneratedMetaCountedPages =
+          metaCountedPages as PdfFactoryCountedPagesMeta<PregeneratedProposalPDFMeta>;
 
-      pageNumber +=
-        metaCountedPages.proposal.countedPagesPerPdf[meta.files.proposal];
-
-      filePaths.push(meta.files.proposal);
-
-      meta.files.questionnaires.forEach((questionary, index) => {
-        filePaths.push(questionary);
-        toc.children.push({
-          title: 'Questionary', // data.questionarySteps[qIdx].topic.title,
+        filePaths.push(meta.files.proposal);
+        const tocEntry: TableOfContents = {
+          title: `Proposal number: ${data.proposal.proposalId}`,
           page: pageNumber,
-          children: stepUpToc(meta.toc.questionnaires[index], pageNumber),
-        });
+          children: [],
+        };
+        rootToC.push(tocEntry);
 
         pageNumber +=
-          metaCountedPages.questionnaires.countedPagesPerPdf[questionary];
-      });
+          pregeneratedMetaCountedPages.proposal.countedPagesPerPdf[
+            meta.files.proposal
+          ];
 
-      if (meta.files.samples.length > 0) {
-        const sampleToC: TableOfContents = {
-          title: 'Samples',
+        return pageNumber;
+      } else if (meta.type === 'full') {
+        const fullMetaCountedPages =
+          metaCountedPages as PdfFactoryCountedPagesMeta<FullProposalPDFMeta>;
+        const fullProposalPdfData = data as FullProposalPDFData;
+
+        const toc: TableOfContents = {
+          title: `Proposal number: ${data.proposal.proposalId}`,
           page: pageNumber,
-          children: [],
+          children: stepUpToc(meta.toc.proposal, pageNumber) || [],
         };
 
-        meta.files.samples.forEach((sample, qIdx) => {
-          filePaths.push(sample);
-          sampleToC.children.push({
-            title: `Sample: ${data.samples[qIdx].sample.title}`,
+        pageNumber +=
+          fullMetaCountedPages.proposal.countedPagesPerPdf[meta.files.proposal];
+
+        filePaths.push(meta.files.proposal);
+
+        meta.files.questionnaires.forEach((questionary, index) => {
+          filePaths.push(questionary);
+          toc.children.push({
+            title: 'Questionary', // data.questionarySteps[qIdx].topic.title,
             page: pageNumber,
-            children: stepUpToc(meta.toc.samples[qIdx], pageNumber),
-          });
-
-          pageNumber += metaCountedPages.samples.countedPagesPerPdf[sample];
-        });
-
-        toc.children.push(sampleToC);
-      }
-
-      if (meta.files.attachments.length > 0) {
-        const attachmentToC: TableOfContents = {
-          title: 'Attachments',
-          page: pageNumber,
-          children: [],
-        };
-
-        meta.files.attachments.forEach((attachment, aIdx) => {
-          const attachmentFileMeta = meta.attachmentsFileMeta[aIdx];
-          const attachmentMeta = meta.attachments.find(
-            ({ id }) => id === attachmentFileMeta.fileId
-          );
-
-          filePaths.push(attachment);
-          attachmentToC.children.push({
-            title:
-              attachmentMeta && attachmentMeta.figure
-                ? `Figure ${attachmentMeta.figure}`
-                : attachmentFileMeta.originalFileName,
-            page: pageNumber,
-            children: [],
+            children: stepUpToc(meta.toc.questionnaires[index], pageNumber),
           });
 
           pageNumber +=
-            metaCountedPages.attachments.countedPagesPerPdf[attachment];
+            fullMetaCountedPages.questionnaires.countedPagesPerPdf[questionary];
         });
 
-        toc.children.push(attachmentToC);
+        if (meta.files.samples.length > 0) {
+          const sampleToC: TableOfContents = {
+            title: 'Samples',
+            page: pageNumber,
+            children: [],
+          };
+
+          meta.files.samples.forEach((sample, qIdx) => {
+            filePaths.push(sample);
+            sampleToC.children.push({
+              title: `Sample: ${fullProposalPdfData.samples[qIdx].sample.title}`,
+              page: pageNumber,
+              children: stepUpToc(meta.toc.samples[qIdx], pageNumber),
+            });
+
+            pageNumber +=
+              fullMetaCountedPages.samples.countedPagesPerPdf[sample];
+          });
+
+          toc.children.push(sampleToC);
+        }
+
+        if (meta.files.attachments.length > 0) {
+          const attachmentToC: TableOfContents = {
+            title: 'Attachments',
+            page: pageNumber,
+            children: [],
+          };
+
+          meta.files.attachments.forEach((attachment, aIdx) => {
+            const attachmentFileMeta = meta.attachmentsFileMeta[aIdx];
+            const attachmentMeta = meta.attachments.find(
+              ({ id }) => id === attachmentFileMeta.fileId
+            );
+
+            filePaths.push(attachment);
+            attachmentToC.children.push({
+              title:
+                attachmentMeta && attachmentMeta.figure
+                  ? `Figure ${attachmentMeta.figure}`
+                  : attachmentFileMeta.originalFileName,
+              page: pageNumber,
+              children: [],
+            });
+
+            pageNumber +=
+              fullMetaCountedPages.attachments.countedPagesPerPdf[attachment];
+          });
+
+          toc.children.push(attachmentToC);
+        }
+
+        if (meta.files.technicalReview) {
+          filePaths.push(meta.files.technicalReview.toString());
+          toc.children.push({
+            title: 'Technical Review',
+            page: pageNumber,
+            children: stepUpToc(meta.toc.technicalReview, pageNumber),
+          });
+
+          pageNumber +=
+            fullMetaCountedPages.technicalReview.countedPagesPerPdf[
+              meta.files.technicalReview.toString()
+            ];
+        }
+
+        rootToC.push(toc);
+
+        return pageNumber;
       }
 
-      if (meta.files.technicalReview) {
-        filePaths.push(meta.files.technicalReview.toString());
-        toc.children.push({
-          title: 'Technical Review',
-          page: pageNumber,
-          children: stepUpToc(meta.toc.technicalReview, pageNumber),
-        });
-
-        pageNumber +=
-          metaCountedPages.technicalReview.countedPagesPerPdf[
-            meta.files.technicalReview.toString()
-          ];
-      }
-
-      rootToC.push(toc);
-
-      return pageNumber;
+      throw new Error(`Unhandled meta type: ${meta}`);
     }
   );
 
