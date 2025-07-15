@@ -1,4 +1,4 @@
-import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+//import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api'; //Enable for debug-level diagnostics logging.
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
 import { HostMetrics } from '@opentelemetry/host-metrics';
 import { envDetector, processDetector } from '@opentelemetry/resources';
@@ -7,12 +7,13 @@ import {
   MeterProvider,
   PeriodicExportingMetricReader,
 } from '@opentelemetry/sdk-metrics';
+import { logger } from '@user-office-software/duo-logger';
 
 const exporter = new OTLPMetricExporter({
   url: process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
 });
 
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
+//diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG); //Enable for debug-level diagnostics logging.
 
 const reader = new PeriodicExportingMetricReader({
   exporter,
@@ -60,9 +61,9 @@ export function isMetricsEnabled(): boolean {
 
 export default async function startMetrics() {
   if (isMetricsEnabled()) {
-    console.log('Metrics initializing', {});
+    logger.logInfo('Metrics initializing', {});
     hostMetrics.start();
   } else {
-    console.log('Metrics not enabled. Skipping initialization.');
+    logger.logInfo('Metrics not enabled. Skipping initialization.', {});
   }
 }
