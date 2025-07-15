@@ -45,10 +45,10 @@ app.use('/static', cors(), express.static(join(__dirname, '..', 'templates')));
 
 app.use((req, res, next) => {
   const start = process.hrtime(); // Start timer
-  activeRequests.add(1);
+  activeRequests.add(1, { route: req.path });
 
   res.on('finish', () => {
-    activeRequests.add(-1);
+    activeRequests.add(-1, { route: req.path });
 
     // Record request count
     httpRequestCounter.add(1, {
