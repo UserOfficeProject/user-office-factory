@@ -54,10 +54,6 @@ export class CustomExperimentSafetyPdfFactory extends PdfFactory<
 
   init(data: ExperimentSafetyPDFData) {
     logger.logDebug(this.logPrefix + 'init', { data });
-    const noRenders = {
-      waitFor: 0,
-      countedPagesPerPdf: {},
-    };
     this.countedPagesMeta = {
       experimentSafety: { waitFor: 1, countedPagesPerPdf: {} },
     };
