@@ -17,6 +17,7 @@ import {
   activeRequests,
   httpRequestCounter,
   httpRequestDuration,
+  isMetricsEnabled,
 } from './config/metrics';
 import { Tokens } from './config/Tokens';
 import { renderTemplate } from './template';
@@ -43,32 +44,34 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', cors(), express.static(join(__dirname, '..', 'templates')));
 
-app.use((req, res, next) => {
-  const start = process.hrtime(); // Start timer
-  activeRequests.add(1, { route: req.path });
+if (isMetricsEnabled()) {
+  app.use((req, res, next) => {
+    const start = process.hrtime(); // Start timer
+    activeRequests.add(1, { route: req.path });
 
-  res.on('finish', () => {
-    activeRequests.add(-1, { route: req.path });
+    res.on('finish', () => {
+      activeRequests.add(-1, { route: req.path });
 
-    // Record request count
-    httpRequestCounter.add(1, {
-      method: req.method,
-      route: req.path,
-      status_code: res.statusCode.toString(),
-    }); // Record request duration
+      // Record request count
+      httpRequestCounter.add(1, {
+        method: req.method,
+        route: req.path,
+        status_code: res.statusCode.toString(),
+      }); // Record request duration
 
-    const [seconds, nanoseconds] = process.hrtime(start);
-    const durationInSeconds = seconds + nanoseconds / 1e9;
+      const [seconds, nanoseconds] = process.hrtime(start);
+      const durationInSeconds = seconds + nanoseconds / 1e9;
 
-    httpRequestDuration.record(durationInSeconds, {
-      method: req.method,
-      route: req.path,
-      status_code: res.statusCode.toString(),
+      httpRequestDuration.record(durationInSeconds, {
+        method: req.method,
+        route: req.path,
+        status_code: res.statusCode.toString(),
+      });
     });
-  });
 
-  next();
-});
+    next();
+  });
+}
 
 app.post(
   '/generate/:downloadType/:type',

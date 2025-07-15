@@ -9,7 +9,7 @@ import {
 } from '@opentelemetry/sdk-metrics';
 
 const exporter = new OTLPMetricExporter({
-  url: 'http://alloy:4318/v1/metrics',
+  url: process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
 });
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
@@ -23,7 +23,8 @@ const customResource = detectResources({
   detectors: [envDetector, processDetector],
 });
 
-customResource.attributes['service.name'] = 'user-office-factory-app';
+customResource.attributes['service.name'] =
+  process.env.OTEL_SERVICE_NAME || 'user-office-factory-app';
 
 const meterProvider = new MeterProvider({
   resource: customResource,
@@ -52,4 +53,16 @@ export const activeRequests = meter.createUpDownCounter(
 );
 
 const hostMetrics = new HostMetrics({ meterProvider });
-hostMetrics.start();
+
+export function isMetricsEnabled(): boolean {
+  return !!process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
+}
+
+export default async function startMetrics() {
+  if (isMetricsEnabled()) {
+    console.log('Metrics initializing', {});
+    hostMetrics.start();
+  } else {
+    console.log('Metrics not enabled. Skipping initialization.');
+  }
+}
