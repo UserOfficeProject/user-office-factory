@@ -89,7 +89,7 @@
     "path": "^0.12.7",
     "prettier": "3.6.2",
     "supertest": "^7.0.0",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.4.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.2"
   },
