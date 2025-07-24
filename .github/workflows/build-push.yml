@@ -6,9 +6,7 @@ on:
   push:
     branches:
       - develop
-      - staging  
-  pull_request:
-    types: [opened, synchronize, reopened]
+      - staging
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
