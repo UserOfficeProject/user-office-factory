@@ -4,7 +4,14 @@ import { extname } from 'path';
 import handlebar from 'handlebars';
 
 handlebar.registerHelper('$eq', function (a, b) {
-  return a === b;
+  return a == b;
+});
+
+handlebar.registerHelper('$in', function <T>(...args: T[]) {
+  args.pop(); // Remove the Handlebars options object
+  const [a, ...b] = args;
+
+  return b.includes(a);
 });
 
 handlebar.registerHelper('$notEq', function (a, b) {
@@ -29,6 +36,21 @@ handlebar.registerHelper('$or', function (...args) {
   args.pop();
 
   return args.some((value) => !!value);
+});
+
+handlebar.registerHelper('$readableDate', function (date) {
+  if (date === undefined) {
+    return '';
+  }
+
+  const dateObj = new Date(date);
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  };
+
+  return dateObj.toLocaleDateString('en-GB', options);
 });
 
 const extensionMimeTypeMp = new Map<string, string>([['.png', 'image/png']]);
