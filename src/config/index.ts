@@ -1,7 +1,6 @@
 import { logger } from '@user-office-software/duo-logger';
 
 import 'reflect-metadata';
-import startMetrics from './metrics';
 
 switch (process.env.DEPENDENCY_CONFIG) {
   case 'ess':
@@ -21,5 +20,4 @@ switch (process.env.DEPENDENCY_CONFIG) {
     require('./dependencyConfigDefault');
 }
 
-startMetrics();
 export {};

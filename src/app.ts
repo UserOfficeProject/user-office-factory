@@ -13,12 +13,7 @@ import './services';
 import './config';
 import { container } from 'tsyringe';
 
-import {
-  activeRequests,
-  httpRequestCounter,
-  httpRequestDuration,
-  isMetricsEnabled,
-} from './config/metrics';
+import { MetricsService } from './config/metrics/MetricsService';
 import { Tokens } from './config/Tokens';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
@@ -44,34 +39,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', cors(), express.static(join(__dirname, '..', 'templates')));
 
-if (isMetricsEnabled()) {
-  app.use((req, res, next) => {
-    const start = process.hrtime(); // Start timer
-    activeRequests.add(1, { route: req.path });
-
-    res.on('finish', () => {
-      activeRequests.add(-1, { route: req.path });
-
-      // Record request count
-      httpRequestCounter.add(1, {
-        method: req.method,
-        route: req.path,
-        status_code: res.statusCode.toString(),
-      }); // Record request duration
-
-      const [seconds, nanoseconds] = process.hrtime(start);
-      const durationInSeconds = seconds + nanoseconds / 1e9;
-
-      httpRequestDuration.record(durationInSeconds, {
-        method: req.method,
-        route: req.path,
-        status_code: res.statusCode.toString(),
-      });
-    });
-
-    next();
-  });
-}
+const metricsService = container.resolve<MetricsService>(
+  Tokens.ConfigureMetrics
+);
+app.use((req, res, next) => metricsService.recordRequest(req, res, next));
 
 app.post(
   '/generate/:downloadType/:type',
