@@ -25,14 +25,15 @@
     "prettier": "prettier package.json --check --write"
   },
   "dependencies": {
-    "@user-office-software/duo-logger": "^2.3.2",
     "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",
+    "@opentelemetry/host-metrics": "^0.36.0",
     "@opentelemetry/instrumentation-http": "^0.203.0",
     "@opentelemetry/instrumentation-knex": "^0.48.0",
     "@opentelemetry/instrumentation-winston": "^0.48.0",
     "@opentelemetry/resource-detector-container": "^0.7.0",
     "@opentelemetry/sdk-node": "^0.200.0",
     "@opentelemetry/sdk-trace-node": "^2.0.0",
+    "@user-office-software/duo-logger": "^2.3.2",
     "archiver": "^7.0.1",
     "await-to-js": "^3.0.0",
     "canvas": "^3.1.2",
