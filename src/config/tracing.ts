@@ -27,7 +27,21 @@ const otelSDK = new NodeSDK({
     }),
   ],
   instrumentations: [
-    new HttpInstrumentation(),
+    new HttpInstrumentation({
+      ignoreIncomingRequestHook: (req) => {
+        const url = req.url || '';
+
+        return (
+          url.startsWith('/static/') ||
+          url.endsWith('.css') ||
+          url.endsWith('.js') ||
+          url.endsWith('.png') ||
+          url.endsWith('.jpg') ||
+          url.endsWith('.ico') ||
+          url.endsWith('.svg')
+        );
+      },
+    }),
     new KnexInstrumentation({
       requireParentSpan: true,
       maxQueryLength: 100,
