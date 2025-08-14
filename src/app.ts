@@ -9,8 +9,12 @@ import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
 import httpLogger from 'morgan';
-
 import './services';
+import './config';
+import { container } from 'tsyringe';
+
+import { MetricsService } from './config/metrics/MetricsService';
+import { Tokens } from './config/Tokens';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
 import { WorkflowManager } from './workflows/WorkflowManager';
@@ -34,6 +38,11 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', cors(), express.static(join(__dirname, '..', 'templates')));
+
+const metricsService = container.resolve<MetricsService>(
+  Tokens.ConfigureMetrics
+);
+app.use((req, res, next) => metricsService.recordRequest(req, res, next));
 
 app.post(
   '/generate/:downloadType/:type',
@@ -88,7 +97,6 @@ app.post(
 app.get('/test-template/:template', (req, res, next) => {
   const { template } = req.params;
   const { data } = req.query;
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderTemplate(template as any, {
     ...JSON.parse(Buffer.from(data as string, 'base64').toString()),
@@ -208,5 +216,7 @@ app.use(function (
   res.status(err.status || 500);
   res.json(errorMessage);
 });
+
+container.resolve<(() => void) | undefined>(Tokens.ConfigureLogger)?.();
 
 export default app;
