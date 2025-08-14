@@ -12,7 +12,7 @@ export type ExperimentSafetyPDFMeta = {
   };
   attachmentsFileMeta: FileMetadata[];
   attachments: Attachment[];
-  type: 'experimentSafety';
+  isPregeneratedPdfMeta: false;
 };
 
 export type ExperimentSafetyCountedPagesMeta =

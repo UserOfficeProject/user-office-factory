@@ -33,7 +33,7 @@ export class CustomExperimentSafetyPdfFactory extends PdfFactory<
     },
     attachmentsFileMeta: [],
     attachments: [],
-    type: 'experimentSafety',
+    isPregeneratedPdfMeta: false,
   };
 
   static ENTITY_NAME = 'ExperimentSafety';

@@ -38,7 +38,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
     },
     attachmentsFileMeta: [],
     attachments: [],
-    type: 'full',
+    isPregeneratedPdfMeta: false,
   };
 
   static ENTITY_NAME = 'Proposal';

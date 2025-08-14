@@ -15,7 +15,7 @@ export class PregeneratedPdfFactory extends PdfFactory<
     files: {
       proposal: '',
     },
-    type: 'pregenerated',
+    isPregeneratedPdfMeta: true,
   };
 
   constructor(entityId: number, userRole: Role) {

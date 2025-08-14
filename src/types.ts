@@ -39,13 +39,13 @@ export type FullProposalPDFData = {
   }[];
   fapReviews?: Review[];
   pdfTemplate: ProposalPdfTemplate | null;
-  type: 'full';
+  isPregeneratedPdfData: false;
 };
 
 export type PregeneratedProposalPDFData = {
   proposal: Pick<Proposal, 'created' | 'primaryKey' | 'proposalId' | 'fileId'>;
   principalInvestigator: BasicUser;
-  type: 'pregenerated';
+  isPregeneratedPdfData: true;
 };
 
 export type ProposalPDFData = FullProposalPDFData | PregeneratedProposalPDFData;

@@ -14,7 +14,7 @@ export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
   ProposalPDFMeta
 > {
   public getFactory(data: ProposalPDFData, entityId: number, userRole: Role) {
-    if (data.type === 'pregenerated') {
+    if (data.isPregeneratedPdfData) {
       return new PregeneratedPdfFactory(entityId, userRole);
     } else {
       const templateBody = data.pdfTemplate?.templateData;

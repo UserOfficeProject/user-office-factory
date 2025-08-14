@@ -16,7 +16,7 @@ import { generateTmpPath, failSafeDeleteFiles } from '../../util/fileSystem';
 
 export type PdfFactoryMeta = {
   files: { [k: string]: string | string[] };
-  type: string;
+  isPregeneratedPdfMeta: boolean;
 };
 
 export abstract class PdfFactoryPicker<

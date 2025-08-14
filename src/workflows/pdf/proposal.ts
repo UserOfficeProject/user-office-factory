@@ -36,7 +36,7 @@ export default function newProposalPdfWorkflowManager(
 
   manager.onFinalizePDF(
     ({ data, filePaths, meta, metaCountedPages, pageNumber, rootToC }) => {
-      if (meta.type === 'pregenerated') {
+      if (meta.isPregeneratedPdfMeta) {
         const pregeneratedMetaCountedPages =
           metaCountedPages as PdfFactoryCountedPagesMeta<PregeneratedProposalPDFMeta>;
 
@@ -54,7 +54,7 @@ export default function newProposalPdfWorkflowManager(
           ];
 
         return pageNumber;
-      } else if (meta.type === 'full') {
+      } else {
         const fullMetaCountedPages =
           metaCountedPages as PdfFactoryCountedPagesMeta<FullProposalPDFMeta>;
         const fullProposalPdfData = data as FullProposalPDFData;
@@ -152,8 +152,6 @@ export default function newProposalPdfWorkflowManager(
 
         return pageNumber;
       }
-
-      throw new Error(`Unhandled meta type: ${meta}`);
     }
   );
 

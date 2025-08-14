@@ -21,14 +21,14 @@ export type FullProposalPDFMeta = {
   };
   attachmentsFileMeta: FileMetadata[];
   attachments: Attachment[];
-  type: 'full';
+  isPregeneratedPdfMeta: false;
 };
 
 export type PregeneratedProposalPDFMeta = {
   files: {
     proposal: string;
   };
-  type: 'pregenerated';
+  isPregeneratedPdfMeta: true;
 };
 
 export type ProposalPDFMeta = FullProposalPDFMeta | PregeneratedProposalPDFMeta;
