@@ -23,7 +23,7 @@ export type ExperimentSafetyPdfTemplate = {
   templateSampleDeclaration: string;
 };
 
-export type ProposalPDFData = {
+export type FullProposalPDFData = {
   proposal: Proposal;
   questionarySteps: QuestionaryStep[];
   principalInvestigator: BasicUser;
@@ -39,7 +39,16 @@ export type ProposalPDFData = {
   }[];
   fapReviews?: Review[];
   pdfTemplate: ProposalPdfTemplate | null;
+  isPregeneratedPdfData: false;
 };
+
+export type PregeneratedProposalPDFData = {
+  proposal: Pick<Proposal, 'created' | 'primaryKey' | 'proposalId' | 'fileId'>;
+  principalInvestigator: BasicUser;
+  isPregeneratedPdfData: true;
+};
+
+export type ProposalPDFData = FullProposalPDFData | PregeneratedProposalPDFData;
 
 export type ExperimentSamplePDFData = {
   experimentSample: ExperimentHasSample;
@@ -114,6 +123,7 @@ export interface Proposal {
   commentForManagement: string;
   notified: boolean;
   submitted: boolean;
+  fileId: string;
 }
 
 export interface Experiment {
