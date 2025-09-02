@@ -15,7 +15,7 @@ export type TableOfContents = {
 
 let browser: Browser;
 
-const launchOptions = ['--disable-dev-shm-usage'];
+const launchOptions = ['--disable-dev-shm-usage', '--disable-gpu'];
 
 if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
