@@ -21,12 +21,15 @@ if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
 }
 
-logger.logInfo('Launching puppeteer with ', { args: launchOptions });
+logger.logInfo('Launching puppeteer with ', {
+  args: launchOptions,
+  timeout: 60000,
+});
 
 // TODO: create browser lazily while keeping track of it
 // so we don't end up with dozens of browsers
 puppeteer
-  .launch({ args: launchOptions })
+  .launch({ args: launchOptions, timeout: 60000 })
   .then((inst) => (browser = inst))
   .catch((e) => {
     logger.logException('Failed to start browser puppeteer', e);
