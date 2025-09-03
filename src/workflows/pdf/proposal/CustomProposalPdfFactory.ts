@@ -65,96 +65,137 @@ export class CustomProposalPdfFactory extends PdfFactory<
   }
 
   init(data: FullProposalPDFData) {
-    const { samples, attachments } = data;
+    try {
+      const { samples, attachments } = data;
 
-    const noRenders = {
-      waitFor: 0,
-      countedPagesPerPdf: {},
-    };
-
-    this.countedPagesMeta = {
-      proposal: { waitFor: 1, countedPagesPerPdf: {} },
-      questionnaires: Object.assign({}, noRenders),
-      technicalReview: Object.assign({}, noRenders),
-      samples: { waitFor: samples.length, countedPagesPerPdf: {} },
-      genericTemplates: Object.assign({}, noRenders),
-      attachments: {
-        waitFor: 0 /* set by fetched:attachmentsFileMeta */,
+      const noRenders = {
+        waitFor: 0,
         countedPagesPerPdf: {},
-      },
-    };
+      };
 
-    /**
-     * Generate task list to track what needs to be done
-     */
-    const tasksNeeded = ['render:proposal', 'count-pages:proposal'];
+      this.countedPagesMeta = {
+        proposal: { waitFor: 1, countedPagesPerPdf: {} },
+        questionnaires: Object.assign({}, noRenders),
+        technicalReview: Object.assign({}, noRenders),
+        samples: { waitFor: samples.length, countedPagesPerPdf: {} },
+        genericTemplates: Object.assign({}, noRenders),
+        attachments: {
+          waitFor: 0 /* set by fetched:attachmentsFileMeta */,
+          countedPagesPerPdf: {},
+        },
+      };
 
-    if (attachments.length > 0) {
-      tasksNeeded.push('fetch:attachments');
-      tasksNeeded.push('fetch:attachmentsFileMeta');
-      tasksNeeded.push('count-pages:attachments');
-    }
-    // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then push the job
-    if (samples.length > 0 && this.sampleDeclaration) {
-      tasksNeeded.push('render:samples');
-      tasksNeeded.push('count-pages:samples');
-    }
+      /**
+       * Generate task list to track what needs to be done
+       */
+      const tasksNeeded = ['render:proposal', 'count-pages:proposal'];
 
-    logger.logDebug(this.logPrefix + 'tasks needed to complete', {
-      tasksNeeded,
-    });
-
-    /**
-     * Listeners
-     */
-    this.on('countPages', this.countPages);
-
-    this.once('render:proposal', this.renderProposal);
-    this.once('render:samples', this.renderSamples);
-    this.once('fetch:attachments', this.fetchAttachments);
-    this.once(
-      'fetch:attachmentsFileMeta',
-      this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
-    );
-
-    this.once('rendered:proposal', (pdf) => {
-      this.meta.files.proposal = pdf.pdfPath;
-      this.meta.toc.proposal = pdf.toc;
-      this.emit('taskFinished', 'render:proposal');
-    });
-
-    this.on('rendered:sample', (pdf) => {
-      this.meta.files.samples.push(pdf.pdfPath);
-      this.meta.toc.samples.push(pdf.toc);
-
-      if (this.meta.files.samples.length === samples.length) {
-        this.emit('taskFinished', 'render:samples');
+      if (attachments.length > 0) {
+        tasksNeeded.push('fetch:attachments');
+        tasksNeeded.push('fetch:attachmentsFileMeta');
+        tasksNeeded.push('count-pages:attachments');
       }
-    });
-
-    this.on('fetched:attachment', (attachmentPath) => {
-      this.meta.files.attachments.push(attachmentPath);
-
-      if (
-        this.meta.files.attachments.length ===
-        this.meta.attachmentsFileMeta.length
-      ) {
-        this.emit('taskFinished', 'fetch:attachments');
+      // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then push the job
+      if (samples.length > 0 && this.sampleDeclaration) {
+        tasksNeeded.push('render:samples');
+        tasksNeeded.push('count-pages:samples');
       }
-    });
 
-    this.once(
-      'fetched:attachmentsFileMeta',
-      (attachmentsFileMeta, attachments) => {
-        this.meta.attachmentsFileMeta = attachmentsFileMeta;
-        this.countedPagesMeta.attachments.waitFor = attachmentsFileMeta.length;
+      logger.logDebug(this.logPrefix + 'tasks needed to complete', {
+        tasksNeeded,
+      });
 
-        this.emit('taskFinished', 'fetch:attachmentsFileMeta');
-        this.emit('render:proposal', {
-          ...data,
-          attachmentsFileMeta,
-          userRole: this.userRole,
-        });
+      /**
+       * Listeners
+       */
+      this.on('countPages', this.countPages);
+
+      this.once('render:proposal', this.renderProposal);
+      this.once('render:samples', this.renderSamples);
+      this.once('fetch:attachments', this.fetchAttachments);
+      this.once(
+        'fetch:attachmentsFileMeta',
+        this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
+      );
+
+      this.once('rendered:proposal', (pdf) => {
+        this.meta.files.proposal = pdf.pdfPath;
+        this.meta.toc.proposal = pdf.toc;
+        this.emit('taskFinished', 'render:proposal');
+      });
+
+      this.on('rendered:sample', (pdf) => {
+        this.meta.files.samples.push(pdf.pdfPath);
+        this.meta.toc.samples.push(pdf.toc);
+
+        if (this.meta.files.samples.length === samples.length) {
+          this.emit('taskFinished', 'render:samples');
+        }
+      });
+
+      this.on('fetched:attachment', (attachmentPath) => {
+        this.meta.files.attachments.push(attachmentPath);
+
+        if (
+          this.meta.files.attachments.length ===
+          this.meta.attachmentsFileMeta.length
+        ) {
+          this.emit('taskFinished', 'fetch:attachments');
+        }
+      });
+
+      this.once(
+        'fetched:attachmentsFileMeta',
+        (attachmentsFileMeta, attachments) => {
+          this.meta.attachmentsFileMeta = attachmentsFileMeta;
+          this.countedPagesMeta.attachments.waitFor =
+            attachmentsFileMeta.length;
+
+          this.emit('taskFinished', 'fetch:attachmentsFileMeta');
+          this.emit('render:proposal', {
+            ...data,
+            attachmentsFileMeta,
+            userRole: this.userRole,
+          });
+
+          // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then start the job
+          if (samples.length > 0 && this.sampleDeclaration) {
+            this.emit(
+              'render:samples',
+              { ...data, userRole: this.userRole },
+              samples,
+              attachmentsFileMeta
+            );
+          }
+
+          if (this.countedPagesMeta.attachments.waitFor === 0) {
+            this.emit('taskFinished', 'fetch:attachments');
+            this.emit('taskFinished', 'count-pages:attachments');
+          } else {
+            this.emit('fetch:attachments', attachmentsFileMeta, attachments);
+          }
+        }
+      );
+
+      this.on('taskFinished', (task) => {
+        logger.logDebug(this.logPrefix + 'task finished', { task });
+        tasksNeeded.splice(tasksNeeded.indexOf(task), 1);
+
+        if (tasksNeeded.length === 0 && !this.stopped) {
+          logger.logDebug(this.logPrefix + 'every task finished', { task });
+          this.emit('done', this.meta, this.countedPagesMeta);
+        }
+      });
+
+      /**
+       * Emitters
+       */
+
+      if (attachments.length > 0) {
+        this.meta.attachments = attachments;
+        this.emit('fetch:attachmentsFileMeta', attachments);
+      } else {
+        this.emit('render:proposal', data);
 
         // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then start the job
         if (samples.length > 0 && this.sampleDeclaration) {
@@ -162,48 +203,12 @@ export class CustomProposalPdfFactory extends PdfFactory<
             'render:samples',
             { ...data, userRole: this.userRole },
             samples,
-            attachmentsFileMeta
+            []
           );
         }
-
-        if (this.countedPagesMeta.attachments.waitFor === 0) {
-          this.emit('taskFinished', 'fetch:attachments');
-          this.emit('taskFinished', 'count-pages:attachments');
-        } else {
-          this.emit('fetch:attachments', attachmentsFileMeta, attachments);
-        }
       }
-    );
-
-    this.on('taskFinished', (task) => {
-      logger.logDebug(this.logPrefix + 'task finished', { task });
-      tasksNeeded.splice(tasksNeeded.indexOf(task), 1);
-
-      if (tasksNeeded.length === 0 && !this.stopped) {
-        logger.logDebug(this.logPrefix + 'every task finished', { task });
-        this.emit('done', this.meta, this.countedPagesMeta);
-      }
-    });
-
-    /**
-     * Emitters
-     */
-
-    if (attachments.length > 0) {
-      this.meta.attachments = attachments;
-      this.emit('fetch:attachmentsFileMeta', attachments);
-    } else {
-      this.emit('render:proposal', data);
-
-      // If the Sample Declaration Questionaries are present and answered And there is a template written for the sample declaration, then start the job
-      if (samples.length > 0 && this.sampleDeclaration) {
-        this.emit(
-          'render:samples',
-          { ...data, userRole: this.userRole },
-          samples,
-          []
-        );
-      }
+    } catch (e) {
+      logger.logError('Uncatched execption', { error: e });
     }
   }
 
