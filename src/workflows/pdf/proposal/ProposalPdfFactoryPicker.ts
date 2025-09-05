@@ -3,6 +3,7 @@ import { CustomProposalPdfFactory } from './CustomProposalPdfFactory';
 import { ProposalPDFMeta } from './ProposalPDFMeta';
 import { ProposalPDFData, Role } from '../../../types';
 import { PdfFactoryPicker } from '../PdfFactory';
+import { PregeneratedPdfFactory } from './PregeneratedProposalPdfFactory';
 
 /**
  * Picks between custom and auto generate PDF generator based on the
@@ -13,23 +14,27 @@ export class AutoProposalPdfFactoryPicker extends PdfFactoryPicker<
   ProposalPDFMeta
 > {
   public getFactory(data: ProposalPDFData, entityId: number, userRole: Role) {
-    const templateBody = data.pdfTemplate?.templateData;
-    const templateHeader = data.pdfTemplate?.templateHeader;
-    const templateFooter = data.pdfTemplate?.templateFooter;
-    const templateSampleDeclaration =
-      data.pdfTemplate?.templateSampleDeclaration;
-
-    if (templateBody === undefined) {
-      return new AutoProposalPdfFactory(entityId, userRole);
+    if (data.isPregeneratedPdfData) {
+      return new PregeneratedPdfFactory(entityId, userRole);
     } else {
-      return new CustomProposalPdfFactory(
-        entityId,
-        userRole,
-        templateBody,
-        templateHeader,
-        templateFooter,
-        templateSampleDeclaration
-      );
+      const templateBody = data.pdfTemplate?.templateData;
+      const templateHeader = data.pdfTemplate?.templateHeader;
+      const templateFooter = data.pdfTemplate?.templateFooter;
+      const templateSampleDeclaration =
+        data.pdfTemplate?.templateSampleDeclaration;
+
+      if (templateBody === undefined) {
+        return new AutoProposalPdfFactory(entityId, userRole);
+      } else {
+        return new CustomProposalPdfFactory(
+          entityId,
+          userRole,
+          templateBody,
+          templateHeader,
+          templateFooter,
+          templateSampleDeclaration
+        );
+      }
     }
   }
 }

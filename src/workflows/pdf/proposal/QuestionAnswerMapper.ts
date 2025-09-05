@@ -2,6 +2,7 @@ import { SafeString } from 'handlebars';
 
 import {
   Answer,
+  FullProposalPDFData,
   GenericTemplate,
   GenericTemplateAnswer,
   ProposalPDFData,
@@ -11,7 +12,7 @@ import {
  * Extracts a usable value from an answer.
  */
 type ValueExtractor = (
-  data: ProposalPDFData,
+  data: FullProposalPDFData,
   questionaryStep: Answer
 ) => unknown;
 
@@ -20,7 +21,7 @@ type ValueExtractor = (
  *
  * @param data The proposal PDF data to be mapped.
  */
-export function extractAnswerMap(data: ProposalPDFData) {
+export function extractAnswerMap(data: FullProposalPDFData) {
   return data.questionarySteps
     .flatMap((questionaryStep) => questionaryStep.fields)
     .flatMap((answer) => ({
@@ -63,7 +64,7 @@ function getValueExtractor(type: string): ValueExtractor {
  * template answer.
  */
 function extractGenericTemplateAnswerMap(
-  data: ProposalPDFData,
+  data: FullProposalPDFData,
   answer: Answer
 ): Record<string, unknown>[] {
   return answer.value

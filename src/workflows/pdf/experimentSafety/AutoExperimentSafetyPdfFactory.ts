@@ -23,6 +23,7 @@ export class AutoExperimentSafetyPdfFactory extends PdfFactory<
     },
     attachmentsFileMeta: [],
     attachments: [],
+    isPregeneratedPdfMeta: false,
   };
 
   static ENTITY_NAME = 'ExperimentSafety';
