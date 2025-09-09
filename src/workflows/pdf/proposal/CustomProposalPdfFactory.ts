@@ -208,7 +208,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
         }
       }
     } catch (e) {
-      logger.logError('Uncatched execption', { error: e });
+      logger.logError('Uncatched exception', { error: e });
     }
   }
 
