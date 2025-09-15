@@ -30,7 +30,7 @@
     "@opentelemetry/instrumentation-http": "^0.203.0",
     "@opentelemetry/instrumentation-knex": "^0.50.0",
     "@opentelemetry/instrumentation-winston": "^0.48.1",
-    "@opentelemetry/resource-detector-container": "^0.7.3",
+    "@opentelemetry/resource-detector-container": "^0.7.5",
     "@opentelemetry/sdk-node": "^0.205.0",
     "@opentelemetry/sdk-trace-node": "^2.0.0",
     "@user-office-software/duo-logger": "^2.3.2",
