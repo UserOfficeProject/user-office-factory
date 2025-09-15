@@ -28,7 +28,7 @@
     "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",
     "@opentelemetry/host-metrics": "^0.36.0",
     "@opentelemetry/instrumentation-http": "^0.203.0",
-    "@opentelemetry/instrumentation-knex": "^0.48.0",
+    "@opentelemetry/instrumentation-knex": "^0.50.0",
     "@opentelemetry/instrumentation-winston": "^0.48.1",
     "@opentelemetry/resource-detector-container": "^0.7.3",
     "@opentelemetry/sdk-node": "^0.205.0",
