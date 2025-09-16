@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 
 import { logger } from '@user-office-software/duo-logger';
 import gm from 'gm';
-import delay from 'lodash/delay';
 
 import { FileMetadata } from '../../models/File';
 import {
@@ -195,6 +194,7 @@ export default abstract class PdfFactory<
     attempt = 1
   ) {
     if (this.stopped) {
+      logger.logDebug(`${this.logPrefix} countPages error abort premature`, {});
       this.emit('aborted', 'countPages', { pdfPath, group, attempt });
 
       failSafeDeleteFiles([pdfPath]);
@@ -206,7 +206,7 @@ export default abstract class PdfFactory<
       const totalPages = getTotalPages(pdfPath);
 
       this.countedPagesMeta[group].countedPagesPerPdf[pdfPath] = totalPages;
-
+      logger.logDebug(`${this.logPrefix} countPages getTotalPages`, {});
       if (
         Object.keys(this.countedPagesMeta[group].countedPagesPerPdf).length ===
         this.countedPagesMeta[group].waitFor
@@ -214,11 +214,7 @@ export default abstract class PdfFactory<
         this.emit('taskFinished', `count-pages:${group}`);
       }
     } catch (e) {
-      if (attempt >= 3) {
-        this.emit('error', e, 'countPages', { pdfPath, group });
-      } else {
-        delay(() => this.emit('countPages', pdfPath, group, attempt + 1), 100);
-      }
+      this.emit('error', e, 'countPages', { pdfPath, group });
     }
   }
 

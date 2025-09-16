@@ -256,22 +256,45 @@ export class AutoProposalPdfFactory extends PdfFactory<
         proposal,
         principalInvestigator,
         coProposers,
-      }).catch((e) => {
-        this.emit('error', e, 'renderedProposalHtml');
+      })
+        .catch((e) => {
+          this.emit('error', e, 'renderedProposalHtml');
 
-        return e;
-      });
-      const renderedHeaderFooter = await renderHeaderFooter(
-        proposal.proposalId
-      ).catch((e) => {
-        this.emit('error', e, 'renderedHeaderFooter');
+          return e;
+        })
+        .finally(() => {
+          logger.logDebug(
+            `${this.logPrefix} renderedProposalHtml successful`,
+            {}
+          );
+        });
+      const renderedHeaderFooter = await renderHeaderFooter(proposal.proposalId)
+        .catch((e) => {
+          this.emit('error', e, 'renderedHeaderFooter');
 
-        return e;
-      });
+          return e;
+        })
+        .finally(() => {
+          logger.logDebug(
+            `${this.logPrefix} renderedHeaderFooter successful`,
+            {}
+          );
+        });
 
       const pdf = await generatePdfFromHtml(renderedProposalHtml, {
         pdfOptions: renderedHeaderFooter,
-      });
+      })
+        .catch((e) => {
+          this.emit('error', e, 'generatePdfFromHtml');
+
+          return e;
+        })
+        .finally(() => {
+          logger.logDebug(
+            `${this.logPrefix} generatePdfFromHtml successful`,
+            {}
+          );
+        });
 
       this.emit('countPages', pdf.pdfPath, 'proposal');
       this.emit('rendered:proposal', pdf);
