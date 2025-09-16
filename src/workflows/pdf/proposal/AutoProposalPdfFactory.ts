@@ -103,30 +103,39 @@ export class AutoProposalPdfFactory extends PdfFactory<
     }
 
     logger.logDebug(this.logPrefix + 'tasks needed to complete', {
-      tasksNeeded,
+      info: JSON.stringify(tasksNeeded),
     });
 
     /**
      * Listeners
      */
     this.on('countPages', this.countPages);
-
+    logger.logDebug(`${this.logPrefix} countPages completed`, {});
     this.once('render:proposal', this.renderProposal);
+
+    logger.logDebug(`${this.logPrefix} render:proposal completed`, {});
     this.once('render:questionnaires', this.renderQuestionarySteps);
+    logger.logDebug(`${this.logPrefix} render:questionnaires completed`, {});
     this.once('render:technicalReview', this.renderTechnicalReview);
+    logger.logDebug(`${this.logPrefix} render:technicalReview completed`, {});
     this.once('render:samples', this.renderSamples);
+    logger.logDebug(`${this.logPrefix} render:samples completed`, {});
     this.once('fetch:attachments', this.fetchAttachments);
+    logger.logDebug(`${this.logPrefix} fetch:attachments completed`, {});
     this.once(
       'fetch:attachmentsFileMeta',
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
-
+    logger.logDebug(
+      `${this.logPrefix} fetch:attachmentsFileMeta completed`,
+      {}
+    );
     this.once('rendered:proposal', (pdf) => {
       this.meta.files.proposal = pdf.pdfPath;
       this.meta.toc.proposal = pdf.toc;
       this.emit('taskFinished', 'render:proposal');
     });
-
+    logger.logDebug(`${this.logPrefix} render:proposal completed`, {});
     this.once('rendered:technicalReview', (pdf) => {
       this.meta.files.technicalReview = pdf.pdfPath;
       this.meta.toc.technicalReview = pdf.toc;
@@ -243,14 +252,22 @@ export class AutoProposalPdfFactory extends PdfFactory<
     }
 
     try {
-      const [renderedProposalHtml, renderedHeaderFooter] = await Promise.all([
-        renderTemplate('proposal-main.hbs', {
-          proposal,
-          principalInvestigator,
-          coProposers,
-        }),
-        renderHeaderFooter(proposal.proposalId),
-      ]);
+      const renderedProposalHtml = await renderTemplate('proposal-main.hbs', {
+        proposal,
+        principalInvestigator,
+        coProposers,
+      }).catch((e) => {
+        this.emit('error', e, 'renderedProposalHtml');
+
+        return e;
+      });
+      const renderedHeaderFooter = await renderHeaderFooter(
+        proposal.proposalId
+      ).catch((e) => {
+        this.emit('error', e, 'renderedHeaderFooter');
+
+        return e;
+      });
 
       const pdf = await generatePdfFromHtml(renderedProposalHtml, {
         pdfOptions: renderedHeaderFooter,
