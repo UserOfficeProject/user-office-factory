@@ -48,7 +48,11 @@ export async function generatePdfFromHtml(
   try {
     if (process.env.PDF_DEBUG_HTML === '1') {
       const htmlPath = `${name}.html`;
-      await promises.writeFile(htmlPath, html, 'utf-8');
+      await promises.writeFile(htmlPath, html, 'utf-8').catch((e) => {
+        logger.logError(`${e} writeFile`, {});
+
+        return e;
+      });
 
       logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
     }
@@ -56,7 +60,11 @@ export async function generatePdfFromHtml(
     const pdfPath = `${name}.pdf`;
 
     const start = Date.now();
-    const page = await browser.newPage();
+    const page = await browser.newPage().catch((e) => {
+      logger.logError(`${e} newPage`, {});
+
+      return e;
+    });
     await page.setContent(html, { waitUntil: 'networkidle0' });
     await page.emulateMediaType('screen');
 

@@ -302,11 +302,9 @@ export class AutoProposalPdfFactory extends PdfFactory<
         });
       logger.logDebug(`${this.logPrefix} pdf.pdfPath ${pdf}`, {});
       if (pdf) {
-        if (pdf?.pdfPath) {
-        }
+        this.emit('countPages', pdf?.pdfPath, 'proposal');
+        this.emit('rendered:proposal', pdf);
       }
-      this.emit('countPages', pdf?.pdfPath, 'proposal');
-      this.emit('rendered:proposal', pdf);
     } catch (e) {
       this.emit('error', e, 'renderProposal');
     }
