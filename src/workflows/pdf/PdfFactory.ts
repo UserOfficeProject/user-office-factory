@@ -91,6 +91,10 @@ export default abstract class PdfFactory<
 
   protected fetchAttachmentsFileMeta(mimeType: string[]) {
     return async (attachments: Attachment[]) => {
+      logger.logDebug(
+        `Status of flags fetchAttachmentsFileMeta aborted : ${this.aborted} stopped : ${this.stopped}`,
+        {}
+      );
       if (this.stopped) {
         this.emit('aborted', 'fetchAttachmentsFileMeta');
 
@@ -116,6 +120,10 @@ export default abstract class PdfFactory<
   ) {
     try {
       for (const attachmentFileMeta of attachmentsFileMeta) {
+        logger.logDebug(
+          `Status of flags fetchAttachments aborted : ${this.aborted} stopped : ${this.stopped}`,
+          {}
+        );
         if (this.stopped) {
           this.emit('aborted', 'fetchAttachments');
 
@@ -194,7 +202,7 @@ export default abstract class PdfFactory<
     attempt = 1
   ) {
     logger.logDebug(
-      `Status of flags 2 aborted : ${this.aborted} stopped : ${this.stopped}`,
+      `Status of flags countPage aborted : ${this.aborted} stopped : ${this.stopped}`,
       {}
     );
     if (this.stopped) {

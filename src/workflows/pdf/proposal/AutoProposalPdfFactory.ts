@@ -116,32 +116,27 @@ export class AutoProposalPdfFactory extends PdfFactory<
     );
     this.on('countPages', this.countPages);
 
-    logger.logDebug(`${this.logPrefix} countPages completed`, {});
     this.once('render:proposal', this.renderProposal);
 
-    logger.logDebug(`${this.logPrefix} render:proposal completed`, {});
     this.once('render:questionnaires', this.renderQuestionarySteps);
-    logger.logDebug(`${this.logPrefix} render:questionnaires completed`, {});
+
     this.once('render:technicalReview', this.renderTechnicalReview);
-    logger.logDebug(`${this.logPrefix} render:technicalReview completed`, {});
+
     this.once('render:samples', this.renderSamples);
-    logger.logDebug(`${this.logPrefix} render:samples completed`, {});
+
     this.once('fetch:attachments', this.fetchAttachments);
-    logger.logDebug(`${this.logPrefix} fetch:attachments completed`, {});
+
     this.once(
       'fetch:attachmentsFileMeta',
       this.fetchAttachmentsFileMeta(['application/pdf', '^image/.*'])
     );
-    logger.logDebug(
-      `${this.logPrefix} fetch:attachmentsFileMeta completed`,
-      {}
-    );
+
     this.once('rendered:proposal', (pdf) => {
       this.meta.files.proposal = pdf.pdfPath;
       this.meta.toc.proposal = pdf.toc;
       this.emit('taskFinished', 'render:proposal');
     });
-    logger.logDebug(`${this.logPrefix} render:proposal completed`, {});
+
     this.once('rendered:technicalReview', (pdf) => {
       this.meta.files.technicalReview = pdf.pdfPath;
       this.meta.toc.technicalReview = pdf.toc;
@@ -251,6 +246,10 @@ export class AutoProposalPdfFactory extends PdfFactory<
     principalInvestigator: BasicUser,
     coProposers: BasicUser[]
   ) {
+    logger.logDebug(
+      `Status of flags renderProposal aborted : ${this.aborted} stopped : ${this.stopped}`,
+      {}
+    );
     if (this.stopped) {
       this.emit('aborted', 'renderProposal');
 
@@ -301,7 +300,7 @@ export class AutoProposalPdfFactory extends PdfFactory<
             {}
           );
         });
-
+      logger.logDebug(`${this.logPrefix} pdf.pdfPath ${pdf}`, {});
       this.emit('countPages', pdf.pdfPath, 'proposal');
       this.emit('rendered:proposal', pdf);
     } catch (e) {
@@ -315,6 +314,10 @@ export class AutoProposalPdfFactory extends PdfFactory<
     genericTemplates: GenericTemplate[],
     attachmentsFileMeta: FileMetadata[]
   ) {
+    logger.logDebug(
+      `Status of flags renderQuestionarySteps aborted : ${this.aborted} stopped : ${this.stopped}`,
+      {}
+    );
     if (this.stopped) {
       this.emit('aborted', 'renderQuestionarySteps');
 
@@ -352,6 +355,10 @@ export class AutoProposalPdfFactory extends PdfFactory<
       instrumentName: string;
     }[]
   ) {
+    logger.logDebug(
+      `Status of flags renderTechnicalReview aborted : ${this.aborted} stopped : ${this.stopped}`,
+      {}
+    );
     if (this.stopped) {
       this.emit('aborted', 'renderTechnicalReview');
 
@@ -384,6 +391,10 @@ export class AutoProposalPdfFactory extends PdfFactory<
   ) {
     try {
       for (const { sample, sampleQuestionaryFields } of samples) {
+        logger.logDebug(
+          `Status of flags renderSamples aborted : ${this.aborted} stopped : ${this.stopped}`,
+          {}
+        );
         if (this.stopped) {
           this.emit('aborted', 'renderSamples');
 
