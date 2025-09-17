@@ -109,7 +109,13 @@ export class AutoProposalPdfFactory extends PdfFactory<
     /**
      * Listeners
      */
+
+    logger.logDebug(
+      `Status of flags aborted : ${this.aborted} stopped : ${this.stopped}`,
+      {}
+    );
     this.on('countPages', this.countPages);
+
     logger.logDebug(`${this.logPrefix} countPages completed`, {});
     this.once('render:proposal', this.renderProposal);
 
