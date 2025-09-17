@@ -193,6 +193,10 @@ export default abstract class PdfFactory<
     group: keyof PdfFactoryMeta['files'],
     attempt = 1
   ) {
+    logger.logDebug(
+      `Status of flags 2 aborted : ${this.aborted} stopped : ${this.stopped}`,
+      {}
+    );
     if (this.stopped) {
       logger.logDebug(`${this.logPrefix} countPages error abort premature`, {});
       this.emit('aborted', 'countPages', { pdfPath, group, attempt });
@@ -201,7 +205,10 @@ export default abstract class PdfFactory<
 
       return;
     }
-
+    logger.logDebug(
+      `Status of flags 3 aborted : ${this.aborted} stopped : ${this.stopped}`,
+      {}
+    );
     try {
       const totalPages = getTotalPages(pdfPath);
 
@@ -215,6 +222,11 @@ export default abstract class PdfFactory<
       }
     } catch (e) {
       this.emit('error', e, 'countPages', { pdfPath, group });
+    } finally {
+      logger.logDebug(
+        `Status of flags 4 aborted : ${this.aborted} stopped : ${this.stopped}`,
+        {}
+      );
     }
   }
 
