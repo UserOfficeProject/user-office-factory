@@ -101,9 +101,10 @@ export class AutoExperimentSafetyPdfFactory extends PdfFactory<
       const pdf = await generatePdfFromHtml(renderedExperimentSafetyHtml, {
         pdfOptions,
       });
-
-      this.emit('countPages', pdf.pdfPath, 'experimentSafety');
-      this.emit('rendered:experimentSafety', pdf);
+      if (pdf) {
+        this.emit('countPages', pdf.pdfPath, 'experimentSafety');
+        this.emit('rendered:experimentSafety', pdf);
+      }
     } catch (e) {
       this.emit('error', e, 'renderExperimentSafety');
     }
