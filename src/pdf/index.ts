@@ -39,41 +39,49 @@ export async function generatePdfFromHtml(
   html: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ) {
-  const name = generateTmpPath();
-
-  if (process.env.PDF_DEBUG_HTML === '1') {
-    const htmlPath = `${name}.html`;
-    await promises.writeFile(htmlPath, html, 'utf-8');
-
-    logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+  let name = null;
+  try {
+    name = generateTmpPath();
+  } catch (error) {
+    logger.logDebug(`${error} generateTmpPath`, {});
   }
+  try {
+    if (process.env.PDF_DEBUG_HTML === '1') {
+      const htmlPath = `${name}.html`;
+      await promises.writeFile(htmlPath, html, 'utf-8');
 
-  const pdfPath = `${name}.pdf`;
+      logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+    }
 
-  const start = Date.now();
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.emulateMediaType('screen');
+    const pdfPath = `${name}.pdf`;
 
-  const headingsInfo = await page.evaluate(extractHeadingsInfo);
+    const start = Date.now();
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.emulateMediaType('screen');
 
-  await page.pdf({
-    path: pdfPath,
-    format: 'A4',
-    margin: { top: 0, left: 0, bottom: 0, right: 0 },
-    ...pdfOptions,
-  });
+    const headingsInfo = await page.evaluate(extractHeadingsInfo);
 
-  await page.close();
+    await page.pdf({
+      path: pdfPath,
+      format: 'A4',
+      margin: { top: 0, left: 0, bottom: 0, right: 0 },
+      ...pdfOptions,
+    });
 
-  logger.logDebug('[generatePdfFromHtml] PDF output:', {
-    pdfPath,
-    runtime: Date.now() - start,
-  });
+    await page.close();
 
-  const toc = generateToc(headingsInfo);
+    logger.logDebug('[generatePdfFromHtml] PDF output:', {
+      pdfPath,
+      runtime: Date.now() - start,
+    });
 
-  return { pdfPath, toc };
+    const toc = generateToc(headingsInfo);
+
+    return { pdfPath, toc };
+  } catch (error) {
+    logger.logDebug(`${error} [generatePdfFromHtml] HTML output`, {});
+  }
 }
 
 // Utility function to extract information about headings and their positions using page.evaluate()

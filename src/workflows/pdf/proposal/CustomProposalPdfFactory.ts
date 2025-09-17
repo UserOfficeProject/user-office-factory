@@ -266,7 +266,10 @@ export class CustomProposalPdfFactory extends PdfFactory<
         pdfOptions: pdfOptions,
       });
 
-      this.emit('countPages', pdf.pdfPath, 'proposal');
+      if (pdf) {
+        this.emit('countPages', pdf.pdfPath, 'proposal');
+      }
+
       this.emit('rendered:proposal', pdf);
     } catch (e) {
       this.emit('error', e, 'renderProposal');
@@ -323,8 +326,11 @@ export class CustomProposalPdfFactory extends PdfFactory<
           const pdf = await generatePdfFromHtml(renderedProposalSample, {
             pdfOptions: pdfOptions,
           });
-          console.info({ pdfPath: pdf.pdfPath });
-          this.emit('countPages', pdf.pdfPath, 'samples');
+          if (pdf) {
+            console.info({ pdfPath: pdf.pdfPath });
+            this.emit('countPages', pdf.pdfPath, 'samples');
+          }
+
           this.emit('rendered:sample', pdf);
         }
       } catch (e) {

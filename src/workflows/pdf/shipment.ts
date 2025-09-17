@@ -114,8 +114,9 @@ export class ShipmentPdfFactory extends PdfFactory<
       const pdf = await generatePdfFromHtml(renderedShipmentHtml, {
         pdfOptions: { printBackground: true },
       });
-
-      this.emit('rendered:shipment', pdf.pdfPath);
+      if (pdf) {
+        this.emit('rendered:shipment', pdf.pdfPath);
+      }
     } catch (e) {
       this.emit('error', e, 'renderShipment');
     }

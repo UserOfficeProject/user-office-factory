@@ -159,8 +159,10 @@ export class SamplePdfFactory extends PdfFactory<SamplePDFData, SamplePDFMeta> {
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdf.pdfPath, 'sample');
-      this.emit('rendered:sample', pdf);
+      if (pdf) {
+        this.emit('countPages', pdf.pdfPath, 'sample');
+        this.emit('rendered:sample', pdf);
+      }
     } catch (e) {
       this.emit('error', e, 'renderSample');
     }

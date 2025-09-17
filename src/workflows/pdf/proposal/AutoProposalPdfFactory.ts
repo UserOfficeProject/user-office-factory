@@ -301,7 +301,11 @@ export class AutoProposalPdfFactory extends PdfFactory<
           );
         });
       logger.logDebug(`${this.logPrefix} pdf.pdfPath ${pdf}`, {});
-      this.emit('countPages', pdf.pdfPath, 'proposal');
+      if (pdf) {
+        if (pdf?.pdfPath) {
+        }
+      }
+      this.emit('countPages', pdf?.pdfPath, 'proposal');
       this.emit('rendered:proposal', pdf);
     } catch (e) {
       this.emit('error', e, 'renderProposal');
@@ -339,7 +343,10 @@ export class AutoProposalPdfFactory extends PdfFactory<
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdf.pdfPath, 'questionnaires');
+      if (pdf) {
+        this.emit('countPages', pdf.pdfPath, 'questionnaires');
+      }
+
       this.emit('rendered:questionary', pdf);
     } catch (e) {
       this.emit('error', e, 'renderQuestionarySteps');
@@ -377,7 +384,10 @@ export class AutoProposalPdfFactory extends PdfFactory<
         pdfOptions: renderedHeaderFooter,
       });
 
-      this.emit('countPages', pdf.pdfPath, 'technicalReview');
+      if (pdf) {
+        this.emit('countPages', pdf.pdfPath, 'technicalReview');
+      }
+
       this.emit('rendered:technicalReview', pdf);
     } catch (e) {
       this.emit('error', e, 'renderTechnicalReview');
@@ -415,7 +425,10 @@ export class AutoProposalPdfFactory extends PdfFactory<
           pdfOptions: renderedHeaderFooter,
         });
 
-        this.emit('countPages', pdf.pdfPath, 'samples');
+        if (pdf) {
+          this.emit('countPages', pdf.pdfPath, 'samples');
+        }
+
         this.emit('rendered:sample', pdf);
       }
     } catch (e) {
