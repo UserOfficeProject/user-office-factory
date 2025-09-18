@@ -13,27 +13,63 @@ export type TableOfContents = {
   children: TableOfContents[];
 };
 
-let browser: Browser;
-
 const launchOptions = ['--disable-dev-shm-usage', '--disable-gpu'];
 
 if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
 }
 
-logger.logInfo('Launching puppeteer with ', {
-  args: launchOptions,
-  timeout: 60000,
-});
+let browser: Browser;
 
-// TODO: create browser lazily while keeping track of it
-// so we don't end up with dozens of browsers
-puppeteer
-  .launch({ args: launchOptions, timeout: 60000000, dumpio: true })
-  .then((inst) => (browser = inst))
-  .catch((e) => {
-    logger.logException('Failed to start browser puppeteer', e);
-  });
+(async () => {
+  try {
+    await getBrowser();
+    logger.logInfo('Puppeteer browser instance prewarmed and ready.', {});
+  } catch (error) {
+    logger.logException(
+      'Failed to prewarm browser instance, application may be non-functional.',
+      error
+    );
+  }
+})();
+async function getBrowser(): Promise<Browser> {
+  if (!browser) {
+    logger.logInfo('Launching puppeteer with ', {
+      args: launchOptions,
+      timeout: 60000,
+      dumpio: true,
+    });
+    try {
+      browser = await puppeteer.launch({
+        args: launchOptions,
+        timeout: 60000000,
+        dumpio: true,
+      });
+    } catch (e) {
+      logger.logException('Failed to start browser instance puppeteer', e);
+      throw e;
+    }
+  }
+
+  try {
+    const page = await browser.newPage();
+    await page.close();
+  } catch (e) {
+    logger.logException(
+      'Puppeteer browser instance is not functional. Attempting restart.',
+      e
+    );
+    if (browser) {
+      await browser.close().catch((err) => {
+        logger.logException('Failed to close crashed browser instance', err);
+      });
+    }
+
+    return getBrowser();
+  }
+
+  return browser;
+}
 
 export async function generatePdfFromHtml(
   html: string,
@@ -60,7 +96,8 @@ export async function generatePdfFromHtml(
     const pdfPath = `${name}.pdf`;
 
     const start = Date.now();
-    const page = await browser.newPage().catch((e) => {
+    const currentBrowser = await getBrowser();
+    const page = await currentBrowser.newPage().catch((e) => {
       logger.logError(`${e} newPage`, {});
 
       return e;
@@ -177,7 +214,8 @@ export async function generatePdfFromLink(
   const pdfPath = `${name}.pdf`;
 
   const start = Date.now();
-  const page = await browser.newPage();
+  const currentBrowser = await getBrowser();
+  const page = await currentBrowser.newPage();
   await page.setViewport({
     width: 1920,
     height: 947,
