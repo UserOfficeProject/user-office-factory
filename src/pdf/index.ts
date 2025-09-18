@@ -19,7 +19,8 @@ if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
 }
 
-let browser: Browser;
+let browser: Browser | null;
+let browserPromise: Browser | PromiseLike<Browser> | null;
 
 (async () => {
   try {
@@ -33,7 +34,36 @@ let browser: Browser;
   }
 })();
 async function getBrowser(): Promise<Browser> {
-  if (!browser) {
+  if (browserPromise) {
+    return browserPromise;
+  }
+  if (browser) {
+    if (browser.connected) {
+      try {
+        const page = await browser.newPage();
+        await page.close();
+
+        return browser;
+      } catch (e) {
+        logger.logException(
+          'Puppeteer browser instance is not functional. Attempting restart.',
+          e
+        );
+        browser = null;
+        browserPromise = null;
+      }
+    } else {
+      if (browser) {
+        await browser.close().catch((err) => {
+          logger.logException('Failed to close crashed browser instance', err);
+        });
+      }
+      browser = null;
+      browserPromise = null;
+    }
+  }
+
+  browserPromise = new Promise(async (resolve, reject) => {
     logger.logInfo('Launching puppeteer with ', {
       args: launchOptions,
       timeout: 60000,
@@ -45,30 +75,20 @@ async function getBrowser(): Promise<Browser> {
         timeout: 60000000,
         dumpio: true,
       });
+      const page = await browser.newPage();
+      await page.close();
+      browserPromise = null;
+      logger.logInfo('Puppeteer browser instance started', {});
+      resolve(browser);
     } catch (e) {
       logger.logException('Failed to start browser instance puppeteer', e);
-      throw e;
+      browser = null;
+      browserPromise = null;
+      reject(e);
     }
-  }
+  });
 
-  try {
-    const page = await browser.newPage();
-    await page.close();
-  } catch (e) {
-    logger.logException(
-      'Puppeteer browser instance is not functional. Attempting restart.',
-      e
-    );
-    if (browser) {
-      await browser.close().catch((err) => {
-        logger.logException('Failed to close crashed browser instance', err);
-      });
-    }
-
-    return getBrowser();
-  }
-
-  return browser;
+  return browserPromise;
 }
 
 export async function generatePdfFromHtml(
