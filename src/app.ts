@@ -15,6 +15,7 @@ import { container } from 'tsyringe';
 
 import { MetricsService } from './config/metrics/MetricsService';
 import { Tokens } from './config/Tokens';
+import PostgresSystemDataSource from './dataSources/postgres/SystemDataSource';
 import { browserConnected } from './pdf';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
@@ -23,7 +24,7 @@ import getXLSXWorkflowManager from './workflows/xlsx';
 import getZIPWorkflowManager from './workflows/zip';
 
 const app = express();
-
+const systemDataSource = new PostgresSystemDataSource();
 app.use(
   httpLogger('tiny', {
     skip: function (req, res) {
@@ -136,11 +137,20 @@ app.get('/version', (req, res) => {
 
 app.get('/readiness', async (req, res) => {
   const browserStatus = await browserConnected();
-  if (browserStatus) {
-    return res.status(200).json({ status: 'Up', puppeteer: 'Connected' });
+  const systemDatabaseStatus = await systemDataSource.connectivityCheck();
+  if (browserStatus && systemDatabaseStatus) {
+    return res.status(200).json({
+      status: 'Up',
+      puppeteer: 'Connected',
+      database: 'Connected',
+    });
   }
 
-  return res.status(500).json({ status: 'Up', puppeteer: 'Not connected' });
+  return res.status(500).json({
+    status: 'Down',
+    puppeteer: browserStatus ? 'Connected' : 'Not connected',
+    database: systemDatabaseStatus ? 'Connected' : 'Not connected',
+  });
 });
 
 app.get(['/', '/health-check'], (req, res) => {
