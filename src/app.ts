@@ -15,6 +15,7 @@ import { container } from 'tsyringe';
 
 import { MetricsService } from './config/metrics/MetricsService';
 import { Tokens } from './config/Tokens';
+import { browserConnected } from './pdf';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
 import { WorkflowManager } from './workflows/WorkflowManager';
@@ -131,6 +132,15 @@ app.get('/version', (req, res) => {
 
     res.end(cachedVersion);
   });
+});
+
+app.get('/readiness', async (req, res) => {
+  const browserStatus = await browserConnected();
+  if (browserStatus) {
+    return res.status(200).json({ status: 'Up', puppeteer: 'Connected' });
+  }
+
+  return res.status(500).json({ status: 'Up', puppeteer: 'Not connected' });
 });
 
 app.get(['/', '/health-check'], (req, res) => {

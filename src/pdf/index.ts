@@ -91,6 +91,21 @@ async function getBrowser(): Promise<Browser> {
   return browserPromise;
 }
 
+export async function browserConnected() {
+  if (browser && browser.connected) {
+    try {
+      const page = await browser.newPage();
+      await page.close();
+
+      return true;
+    } catch (e) {
+      logger.logException('Puppeteer browser instance is not connected', e);
+    }
+  }
+
+  return false;
+}
+
 export async function generatePdfFromHtml(
   html: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
