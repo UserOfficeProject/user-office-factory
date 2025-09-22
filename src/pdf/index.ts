@@ -22,18 +22,9 @@ if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
 let browser: Browser | null;
 let browserPromise: Browser | PromiseLike<Browser> | null;
 
-(async () => {
-  try {
-    await getBrowser();
-    logger.logInfo('Puppeteer browser instance prewarmed and ready.', {});
-  } catch (error) {
-    logger.logException(
-      'Failed to prewarm browser instance, application may be non-functional.',
-      error
-    );
-  }
-})();
-async function getBrowser(): Promise<Browser> {
+(async () => await launchBrowser())();
+
+async function launchBrowser(): Promise<Browser> {
   if (browserPromise) {
     return browserPromise;
   }
@@ -45,12 +36,15 @@ async function getBrowser(): Promise<Browser> {
       return browser;
     } catch (e) {
       logger.logException(
-        'Puppeteer browser instance is not functional. Attempting restart.',
+        'Puppeteer browser instance is not connected. Attempting restart.',
         e
       );
       if (browser) {
         await browser.close().catch((err) => {
-          logger.logException('Failed to close crashed browser instance', err);
+          logger.logException(
+            'Failed to close crashed puppeteer browser instance',
+            err
+          );
         });
       }
       browser = null;
@@ -74,7 +68,7 @@ async function getBrowser(): Promise<Browser> {
       logger.logInfo('Puppeteer browser instance started', {});
       resolve(browser);
     } catch (e) {
-      logger.logException('Failed to start browser instance puppeteer', e);
+      logger.logException('Failed to start puppeteer browser instance', e);
       browser = null;
       browserPromise = null;
       reject(e);
@@ -82,6 +76,14 @@ async function getBrowser(): Promise<Browser> {
   });
 
   return browserPromise;
+}
+
+async function getBrowser(): Promise<Browser> {
+  if (browser && browser.connected) {
+    return browser;
+  }
+
+  return launchBrowser();
 }
 
 function promiseWithTimeout<T>(
@@ -110,7 +112,7 @@ export async function browserConnected() {
 
       return true;
     } catch (e) {
-      logger.logException('Puppeteer browser instance is not functional.', e);
+      logger.logException('Puppeteer browser instance is not connected.', e);
     }
   }
 
@@ -145,6 +147,7 @@ export async function generatePdfFromHtml(
     const currentBrowser = await getBrowser();
     const page = await currentBrowser.newPage().catch((e) => {
       logger.logError(`${e} newPage`, {});
+      launchBrowser();
 
       return e;
     });

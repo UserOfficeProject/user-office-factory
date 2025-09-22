@@ -140,7 +140,7 @@ app.get('/readiness', async (req, res) => {
   const systemDatabaseStatus = await systemDataSource.connectivityCheck();
   if (browserStatus && systemDatabaseStatus) {
     return res.status(200).json({
-      status: 'Up',
+      status: 'UP',
       puppeteer: 'Connected',
       database: 'Connected',
     });
