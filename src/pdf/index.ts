@@ -92,14 +92,18 @@ async function getBrowser(): Promise<Browser> {
 }
 
 export async function browserConnected() {
-  if (browser && browser.connected) {
+  if (browserPromise) {
+    return false;
+  }
+
+  if (browser) {
     try {
       const page = await browser.newPage();
       await page.close();
 
       return true;
     } catch (e) {
-      logger.logException('Puppeteer browser instance is not connected', e);
+      logger.logException('Puppeteer browser instance is not functional.', e);
     }
   }
 
