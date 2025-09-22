@@ -89,20 +89,6 @@ async function getBrowser(): Promise<Browser> {
   return browserPromise;
 }
 
-function promiseWithTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  timeoutError = new Error('Promise timed out')
-): Promise<T> {
-  const timeout = new Promise<T>((_, reject) => {
-    setTimeout(() => {
-      reject(timeoutError);
-    }, ms);
-  });
-
-  return Promise.race([promise, timeout]);
-}
-
 export async function browserConnected() {
   if (browserPromise) {
     return false;
@@ -110,10 +96,7 @@ export async function browserConnected() {
 
   if (browser) {
     try {
-      const page = await promiseWithTimeout(browser.newPage(), 30000);
-      await promiseWithTimeout(page.close(), 30000);
-
-      return true;
+      return browser.connected;
     } catch (e) {
       logger.logException('Puppeteer browser instance is not functional.', e);
     }

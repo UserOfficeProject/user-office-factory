@@ -138,7 +138,7 @@ app.get('/version', (req, res) => {
 app.get('/readiness', async (req, res) => {
   const browserStatus = await browserConnected();
   const systemDatabaseStatus = await systemDataSource.connectivityCheck();
-  if (systemDatabaseStatus) {
+  if (browserStatus && systemDatabaseStatus) {
     return res.status(200).json({
       status: 'Up',
       puppeteer: 'Connected',
