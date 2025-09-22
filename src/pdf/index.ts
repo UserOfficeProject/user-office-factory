@@ -38,21 +38,16 @@ async function getBrowser(): Promise<Browser> {
     return browserPromise;
   }
   if (browser) {
-    if (browser.connected) {
-      try {
-        const page = await browser.newPage();
-        await page.close();
+    try {
+      const page = await browser.newPage();
+      await page.close();
 
-        return browser;
-      } catch (e) {
-        logger.logException(
-          'Puppeteer browser instance is not functional. Attempting restart.',
-          e
-        );
-        browser = null;
-        browserPromise = null;
-      }
-    } else {
+      return browser;
+    } catch (e) {
+      logger.logException(
+        'Puppeteer browser instance is not functional. Attempting restart.',
+        e
+      );
       if (browser) {
         await browser.close().catch((err) => {
           logger.logException('Failed to close crashed browser instance', err);
@@ -89,6 +84,20 @@ async function getBrowser(): Promise<Browser> {
   return browserPromise;
 }
 
+function promiseWithTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  timeoutError = new Error('Promise timed out')
+): Promise<T> {
+  const timeout = new Promise<T>((_, reject) => {
+    setTimeout(() => {
+      reject(timeoutError);
+    }, ms);
+  });
+
+  return Promise.race([promise, timeout]);
+}
+
 export async function browserConnected() {
   if (browserPromise) {
     return false;
@@ -96,7 +105,10 @@ export async function browserConnected() {
 
   if (browser) {
     try {
-      return browser.connected;
+      const page = await promiseWithTimeout(browser.newPage(), 10000);
+      await promiseWithTimeout(page.close(), 10000);
+
+      return true;
     } catch (e) {
       logger.logException('Puppeteer browser instance is not functional.', e);
     }
