@@ -66,13 +66,11 @@ async function getBrowser(): Promise<Browser> {
   browserPromise = new Promise(async (resolve, reject) => {
     logger.logInfo('Launching puppeteer with ', {
       args: launchOptions,
-      timeout: 60000,
       dumpio: true,
     });
     try {
       browser = await puppeteer.launch({
         args: launchOptions,
-        timeout: 60000000,
         dumpio: true,
       });
       const page = await browser.newPage();
