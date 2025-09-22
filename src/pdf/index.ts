@@ -30,8 +30,8 @@ async function launchBrowser(): Promise<Browser> {
   }
   if (browser) {
     try {
-      const page = await browser.newPage();
-      await page.close();
+      const page = await promiseWithTimeout(browser.newPage(), 10000);
+      await promiseWithTimeout(page.close(), 10000);
 
       return browser;
     } catch (e) {
@@ -40,7 +40,7 @@ async function launchBrowser(): Promise<Browser> {
         e
       );
       if (browser) {
-        await browser.close().catch((err) => {
+        await promiseWithTimeout(browser.close(), 10000).catch((err) => {
           logger.logException(
             'Failed to close crashed puppeteer browser instance',
             err
