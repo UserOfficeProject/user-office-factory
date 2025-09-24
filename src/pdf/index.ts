@@ -2,7 +2,7 @@ import { promises } from 'fs';
 
 import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
-import puppeteer, { Browser, PDFOptions } from 'puppeteer';
+import puppeteer, { Browser, BrowserContext, PDFOptions } from 'puppeteer';
 
 import { createToC } from './pdfTableOfContents';
 import { generateTmpPath, generateTmpPathWithName } from '../util/fileSystem';
@@ -41,7 +41,7 @@ export async function generatePdfFromHtml(
     toc: TableOfContents[];
   }>();
   const name = generateTmpPath();
-
+  let context: BrowserContext | undefined = undefined;
   try {
     if (process.env.PDF_DEBUG_HTML === '1') {
       const htmlPath = `${name}.html`;
@@ -53,12 +53,8 @@ export async function generatePdfFromHtml(
     const pdfPath = `${name}.pdf`;
 
     const start = Date.now();
-    const context = await browser.createBrowserContext();
-    promise.finally(() => {
-      if (context) {
-        context.close();
-      }
-    });
+    context = await browser.createBrowserContext();
+
     const page = await context.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     await page.emulateMediaType('screen');
@@ -85,6 +81,10 @@ export async function generatePdfFromHtml(
   } catch (error) {
     logger.logError(`${error} [generatePdfFromHtml]`, {});
     reject(`[generatePdfFromHtml] failed to generate pdf from Html ${error}`);
+  } finally {
+    if (context) {
+      await context.close();
+    }
   }
 
   return promise;
@@ -171,6 +171,7 @@ export async function generatePdfFromLink(
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ): Promise<string> {
   const { promise, resolve, reject } = Promise.withResolvers<string>();
+  let context: BrowserContext | undefined = undefined;
   try {
     const name = generateTmpPath();
 
@@ -179,13 +180,7 @@ export async function generatePdfFromLink(
     }
     const pdfPath = `${name}.pdf`;
     const start = Date.now();
-    const context = await browser.createBrowserContext().catch((e) => {
-      if (context) {
-        context.close();
-      }
-
-      throw e;
-    });
+    context = await browser.createBrowserContext();
     promise.finally(() => {
       if (context) {
         context.close();
@@ -221,6 +216,10 @@ export async function generatePdfFromLink(
   } catch (error) {
     logger.logError(`${error} [generatePdfFromLink]`, {});
     reject(`[generatePdfFromLink] failed to generate pdf path ${error}`);
+  } finally {
+    if (context) {
+      await context.close();
+    }
   }
 
   return promise;
