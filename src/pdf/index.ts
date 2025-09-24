@@ -35,42 +35,59 @@ puppeteer
 export async function generatePdfFromHtml(
   html: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
-) {
+): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
+  const { promise, resolve, reject } = Promise.withResolvers<{
+    pdfPath: string;
+    toc: TableOfContents[];
+  }>();
   const name = generateTmpPath();
 
-  if (process.env.PDF_DEBUG_HTML === '1') {
-    const htmlPath = `${name}.html`;
-    await promises.writeFile(htmlPath, html, 'utf-8');
+  try {
+    if (process.env.PDF_DEBUG_HTML === '1') {
+      const htmlPath = `${name}.html`;
+      await promises.writeFile(htmlPath, html, 'utf-8');
 
-    logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+      logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+    }
+
+    const pdfPath = `${name}.pdf`;
+
+    const start = Date.now();
+    const context = await browser.createBrowserContext();
+    promise.finally(() => {
+      if (context) {
+        context.close();
+      }
+    });
+    const page = await context.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.emulateMediaType('screen');
+
+    const headingsInfo = await page.evaluate(extractHeadingsInfo);
+
+    await page.pdf({
+      path: pdfPath,
+      format: 'A4',
+      margin: { top: 0, left: 0, bottom: 0, right: 0 },
+      ...pdfOptions,
+    });
+
+    await page.close();
+
+    logger.logDebug('[generatePdfFromHtml] PDF output:', {
+      pdfPath,
+      runtime: Date.now() - start,
+    });
+
+    const toc = generateToc(headingsInfo);
+
+    resolve({ pdfPath, toc });
+  } catch (error) {
+    logger.logError(`${error} [generatePdfFromHtml]`, {});
+    reject(`[generatePdfFromHtml] failed to generate pdf from Html ${error}`);
   }
 
-  const pdfPath = `${name}.pdf`;
-
-  const start = Date.now();
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.emulateMediaType('screen');
-
-  const headingsInfo = await page.evaluate(extractHeadingsInfo);
-
-  await page.pdf({
-    path: pdfPath,
-    format: 'A4',
-    margin: { top: 0, left: 0, bottom: 0, right: 0 },
-    ...pdfOptions,
-  });
-
-  await page.close();
-
-  logger.logDebug('[generatePdfFromHtml] PDF output:', {
-    pdfPath,
-    runtime: Date.now() - start,
-  });
-
-  const toc = generateToc(headingsInfo);
-
-  return { pdfPath, toc };
+  return promise;
 }
 
 // Utility function to extract information about headings and their positions using page.evaluate()
@@ -152,39 +169,61 @@ function insertPageIntoParent(
 export async function generatePdfFromLink(
   link: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
-) {
-  const name = generateTmpPath();
+): Promise<string> {
+  const { promise, resolve, reject } = Promise.withResolvers<string>();
+  try {
+    const name = generateTmpPath();
 
-  const pdfPath = `${name}.pdf`;
+    if (!name) {
+      reject('[generatePdfFromLink] failed to generate temporary path');
+    }
+    const pdfPath = `${name}.pdf`;
+    const start = Date.now();
+    const context = await browser.createBrowserContext().catch((e) => {
+      if (context) {
+        context.close();
+      }
 
-  const start = Date.now();
-  const page = await browser.newPage();
-  await page.setViewport({
-    width: 1920,
-    height: 947,
-  });
+      throw e;
+    });
+    promise.finally(() => {
+      if (context) {
+        context.close();
+      }
+    });
+    const page = await context.newPage();
+    await page.setViewport({
+      width: 1920,
+      height: 947,
+    });
 
-  await page.goto(link, { waitUntil: 'load' });
+    await page.goto(link, { waitUntil: 'load' });
 
-  const imgHandle = await page.$('img');
-  const width = (await page.evaluate((img) => img?.width, imgHandle)) || 0;
-  const height = (await page.evaluate((img) => img?.height, imgHandle)) || 0;
+    const imgHandle = await page.$('img');
+    const width = (await page.evaluate((img) => img?.width, imgHandle)) || 0;
+    const height = (await page.evaluate((img) => img?.height, imgHandle)) || 0;
 
-  await page.pdf({
-    path: pdfPath,
-    margin: { top: 0, left: 0, bottom: 0, right: 0 },
-    landscape: width > height,
-    ...pdfOptions,
-  });
+    await page.pdf({
+      path: pdfPath,
+      margin: { top: 0, left: 0, bottom: 0, right: 0 },
+      landscape: width > height,
+      ...pdfOptions,
+    });
 
-  await page.close();
+    await page.close();
 
-  logger.logDebug('[generatePdfFromLink] PDF output:', {
-    pdfPath,
-    runtime: Date.now() - start,
-  });
+    logger.logDebug('[generatePdfFromLink] PDF output:', {
+      pdfPath,
+      runtime: Date.now() - start,
+    });
 
-  return pdfPath;
+    resolve(pdfPath);
+  } catch (error) {
+    logger.logError(`${error} [generatePdfFromLink]`, {});
+    reject(`[generatePdfFromLink] failed to generate pdf path ${error}`);
+  }
+
+  return promise;
 }
 
 export function getTotalPages(filePath: string): number {
