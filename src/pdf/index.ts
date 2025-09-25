@@ -181,11 +181,6 @@ export async function generatePdfFromLink(
     const pdfPath = `${name}.pdf`;
     const start = Date.now();
     context = await browser.createBrowserContext();
-    promise.finally(() => {
-      if (context) {
-        context.close();
-      }
-    });
     const page = await context.newPage();
     await page.setViewport({
       width: 1920,

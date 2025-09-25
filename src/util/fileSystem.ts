@@ -21,7 +21,7 @@ export function generateTmpPathWithName(name: string) {
 
 export function failSafeDeleteFiles(filePaths: string[]) {
   filePaths.forEach((filePath) => {
-    if (typeof filePath === 'string' && filePath.length > 0) {
+    if (typeof filePath === 'string' && filePath.trim()) {
       unlink(filePath, (err) => {
         if (!err) {
           return;
