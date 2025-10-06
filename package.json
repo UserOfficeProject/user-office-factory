@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@opentelemetry/exporter-trace-otlp-http": "^0.205.0",
-    "@opentelemetry/host-metrics": "^0.36.0",
+    "@opentelemetry/host-metrics": "^0.36.2",
     "@opentelemetry/instrumentation-http": "^0.205.0",
     "@opentelemetry/instrumentation-knex": "^0.50.0",
     "@opentelemetry/instrumentation-winston": "^0.50.0",
