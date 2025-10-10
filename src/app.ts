@@ -148,7 +148,7 @@ const checkDatabaseReadiness = async () => {
         ? error.message
         : 'Unknown error occurred while checking database connectivity';
 
-    logger.logError('Database readiness check failed', { errorMessage });
+    logger.logException('Readiness check failed', errorMessage);
 
     return {
       isReady: false,
