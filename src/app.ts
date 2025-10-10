@@ -15,6 +15,7 @@ import { container } from 'tsyringe';
 
 import { MetricsService } from './config/metrics/MetricsService';
 import { Tokens } from './config/Tokens';
+import PostgresSystemDataSource from './dataSources/postgres/SystemDataSource';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
 import { WorkflowManager } from './workflows/WorkflowManager';
@@ -22,7 +23,7 @@ import getXLSXWorkflowManager from './workflows/xlsx';
 import getZIPWorkflowManager from './workflows/zip';
 
 const app = express();
-
+const systemDataSource = new PostgresSystemDataSource();
 app.use(
   httpLogger('tiny', {
     skip: function (req, res) {
@@ -130,6 +131,44 @@ app.get('/version', (req, res) => {
     cachedVersion = content.toString().trim();
 
     res.end(cachedVersion);
+  });
+});
+
+const checkDatabaseReadiness = async () => {
+  try {
+    const isConnected = await systemDataSource.connectivityCheck();
+    if (isConnected) {
+      return { isReady: true, message: 'Connected' };
+    } else {
+      return { isReady: false, message: 'Not Connected' };
+    }
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'Unknown error occurred while checking database connectivity';
+
+    logger.logError('Database readiness check failed', { errorMessage });
+
+    return {
+      isReady: false,
+      message: errorMessage,
+    };
+  }
+};
+
+app.get('/readiness', async (req, res) => {
+  const databaseResult = await checkDatabaseReadiness();
+  const responseStatus = databaseResult.isReady ? 200 : 503;
+
+  return res.status(responseStatus).json({
+    application: {
+      status: 'UP',
+      database: {
+        status: databaseResult.isReady ? 'UP' : 'DOWN',
+        message: databaseResult.message,
+      },
+    },
   });
 });
 
