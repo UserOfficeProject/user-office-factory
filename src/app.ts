@@ -134,43 +134,36 @@ app.get('/version', (req, res) => {
   });
 });
 
-const checkDatabaseReadiness = async () => {
+app.get('/readiness', (req, res) => {
   try {
-    const isConnected = await systemDataSource.connectivityCheck();
-    if (isConnected) {
-      return { isReady: true, message: 'Connected' };
-    } else {
-      return { isReady: false, message: 'Not Connected' };
-    }
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : 'Unknown error occurred while checking database connectivity';
+    systemDataSource.connectivityCheck().then((success) => {
+      const responseStatus = success ? 200 : 503;
+      res.status(responseStatus).json({
+        application: {
+          status: 'UP',
+          database: {
+            status: success ? 'UP' : 'DOWN',
+            message: success ? 'Connected' : 'Not connected',
+          },
+        },
+      });
 
-    logger.logException('Readiness check failed', errorMessage);
-
-    return {
-      isReady: false,
-      message: errorMessage,
-    };
-  }
-};
-
-app.get('/readiness', async (req, res) => {
-  const databaseResult = await checkDatabaseReadiness();
-  const responseStatus = databaseResult.isReady ? 200 : 503;
-
-  res.status(responseStatus).json({
-    application: {
-      status: 'UP',
-      database: {
-        status: databaseResult.isReady ? 'UP' : 'DOWN',
-        message: databaseResult.message,
+      res.end();
+    });
+  } catch (e) {
+    res.status(500).json({
+      application: {
+        status: 'DOWN',
+        database: {
+          status: 'DOWN',
+          message: 'Could not perform connection check',
+        },
       },
-    },
-  });
-  res.end();
+    });
+
+    logger.logException('Readiness check failed', e);
+    res.end();
+  }
 });
 
 app.get(['/', '/health-check'], (req, res) => {
