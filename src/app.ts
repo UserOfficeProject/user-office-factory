@@ -161,7 +161,7 @@ app.get('/readiness', async (req, res) => {
   const databaseResult = await checkDatabaseReadiness();
   const responseStatus = databaseResult.isReady ? 200 : 503;
 
-  return res.status(responseStatus).json({
+  res.status(responseStatus).json({
     application: {
       status: 'UP',
       database: {
@@ -170,6 +170,7 @@ app.get('/readiness', async (req, res) => {
       },
     },
   });
+  res.end();
 });
 
 app.get(['/', '/health-check'], (req, res) => {
