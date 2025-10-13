@@ -134,9 +134,9 @@ app.get('/version', (req, res) => {
   });
 });
 
-app.get('/readiness', (req, res) => {
+app.get('/readiness', async (req, res) => {
   try {
-    systemDataSource.connectivityCheck().then((success) => {
+    await systemDataSource.connectivityCheck().then((success) => {
       const responseStatus = success ? 200 : 503;
       res.status(responseStatus).json({
         application: {
@@ -147,10 +147,9 @@ app.get('/readiness', (req, res) => {
           },
         },
       });
-
-      res.end();
     });
   } catch (e) {
+    logger.logException('Readiness check failed', e);
     res.status(500).json({
       application: {
         status: 'DOWN',
@@ -160,9 +159,6 @@ app.get('/readiness', (req, res) => {
         },
       },
     });
-
-    logger.logException('Readiness check failed', e);
-    res.end();
   }
 });
 
