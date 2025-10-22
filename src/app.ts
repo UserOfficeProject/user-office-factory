@@ -136,17 +136,16 @@ app.get('/version', (req, res) => {
 
 app.get('/readiness', async (req, res) => {
   try {
-    await systemDataSource.connectivityCheck().then((success) => {
-      const responseStatus = success ? 200 : 503;
-      res.status(responseStatus).json({
-        application: {
-          status: 'UP',
-          database: {
-            status: success ? 'UP' : 'DOWN',
-            message: success ? 'Connected' : 'Not connected',
-          },
+    const success = await systemDataSource.connectivityCheck();
+    const responseStatus = success ? 200 : 503;
+    res.status(responseStatus).json({
+      application: {
+        status: 'UP',
+        database: {
+          status: success ? 'UP' : 'DOWN',
+          message: success ? 'Connected' : 'Not connected',
         },
-      });
+      },
     });
   } catch (e) {
     logger.logException('Readiness check failed', e);

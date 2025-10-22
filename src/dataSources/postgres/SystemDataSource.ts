@@ -6,16 +6,9 @@ import { SystemDataSource } from '../SystemDataSource';
 export default class PostgresSystemDataSource implements SystemDataSource {
   async connectivityCheck(): Promise<boolean> {
     try {
-      return database
-        .raw('select * FROM "files" LIMIT 1')
-        .then(() => {
-          return true;
-        })
-        .catch((error) => {
-          logger.logError('Connection not ready yet', { error });
+      await database.raw('select 1');
 
-          return false;
-        });
+      return true;
     } catch (error) {
       logger.logError('Connection not ready yet', { error });
 
