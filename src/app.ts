@@ -15,6 +15,7 @@ import { container } from 'tsyringe';
 
 import { MetricsService } from './config/metrics/MetricsService';
 import { Tokens } from './config/Tokens';
+import PostgresSystemDataSource from './dataSources/postgres/SystemDataSource';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
 import { WorkflowManager } from './workflows/WorkflowManager';
@@ -22,7 +23,7 @@ import getXLSXWorkflowManager from './workflows/xlsx';
 import getZIPWorkflowManager from './workflows/zip';
 
 const app = express();
-
+const systemDataSource = new PostgresSystemDataSource();
 app.use(
   httpLogger('tiny', {
     skip: function (req, res) {
@@ -131,6 +132,33 @@ app.get('/version', (req, res) => {
 
     res.end(cachedVersion);
   });
+});
+
+app.get('/readiness', async (req, res) => {
+  try {
+    const success = await systemDataSource.connectivityCheck();
+    const responseStatus = success ? 200 : 503;
+    res.status(responseStatus).json({
+      application: {
+        status: 'UP',
+        database: {
+          status: success ? 'UP' : 'DOWN',
+          message: success ? 'Connected' : 'Not connected',
+        },
+      },
+    });
+  } catch (e) {
+    logger.logException('Readiness check failed', e);
+    res.status(500).json({
+      application: {
+        status: 'DOWN',
+        database: {
+          status: 'DOWN',
+          message: 'Could not perform connection check',
+        },
+      },
+    });
+  }
 });
 
 app.get(['/', '/health-check'], (req, res) => {
