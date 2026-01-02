@@ -59,7 +59,7 @@
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
-    "@types/archiver": "^6.0.2",
+    "@types/archiver": "^7.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.6",
