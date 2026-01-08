@@ -13,3 +13,10 @@ updates:
       # Separate sections of the branch name with a hyphen because docker hub doesn't want slashes
       # for example, `dependabot-npm_and_yarn-next_js-acorn-6.4.1`
       separator: "-"
+    cooldown: # Cooldown: wait before creating PRs for newly released versions
+      default-days: 1 # fallback wait for all updates
+      semver-major-days: 30 # waits 30 days for major updates
+      semver-minor-days: 7 # waits 7 days for minor updates
+      semver-patch-days: 1 # optional; explicit patch wait (defaults to default-days)
+      include:
+        - "*" # apply to all dependencies
