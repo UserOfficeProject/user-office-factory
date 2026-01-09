@@ -1,9 +1,8 @@
 import { FileMetadata } from '../../../models/File';
 import { TableOfContents } from '../../../pdf';
 import { Attachment } from '../../../types';
-import { PdfFactoryCountedPagesMeta } from '../PdfFactory';
 
-export type ProposalPDFMeta = {
+export type FullProposalPDFMeta = {
   files: {
     proposal: string;
     questionnaires: string[];
@@ -22,7 +21,14 @@ export type ProposalPDFMeta = {
   };
   attachmentsFileMeta: FileMetadata[];
   attachments: Attachment[];
+  isPregeneratedPdfMeta: false;
 };
 
-export type ProposalCountedPagesMeta =
-  PdfFactoryCountedPagesMeta<ProposalPDFMeta>;
+export type PregeneratedProposalPDFMeta = {
+  files: {
+    proposal: string;
+  };
+  isPregeneratedPdfMeta: true;
+};
+
+export type ProposalPDFMeta = FullProposalPDFMeta | PregeneratedProposalPDFMeta;

@@ -4,10 +4,13 @@ import AttachmentFactory, { AttachmentFactoryMeta } from './AttachmentFactory';
 import ZipWorkflowManager from './ZipWorkflowManager';
 import { FileMetadata } from '../../models/File';
 import services from '../../services';
-import { Attachment, ProposalPDFData } from '../../types';
+import { Attachment, FullProposalPDFData } from '../../types';
 import { generateTmpPath } from '../../util/fileSystem';
 
-export type AttachmentData = Pick<ProposalPDFData, 'proposal' | 'attachments'>;
+export type AttachmentData = Pick<
+  FullProposalPDFData,
+  'proposal' | 'attachments'
+>;
 
 export class AttachmentZipFactory extends AttachmentFactory<
   AttachmentData,

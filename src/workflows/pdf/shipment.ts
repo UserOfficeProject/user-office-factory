@@ -16,6 +16,7 @@ type ShipmentPDFMeta = {
   };
   attachmentsFileMeta: FileMetadata[]; // TODO make attachmentsFileMeta in interface optional and delete this
   attachments: Attachment[]; // TODO make attachments in interface optional and delete this
+  isPregeneratedPdfMeta: false;
 };
 
 type ShipmentPDFPagesMeta = PdfFactoryCountedPagesMeta<ShipmentPDFMeta>;
@@ -31,6 +32,7 @@ export class ShipmentPdfFactory extends PdfFactory<
     },
     attachmentsFileMeta: [],
     attachments: [],
+    isPregeneratedPdfMeta: false,
   };
 
   static ENTITY_NAME = 'Shipment';

@@ -20,15 +20,21 @@ export function generateTmpPathWithName(name: string) {
 }
 
 export function failSafeDeleteFiles(filePaths: string[]) {
-  filePaths.forEach((filePath) =>
-    unlink(filePath, (err) => {
-      if (!err) {
-        return;
-      }
+  filePaths.forEach((filePath) => {
+    if (typeof filePath === 'string' && filePath.trim()) {
+      unlink(filePath, (err) => {
+        if (!err) {
+          return;
+        }
 
-      logger.logException('[failSafeDeleteFiles] Failed to delete file', err, {
-        filePath,
+        logger.logException(
+          `[failSafeDeleteFiles] Failed to delete file ${filePath}`,
+          err,
+          {
+            filePath,
+          }
+        );
       });
-    })
-  );
+    }
+  });
 }

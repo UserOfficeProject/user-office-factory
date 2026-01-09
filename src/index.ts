@@ -1,5 +1,6 @@
+/* eslint-disable import/order */
+import startTracing from './config/tracing';
 import { logger } from '@user-office-software/duo-logger';
-
 import app from './app';
 
 const port = process.env.NODE_PORT || 4500;
@@ -29,3 +30,4 @@ process.on('uncaughtException', (error) => {
 app.listen(port, () => {
   console.log(`Factory listening on http://localhost:${port}`);
 });
+startTracing();

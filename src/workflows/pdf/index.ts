@@ -1,3 +1,4 @@
+import newExperimentSafetyPdfWorkflowManager from './experimentSafety';
 import newProposalPdfWorkflowManager from './proposal';
 import newSamplePdfWorkflowManager from './sample';
 import newShipmentPdfWorkflowManager from './shipment';
@@ -15,6 +16,8 @@ export default function getPDFWorkflowManager(
       return newSamplePdfWorkflowManager(data, userRole);
     case 'shipment-label':
       return newShipmentPdfWorkflowManager(data, userRole);
+    case 'experiment-safety':
+      return newExperimentSafetyPdfWorkflowManager(data, userRole);
     default:
       throw new Error(`Unknown PDF type: ${pdfType}`);
   }

@@ -2,30 +2,30 @@ import { join } from 'path';
 
 import { logger } from '@user-office-software/duo-logger';
 
-import { ProposalPDFMeta, ProposalCountedPagesMeta } from './ProposalPDFMeta';
+import { FullProposalPDFMeta } from './ProposalPDFMeta';
 import { extractAnswerMap } from './QuestionAnswerMapper';
 import { FileMetadata } from '../../../models/File';
 import { generatePdfFromHtml } from '../../../pdf';
 import { render, renderFooter, renderHeader } from '../../../template';
-import { ProposalPDFData, ProposalSampleData, Role } from '../../../types';
+import { FullProposalPDFData, ProposalSampleData, Role } from '../../../types';
 import { insertScriptInBottom, insertScriptInTop } from '../../../util/pdfHtml';
 import { computeTableOfContents, pagedJs } from '../../../util/pdfHtmlScript';
-import PdfFactory from '../PdfFactory';
+import PdfFactory, { PdfFactoryCountedPagesMeta } from '../PdfFactory';
 
 /**
  * Generates PDFs based on a user officer defined template.
  */
 export class CustomProposalPdfFactory extends PdfFactory<
-  ProposalPDFData,
-  ProposalPDFMeta
+  FullProposalPDFData,
+  FullProposalPDFMeta
 > {
   protected templateBody: string;
   protected templateHeader?: string;
   protected templateFooter?: string;
   protected sampleDeclaration?: string;
 
-  protected countedPagesMeta: ProposalCountedPagesMeta;
-  protected meta: ProposalPDFMeta = {
+  protected countedPagesMeta: PdfFactoryCountedPagesMeta<FullProposalPDFMeta>;
+  protected meta: FullProposalPDFMeta = {
     files: {
       proposal: '',
       questionnaires: [],
@@ -44,6 +44,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
     },
     attachmentsFileMeta: [],
     attachments: [],
+    isPregeneratedPdfMeta: false,
   };
 
   static ENTITY_NAME = 'Proposal';
@@ -63,7 +64,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
     this.sampleDeclaration = sampleDeclaration;
   }
 
-  init(data: ProposalPDFData) {
+  init(data: FullProposalPDFData) {
     const { samples, attachments } = data;
 
     const noRenders = {
@@ -206,7 +207,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
     }
   }
 
-  private async renderProposal(data: ProposalPDFData) {
+  private async renderProposal(data: FullProposalPDFData) {
     if (this.stopped) {
       this.emit('aborted', 'renderProposal');
 
@@ -268,7 +269,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
   }
 
   private async renderSamples(
-    data: ProposalPDFData,
+    data: FullProposalPDFData,
     samples: ProposalSampleData[],
     attachmentsFileMeta: FileMetadata[]
   ) {

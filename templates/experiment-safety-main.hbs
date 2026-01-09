@@ -1,0 +1,150 @@
+{{#> layout}}
+  <div id="pageBorder" class="page-border">
+    <div class="text-center fw-bold fs-4 mb-4">Experiment Risk Assessment</div>
+
+    <div class="d-flex justify-content-between mb-4 fw-bold fs-6">
+      <div>{{principalInvestigator.firstname}} {{principalInvestigator.lastname}}</div>
+      <div>{{ $readableDate experiment.startsAt }} – {{ $readableDate experiment.endsAt }}</div>
+      <div>ID: {{ experiment.experimentId }}</div>
+    </div>
+
+    <div class="mb-4">
+      <div>Experiment Number: <strong >{{ experiment.experimentId }}</strong></div>
+      <div class="fst-italic mt-1">
+        {{#if ($eq experimentSafety.statusId '21')}}
+          Approved
+        {{else if ($eq experimentSafety.statusId '20')}}
+          Rejected
+        {{/if}}
+      </div>
+
+      <div class="d-flex justify-content-between mt-3">
+        <div>
+          <div class="fw-bold">Experimenter</div>
+          {{principalInvestigator.firstname}} {{principalInvestigator.lastname}}
+        </div>
+        <div>
+          <div class="fw-bold">Principal Investigator</div>
+          {{principalInvestigator.firstname}} {{principalInvestigator.lastname}}
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-title">Information by Safety Review Team</div>
+    <div class="mb-3">
+      {{#if ($eq this.safetyReviewQuestionary.answers.hazard_type_selection "Radioactive")}}
+        <img src="http://localhost:4500/static/images/Radioactive.jpg" style="height: 100px;" />
+      {{else if ($eq this.safetyReviewQuestionary.answers.hazard_type_selection "Hot")}}
+        <img src="http://localhost:4500/static/images/Hot.jpg" style="height: 100px;" />
+      {{else if ($eq this.safetyReviewQuestionary.answers.hazard_type_selection "Explosive")}}
+        <img src="http://localhost:4500/static/images/Explosive.jpg" style="height: 100px;" />
+      {{/if}}
+      <h5 class="mt-2">{{ this.safetyReviewQuestionary.answers.hazard_type_selection }}</h5>
+    </div>
+
+    {{#each this.safetyReviewQuestionary.questionarySteps}}
+      {{#each this.fields}}
+        {{#if ($in question.dataType 'NUMBER_INPUT' 'BOOLEAN' 'INTERVAL' 'DATE' 'DYNAMIC_MULTIPLE_CHOICE' 'SELECTION_FROM_OPTIONS' 'TEXT_INPUT' 'RICH_TEXT_INPUT')}}
+        <div class="mb-2">
+          <span class="field-label">{{ this.question.question }}</span>:
+          <span>
+            {{#if ($eq this.question.dataType 'NUMBER_INPUT')}} 
+              {{#if this.value.value}} {{this.value.value}} {{ this.value.unit.unit }} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'BOOLEAN')}} 
+              {{#if this.value}} Yes {{else}} No {{/if}} 
+            {{else if ($eq this.question.dataType 'INTERVAL')}} 
+              {{#if ($or this.value.min this.value.max)}} 
+                {{ this.value.min }} - {{ this.value.max }} 
+                {{#if this.value.unit}} {{ this.value.unit.unit }} {{/if}} 
+              {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'DATE')}} 
+              {{#if this.value}} {{$utcDate this.value}} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'DYNAMIC_MULTIPLE_CHOICE')}} 
+              {{#if this.value}} {{$join this.value ', '}} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'SELECTION_FROM_OPTIONS')}} 
+              {{#if this.value}} {{$join this.value ', '}} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'TEXT_INPUT')}} 
+              {{#if this.value}} {{ this.value }} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'RICH_TEXT_INPUT')}} 
+              {{#if this.value}} {{{this.value}}} {{else}} <em>Left blank</em> {{/if}} 
+            {{/if}}
+          </span>
+        </div>
+        {{/if}}
+      {{/each}}
+    {{/each}}
+
+    <div class="section-title">Experiment Safety Input Submitted by the Experimenter</div>
+    {{#each this.esiQuestionary.questionarySteps}}
+      {{#each this.fields}}
+        {{#if ($in question.dataType 'NUMBER_INPUT' 'BOOLEAN' 'INTERVAL' 'DATE' 'DYNAMIC_MULTIPLE_CHOICE' 'SELECTION_FROM_OPTIONS' 'TEXT_INPUT' 'RICH_TEXT_INPUT')}}
+        <div class="mb-2">
+          <span class="field-label">{{ this.question.question }}</span>:
+          <span>
+            {{#if ($eq this.question.dataType 'NUMBER_INPUT')}} 
+              {{#if this.value.value}} {{this.value.value}} {{ this.value.unit.unit }} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'BOOLEAN')}} 
+              {{#if this.value}} Yes {{else}} No {{/if}} 
+            {{else if ($eq this.question.dataType 'INTERVAL')}} 
+              {{#if ($or this.value.min this.value.max)}} 
+                {{ this.value.min }} - {{ this.value.max }} 
+                {{#if this.value.unit}} {{ this.value.unit.unit }} {{/if}} 
+              {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'DATE')}} 
+              {{#if this.value}} {{$utcDate this.value}} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'DYNAMIC_MULTIPLE_CHOICE')}} 
+              {{#if this.value}} {{$join this.value ', '}} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'SELECTION_FROM_OPTIONS')}} 
+              {{#if this.value}} {{$join this.value ', '}} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'TEXT_INPUT')}} 
+              {{#if this.value}} {{ this.value }} {{else}} <em>Left blank</em> {{/if}} 
+            {{else if ($eq this.question.dataType 'RICH_TEXT_INPUT')}} 
+              {{#if this.value}} {{{this.value}}} {{else}} <em>Left blank</em> {{/if}} 
+            {{/if}}
+          </span>
+        </div>
+        {{/if}}
+      {{/each}}
+    {{/each}}
+
+    <div class="section-title">Samples Submitted by the Experimenter</div>
+    {{#each experimentSamples}}
+      <div class="sample-block">
+        <div class="fw-bold fs-6 mb-3">Sample: {{this.sample.title}}</div>
+        {{#each this.sampleESIQuestionary.questionarySteps}}
+          {{#each this.fields}}
+            {{#if ($in question.dataType 'NUMBER_INPUT' 'BOOLEAN' 'INTERVAL' 'DATE' 'DYNAMIC_MULTIPLE_CHOICE' 'SELECTION_FROM_OPTIONS' 'TEXT_INPUT' 'RICH_TEXT_INPUT')}}
+            <div class="mb-2">
+              <span class="field-label">{{ this.question.question }}</span>:
+              <span>
+                {{#if ($eq this.question.dataType 'NUMBER_INPUT')}} 
+                  {{#if this.value.value}} 
+                    {{this.value.value}} {{ this.value.unit.unit }} 
+                  {{else}} <em>Left blank</em> {{/if}} 
+                {{else if ($eq this.question.dataType 'BOOLEAN')}} 
+                  {{#if this.value}} Yes {{else}} No {{/if}} 
+                {{else if ($eq this.question.dataType 'INTERVAL')}} 
+                  {{#if ($or this.value.min this.value.max)}} 
+                    {{ this.value.min }} - {{ this.value.max }} 
+                    {{#if this.value.unit}} {{ this.value.unit.unit }} {{/if}} 
+                  {{else}} <em>Left blank</em> {{/if}} 
+                {{else if ($eq this.question.dataType 'DATE')}} 
+                  {{#if this.value}} {{$utcDate this.value}} {{else}} <em>Left blank</em> {{/if}} 
+                {{else if ($eq this.question.dataType 'DYNAMIC_MULTIPLE_CHOICE')}} 
+                  {{#if this.value}} {{$join this.value ', '}} {{else}} <em>Left blank</em> {{/if}} 
+                {{else if ($eq this.question.dataType 'SELECTION_FROM_OPTIONS')}} 
+                  {{#if this.value}} {{$join this.value ', '}} {{else}} <em>Left blank</em> {{/if}} 
+                {{else if ($eq this.question.dataType 'TEXT_INPUT')}} 
+                  {{#if this.value}} {{ this.value }} {{else}} <em>Left blank</em> {{/if}} 
+                {{else if ($eq this.question.dataType 'RICH_TEXT_INPUT')}} 
+                  {{#if this.value}} {{{this.value}}} {{else}} <em>Left blank</em> {{/if}} 
+                {{/if}}
+              </span>
+            </div>
+            {{/if}}
+          {{/each}}
+        {{/each}}
+      </div>
+    {{/each}}
+  </div>
+{{/layout}}

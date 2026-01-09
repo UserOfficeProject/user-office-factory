@@ -9,8 +9,13 @@ import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import createError, { HttpError } from 'http-errors';
 import httpLogger from 'morgan';
-
 import './services';
+import './config';
+import { container } from 'tsyringe';
+
+import { MetricsService } from './config/metrics/MetricsService';
+import { Tokens } from './config/Tokens';
+import PostgresSystemDataSource from './dataSources/postgres/SystemDataSource';
 import { renderTemplate } from './template';
 import getPDFWorkflowManager from './workflows/pdf';
 import { WorkflowManager } from './workflows/WorkflowManager';
@@ -18,7 +23,7 @@ import getXLSXWorkflowManager from './workflows/xlsx';
 import getZIPWorkflowManager from './workflows/zip';
 
 const app = express();
-
+const systemDataSource = new PostgresSystemDataSource();
 app.use(
   httpLogger('tiny', {
     skip: function (req, res) {
@@ -34,6 +39,11 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/static', cors(), express.static(join(__dirname, '..', 'templates')));
+
+const metricsService = container.resolve<MetricsService>(
+  Tokens.ConfigureMetrics
+);
+app.use((req, res, next) => metricsService.recordRequest(req, res, next));
 
 app.post(
   '/generate/:downloadType/:type',
@@ -88,7 +98,6 @@ app.post(
 app.get('/test-template/:template', (req, res, next) => {
   const { template } = req.params;
   const { data } = req.query;
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderTemplate(template as any, {
     ...JSON.parse(Buffer.from(data as string, 'base64').toString()),
@@ -123,6 +132,33 @@ app.get('/version', (req, res) => {
 
     res.end(cachedVersion);
   });
+});
+
+app.get('/readiness', async (req, res) => {
+  try {
+    const success = await systemDataSource.connectivityCheck();
+    const responseStatus = success ? 200 : 503;
+    res.status(responseStatus).json({
+      application: {
+        status: 'UP',
+        database: {
+          status: success ? 'UP' : 'DOWN',
+          message: success ? 'Connected' : 'Not connected',
+        },
+      },
+    });
+  } catch (e) {
+    logger.logException('Readiness check failed', e);
+    res.status(500).json({
+      application: {
+        status: 'DOWN',
+        database: {
+          status: 'DOWN',
+          message: 'Could not perform connection check',
+        },
+      },
+    });
+  }
 });
 
 app.get(['/', '/health-check'], (req, res) => {
@@ -208,5 +244,7 @@ app.use(function (
   res.status(err.status || 500);
   res.json(errorMessage);
 });
+
+container.resolve<(() => void) | undefined>(Tokens.ConfigureLogger)?.();
 
 export default app;

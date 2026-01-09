@@ -9,14 +9,21 @@ export type FapXLSXData = Array<{
 
 export type Attachment = { id: string; figure?: string; caption?: string };
 
-export type PdfTemplate = {
+export type ProposalPdfTemplate = {
   templateData: string;
   templateHeader: string;
   templateFooter: string;
   templateSampleDeclaration: string;
 };
 
-export type ProposalPDFData = {
+export type ExperimentSafetyPdfTemplate = {
+  templateData: string;
+  templateHeader: string;
+  templateFooter: string;
+  templateSampleDeclaration: string;
+};
+
+export type FullProposalPDFData = {
   proposal: Proposal;
   questionarySteps: QuestionaryStep[];
   principalInvestigator: BasicUser;
@@ -31,8 +38,58 @@ export type ProposalPDFData = {
     instrumentName: string;
   }[];
   fapReviews?: Review[];
-  pdfTemplate: PdfTemplate | null;
+  pdfTemplate: ProposalPdfTemplate | null;
+  isPregeneratedPdfData: false;
 };
+
+export type PregeneratedProposalPDFData = {
+  proposal: Pick<Proposal, 'created' | 'primaryKey' | 'proposalId' | 'fileId'>;
+  principalInvestigator: BasicUser;
+  isPregeneratedPdfData: true;
+};
+
+export type ProposalPDFData = FullProposalPDFData | PregeneratedProposalPDFData;
+
+export type ExperimentSamplePDFData = {
+  experimentSample: ExperimentHasSample;
+  sample: Sample;
+  sampleESIQuestionary: {
+    questionarySteps: QuestionaryStep[];
+    answers: Record<string, any>;
+  };
+  attachments: Attachment[];
+};
+
+export type ExperimentSafetyPDFData = {
+  proposal: Proposal;
+  principalInvestigator: BasicUser;
+  experiment: Experiment;
+  experimentSafety: ExperimentSafety;
+  localContact: BasicUser | null;
+  instrument: Instrument | null;
+  esiQuestionary: {
+    questionarySteps: QuestionaryStep[];
+    answers: Record<string, any>;
+  };
+  safetyReviewQuestionary: {
+    questionarySteps: QuestionaryStep[];
+    answers: Record<string, any>;
+  };
+  experimentSamples: ExperimentSamplePDFData[];
+  pdfTemplate: ExperimentSafetyPdfTemplate | null;
+  attachments: Attachment[];
+};
+
+export interface Instrument {
+  id: number;
+  name: string;
+  shortCode: string;
+  description: string;
+  managerUserId: number;
+  availabilityTime: number | null;
+  submitted: boolean;
+  fapId: number;
+}
 
 export type SamplePDFData = {
   sample: Sample & { status: string };
@@ -66,6 +123,38 @@ export interface Proposal {
   commentForManagement: string;
   notified: boolean;
   submitted: boolean;
+  fileId: string;
+}
+
+export interface Experiment {
+  experimentPk: number;
+  experimentId: string;
+  startsAt: Date;
+  endsAt: Date;
+  scheduledEventId: number;
+  proposalPk: number;
+  status: string;
+  localContactId: number | null;
+  instrumentId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ExperimentSafety {
+  experimentSafetyPk: number;
+  experimentPk: number;
+  esiQuestionaryId: number;
+  esiQuestionarySubmittedAt: Date | null;
+  createdBy: number;
+  statusId: number | null;
+  safetyReviewQuestionaryId: number | null;
+  reviewedBy: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  instrumentScientistDecision: string | null;
+  instrumentScientistComment: string | null;
+  experimentSafetyReviewerDecision: string | null;
+  experimentSafetyReviewerComment: string | null;
 }
 
 export interface Review {
@@ -149,6 +238,15 @@ export interface Sample {
   safetyStatus: SampleStatus;
   safetyComment: string;
   created: Date;
+}
+
+export interface ExperimentHasSample {
+  experimentPk: number;
+  sampleId: number;
+  isEsiSubmitted: boolean;
+  sampleEsiQuestionaryId: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export enum SampleStatus {
