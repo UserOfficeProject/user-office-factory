@@ -2,9 +2,10 @@ import { promises } from 'fs';
 
 import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
-import puppeteer, { Browser, PDFOptions } from 'puppeteer';
+import puppeteer, { Browser, Page, PDFOptions } from 'puppeteer';
 
 import { createToC } from './pdfTableOfContents';
+import { Semaphore } from './semaphore';
 import { generateTmpPath, generateTmpPathWithName } from '../util/fileSystem';
 
 export type TableOfContents = {
@@ -13,24 +14,52 @@ export type TableOfContents = {
   children: TableOfContents[];
 };
 
-let browser: Browser;
-
 const launchOptions = ['--disable-dev-shm-usage'];
 
 if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
 }
+// Limit concurrent PDF generations to prevent resource exhaustion
+// Can be configured via environment variable, defaults to 20
+const MAX_CONCURRENT_PDF_GENERATIONS = parseInt(
+  process.env.MAX_CONCURRENT_PDF_GENERATIONS || '20',
+  10
+);
 
-logger.logInfo('Launching puppeteer with ', { args: launchOptions });
+// Configurable timeout for PDF generation (default 60 seconds)
+const PDF_GENERATION_TIMEOUT = parseInt(
+  process.env.PDF_GENERATION_TIMEOUT || '60000',
+  10
+);
 
-// TODO: create browser lazily while keeping track of it
-// so we don't end up with dozens of browsers
-puppeteer
-  .launch({ args: launchOptions })
-  .then((inst) => (browser = inst))
-  .catch((e) => {
-    logger.logException('Failed to start browser puppeteer', e);
-  });
+logger.logInfo('PDF generation settings', {
+  maxConcurrent: MAX_CONCURRENT_PDF_GENERATIONS,
+  timeoutMs: PDF_GENERATION_TIMEOUT,
+  puppeteerLaunchOptions: launchOptions,
+});
+
+// Semaphore to limit concurrent PDF generations
+// When multiple documents are being generated simultaneously, this helps
+// prevent resource exhaustion (CPU, memory) by limiting the number of
+// concurrent Puppeteer browser page instances.
+// Adjust MAX_CONCURRENT_PDF_GENERATIONS based on your server capacity.
+const pdfSemaphore = new Semaphore(MAX_CONCURRENT_PDF_GENERATIONS);
+
+// Browser initialization promise - allows waiting for browser to be ready
+// Callers get one shared browser instance
+let browserPromise: Promise<Browser> | null = null;
+
+function getBrowser(): Promise<Browser> {
+  if (!browserPromise) {
+    browserPromise = puppeteer.launch({ args: launchOptions }).catch((e) => {
+      logger.logException('Failed to start browser puppeteer', e);
+      browserPromise = null; // Reset so we can retry
+      throw e;
+    });
+  }
+
+  return browserPromise;
+}
 
 export async function generatePdfFromHtml(
   html: string,
@@ -47,30 +76,60 @@ export async function generatePdfFromHtml(
 
   const pdfPath = `${name}.pdf`;
 
+  // Acquire semaphore to limit concurrent PDF generations
+  await pdfSemaphore.acquire();
+
+  let page: Page | null = null;
   const start = Date.now();
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-  await page.emulateMediaType('screen');
 
-  const headingsInfo = await page.evaluate(extractHeadingsInfo);
+  try {
+    const browser = await getBrowser();
+    page = await browser.newPage();
 
-  await page.pdf({
-    path: pdfPath,
-    format: 'A4',
-    margin: { top: 0, left: 0, bottom: 0, right: 0 },
-    ...pdfOptions,
-  });
+    // Set a default navigation timeout
+    page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
+    page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
 
-  await page.close();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.emulateMediaType('screen');
 
-  logger.logDebug('[generatePdfFromHtml] PDF output:', {
-    pdfPath,
-    runtime: Date.now() - start,
-  });
+    const headingsInfo = await page.evaluate(extractHeadingsInfo);
 
-  const toc = generateToc(headingsInfo);
+    await page.pdf({
+      path: pdfPath,
+      format: 'A4',
+      margin: { top: 0, left: 0, bottom: 0, right: 0 },
+      ...pdfOptions,
+    });
 
-  return { pdfPath, toc };
+    logger.logDebug('[generatePdfFromHtml] PDF output:', {
+      pdfPath,
+      runtime: Date.now() - start,
+    });
+
+    const toc = generateToc(headingsInfo);
+
+    return { pdfPath, toc };
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.logError(`Error: ${err.message} [generatePdfFromHtml]`, {});
+
+    throw new Error(
+      `[generatePdfFromHtml] failed to generate pdf from Html ${err.message}`
+    );
+  } finally {
+    // Always close the page and release the semaphore
+    if (page) {
+      try {
+        await page.close();
+      } catch (closeError) {
+        logger.logWarn('[generatePdfFromHtml] Failed to close page', {
+          error: String(closeError),
+        });
+      }
+    }
+    pdfSemaphore.release();
+  }
 }
 
 // Utility function to extract information about headings and their positions using page.evaluate()
@@ -157,34 +216,64 @@ export async function generatePdfFromLink(
 
   const pdfPath = `${name}.pdf`;
 
+  // Acquire semaphore to limit concurrent PDF generations
+  await pdfSemaphore.acquire();
+
+  let page: Page | null = null;
   const start = Date.now();
-  const page = await browser.newPage();
-  await page.setViewport({
-    width: 1920,
-    height: 947,
-  });
 
-  await page.goto(link, { waitUntil: 'load' });
+  try {
+    const browser = await getBrowser();
+    page = await browser.newPage();
 
-  const imgHandle = await page.$('img');
-  const width = (await page.evaluate((img) => img?.width, imgHandle)) || 0;
-  const height = (await page.evaluate((img) => img?.height, imgHandle)) || 0;
+    // Set a default navigation timeout
+    page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
+    page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
 
-  await page.pdf({
-    path: pdfPath,
-    margin: { top: 0, left: 0, bottom: 0, right: 0 },
-    landscape: width > height,
-    ...pdfOptions,
-  });
+    await page.setViewport({
+      width: 1920,
+      height: 947,
+    });
 
-  await page.close();
+    await page.goto(link, { waitUntil: 'load' });
 
-  logger.logDebug('[generatePdfFromLink] PDF output:', {
-    pdfPath,
-    runtime: Date.now() - start,
-  });
+    const imgHandle = await page.$('img');
+    const width = (await page.evaluate((img) => img?.width, imgHandle)) || 0;
+    const height = (await page.evaluate((img) => img?.height, imgHandle)) || 0;
 
-  return pdfPath;
+    await page.pdf({
+      path: pdfPath,
+      margin: { top: 0, left: 0, bottom: 0, right: 0 },
+      landscape: width > height,
+      ...pdfOptions,
+    });
+
+    logger.logDebug('[generatePdfFromLink] PDF output:', {
+      pdfPath,
+      runtime: Date.now() - start,
+    });
+
+    return pdfPath;
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.logError(`Error in generatePdfFromLink: ${err.message}`, {});
+
+    throw new Error(
+      `[generatePdfFromLink] failed to generate pdf from link ${err.message}`
+    );
+  } finally {
+    // Always close the page and release the semaphore
+    if (page) {
+      try {
+        await page.close();
+      } catch (closeError) {
+        logger.logWarn('[generatePdfFromLink] Failed to close page', {
+          error: String(closeError),
+        });
+      }
+    }
+    pdfSemaphore.release();
+  }
 }
 
 export function getTotalPages(filePath: string): number {
