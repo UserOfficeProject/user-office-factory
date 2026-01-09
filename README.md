@@ -89,10 +89,6 @@ Or provide discrete settings:
 - `DATABASE_PASSWORD`
 - `DATABASE_DATABASE`
 
-Optional:
-
-- `DATABASE_LOG_QUERIES=1` to log SQL statements.
-
 ### Puppeteer / PDF
 
 - `MAX_CONCURRENT_PDF_GENERATIONS` (default: `20`) to limit concurrent PDF generations, adjust based on available CPU/memory. 
