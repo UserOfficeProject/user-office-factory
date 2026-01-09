@@ -95,7 +95,8 @@ Optional:
 
 ### Puppeteer / PDF
 
-- `MAX_CONCURRENT_PDF_GENERATIONS` (default: `20`) to limit concurrent PDF generations, adjust based on available CPU/memory
+- `MAX_CONCURRENT_PDF_GENERATIONS` (default: `20`) to limit concurrent PDF generations, adjust based on available CPU/memory. 
+  - When Puppeteer throws like `Protocol error: Connection closed.` errors under load, reduce this value.
 - `PDF_GENERATION_TIMEOUT` (default: `60000` ms) to set maximum time for PDF generation
 - `PDF_DEBUG_HTML=1` to write the rendered HTML alongside the generated PDF
 - `UO_FEATURE_ALLOW_NO_SANDBOX=1` to launch Chromium with `--no-sandbox`
