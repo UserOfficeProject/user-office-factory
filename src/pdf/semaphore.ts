@@ -10,7 +10,7 @@ class Semaphore {
     this.permits = permits;
   }
 
-  async acquire(): Promise<void> {
+  acquire(): Promise<void> {
     if (this.permits > 0) {
       this.permits--;
 
