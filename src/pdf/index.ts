@@ -2,7 +2,7 @@ import { promises } from 'fs';
 
 import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
-import puppeteer, { Browser, Page, PDFOptions } from 'puppeteer';
+import puppeteer, { Browser, BrowserContext, PDFOptions } from 'puppeteer';
 
 import { createToC } from './pdfTableOfContents';
 import { Semaphore } from './semaphore';
@@ -20,9 +20,9 @@ if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
 }
 // Limit concurrent PDF generations to prevent resource exhaustion
-// Can be configured via environment variable, defaults to 20
+// Can be configured via environment variable, defaults to 5
 const MAX_CONCURRENT_PDF_GENERATIONS = parseInt(
-  process.env.MAX_CONCURRENT_PDF_GENERATIONS || '20',
+  process.env.MAX_CONCURRENT_PDF_GENERATIONS || '5',
   10
 );
 
@@ -66,6 +66,8 @@ export async function generatePdfFromHtml(
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
   const name = generateTmpPath();
+  const pdfPath = `${name}.pdf`;
+  let context: BrowserContext | undefined = undefined;
 
   if (process.env.PDF_DEBUG_HTML === '1') {
     const htmlPath = `${name}.html`;
@@ -74,17 +76,13 @@ export async function generatePdfFromHtml(
     logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
   }
 
-  const pdfPath = `${name}.pdf`;
-
   // Acquire semaphore to limit concurrent PDF generations
   await pdfSemaphore.acquire();
 
-  let page: Page | undefined = undefined;
-  const start = Date.now();
-
   try {
-    const browser = await getBrowser();
-    page = await browser.newPage();
+    const start = Date.now();
+    context = await (await getBrowser()).createBrowserContext();
+    const page = await context.newPage();
 
     // Set a default navigation timeout
     page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
@@ -102,6 +100,8 @@ export async function generatePdfFromHtml(
       ...pdfOptions,
     });
 
+    await page.close();
+
     logger.logDebug('[generatePdfFromHtml] PDF output:', {
       pdfPath,
       runtime: Date.now() - start,
@@ -118,12 +118,12 @@ export async function generatePdfFromHtml(
       `[generatePdfFromHtml] failed to generate pdf from Html ${err.message}`
     );
   } finally {
-    // Always close the page and release the semaphore
-    if (page) {
+    // Always close the context and release the semaphore
+    if (context) {
       try {
-        await page.close();
+        await context.close();
       } catch (closeError) {
-        logger.logWarn('[generatePdfFromHtml] Failed to close page', {
+        logger.logWarn('[generatePdfFromHtml] Failed to close context', {
           error: String(closeError),
         });
       }
@@ -214,16 +214,16 @@ export async function generatePdfFromLink(
 ): Promise<string> {
   const name = generateTmpPath();
   const pdfPath = `${name}.pdf`;
+  let context: BrowserContext | undefined = undefined;
 
   // Acquire semaphore to limit concurrent PDF generations
   await pdfSemaphore.acquire();
 
-  let page: Page | undefined = undefined;
   const start = Date.now();
-
   try {
     const browser = await getBrowser();
-    page = await browser.newPage();
+    context = await browser.createBrowserContext();
+    const page = await context.newPage();
 
     // Set a default navigation timeout
     page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
@@ -247,6 +247,8 @@ export async function generatePdfFromLink(
       ...pdfOptions,
     });
 
+    await page.close();
+
     logger.logDebug('[generatePdfFromLink] PDF output:', {
       pdfPath,
       runtime: Date.now() - start,
@@ -261,12 +263,12 @@ export async function generatePdfFromLink(
       `[generatePdfFromLink] failed to generate pdf from link ${err.message}`
     );
   } finally {
-    // Always close the page and release the semaphore
-    if (page) {
+    // Always close the context and release the semaphore
+    if (context) {
       try {
-        await page.close();
+        await context.close();
       } catch (closeError) {
-        logger.logWarn('[generatePdfFromLink] Failed to close page', {
+        logger.logWarn('[generatePdfFromLink] Failed to close context', {
           error: String(closeError),
         });
       }
