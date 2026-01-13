@@ -20,9 +20,9 @@ if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
 }
 // Limit concurrent PDF generations to prevent resource exhaustion
-// Can be configured via environment variable, defaults to 5
+// Can be configured via environment variable, defaults to 2
 const MAX_CONCURRENT_PDF_GENERATIONS = parseInt(
-  process.env.MAX_CONCURRENT_PDF_GENERATIONS || '5',
+  process.env.MAX_CONCURRENT_PDF_GENERATIONS || '2',
   10
 );
 
