@@ -110,4 +110,5 @@ time: 23792.517 ms
 Note: If the concurrency is set too high for the available resources, you may experience missing pages in the generated PDF.
 
 ### Room for improvements
+
 - Use a browser pool instead of a built-in Chromium instance in the application (e.g. Selenium, browserless.io).
