@@ -61,25 +61,31 @@ function getBrowser(): Promise<Browser> {
   return browserPromise;
 }
 
+// Note: This function is protected by a semaphore to limit concurrency and prevent resource exhaustion.
+//
+// Problem: Using `waitUntil: 'networkidle0'` can still produce incomplete rendering.
+// Using a separate browser context (empty cache) per page reduces the risk, but it can still happen.
+//
+// TODO: Implement a deterministic render-wait strategy (template-specific if needed)
 export async function generatePdfFromHtml(
   html: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
-  const name = generateTmpPath();
-  const pdfPath = `${name}.pdf`;
-  let context: BrowserContext | undefined = undefined;
-
-  if (process.env.PDF_DEBUG_HTML === '1') {
-    const htmlPath = `${name}.html`;
-    await promises.writeFile(htmlPath, html, 'utf-8');
-
-    logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
-  }
-
-  // Acquire semaphore to limit the number of concurrent Context/Page creations
+  // Acquire semaphore before starting PDF generation
   await pdfSemaphore.acquire();
 
+  let context: BrowserContext | undefined = undefined;
   try {
+    const name = generateTmpPath();
+    const pdfPath = `${name}.pdf`;
+
+    if (process.env.PDF_DEBUG_HTML === '1') {
+      const htmlPath = `${name}.html`;
+      await promises.writeFile(htmlPath, html, 'utf-8');
+
+      logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+    }
+
     const start = Date.now();
     context = await (await getBrowser()).createBrowserContext();
     const page = await context.newPage();
@@ -212,17 +218,16 @@ export async function generatePdfFromLink(
   link: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ): Promise<string> {
-  const name = generateTmpPath();
-  const pdfPath = `${name}.pdf`;
-  let context: BrowserContext | undefined = undefined;
-
-  // Acquire semaphore to limit the number of concurrent Context/Page creations
+  // Acquire semaphore before starting PDF generation
   await pdfSemaphore.acquire();
 
-  const start = Date.now();
+  let context: BrowserContext | undefined = undefined;
   try {
-    const browser = await getBrowser();
-    context = await browser.createBrowserContext();
+    const name = generateTmpPath();
+    const pdfPath = `${name}.pdf`;
+
+    const start = Date.now();
+    context = await (await getBrowser()).createBrowserContext();
     const page = await context.newPage();
 
     // Set a default navigation timeout
