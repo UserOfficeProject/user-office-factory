@@ -76,7 +76,7 @@ export async function generatePdfFromHtml(
     logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
   }
 
-  // Acquire semaphore to limit concurrent PDF generations
+  // Acquire semaphore to limit the number of concurrent Context/Page creations
   await pdfSemaphore.acquire();
 
   try {
@@ -216,7 +216,7 @@ export async function generatePdfFromLink(
   const pdfPath = `${name}.pdf`;
   let context: BrowserContext | undefined = undefined;
 
-  // Acquire semaphore to limit concurrent PDF generations
+  // Acquire semaphore to limit the number of concurrent Context/Page creations
   await pdfSemaphore.acquire();
 
   const start = Date.now();
