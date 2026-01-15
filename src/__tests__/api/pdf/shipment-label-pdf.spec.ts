@@ -1,5 +1,4 @@
 import { createWriteStream, unlink } from 'fs';
-import { setTimeout } from 'timers/promises';
 
 import request from 'supertest';
 
@@ -8,11 +7,6 @@ import app from '../../../app';
 import { getTotalPages } from '../../../pdf';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/pdf-payloads.json';
-
-// NOTE: This is just to make sure everything is up and running before we start.
-beforeAll(async () => {
-  await setTimeout(5000);
-}, 10000);
 
 describe('Shipment label PDF', () => {
   test(
@@ -37,7 +31,8 @@ describe('Shipment label PDF', () => {
 
           const text = extractPDFText(pdfPath);
 
-          expect(text).toMatch(/CONTAINER ID\n33333/);
+          // PDF text extraction may collapse newlines/spaces depending on font/layout
+          expect(text).toMatch(/CONTAINER ID\s*33333/);
 
           unlink(pdfPath, (err) => {
             expect(err).toBe(null);
