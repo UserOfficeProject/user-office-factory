@@ -27,10 +27,10 @@ export function failSafeDeleteFiles(filePaths: string[]) {
           return;
         }
 
-        logger.logException(
+        logger.logWarn(
           `[failSafeDeleteFiles] Failed to delete file ${filePath}`,
-          err,
           {
+            error: err,
             filePath,
           }
         );
