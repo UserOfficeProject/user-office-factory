@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { mkdtempSync, unlink } from 'fs';
+import { access, constants, mkdtempSync, unlink } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
@@ -22,18 +22,27 @@ export function generateTmpPathWithName(name: string) {
 export function failSafeDeleteFiles(filePaths: string[]) {
   filePaths.forEach((filePath) => {
     if (typeof filePath === 'string' && filePath.trim()) {
-      unlink(filePath, (err) => {
-        if (!err) {
+      access(filePath, constants.F_OK, (accessErr) => {
+        if (accessErr) {
+          // File does not exist, nothing to delete.
+          // This can happen when a task is aborted before it creates any files.
+          // In that case, we simply skip deletion.
           return;
         }
 
-        logger.logWarn(
-          `[failSafeDeleteFiles] Failed to delete file ${filePath}`,
-          {
-            error: err,
-            filePath,
+        unlink(filePath, (err) => {
+          if (!err) {
+            return;
           }
-        );
+
+          logger.logException(
+            `[failSafeDeleteFiles] Failed to delete file ${filePath}`,
+            err,
+            {
+              filePath,
+            }
+          );
+        });
       });
     }
   });
