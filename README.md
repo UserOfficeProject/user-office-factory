@@ -142,6 +142,8 @@ Or provide discrete settings:
 
 ### Browserless (Remote Browser)
 
+See [k8s/browserless/](k8s/browserless/README.md) for Kubernetes deployment instructions.
+
 - `BROWSER_WS_ENDPOINT` - WebSocket endpoint of the Browserless cluster
   - Examples:
     - Docker Compose: `ws://browserless:3000`

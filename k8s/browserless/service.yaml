@@ -1,0 +1,16 @@
+# LoadBalancer service for browserless pods
+# K8s kube-proxy handles per-connection load balancing across pods.
+# WebSocket connections are persistent — once established, they stay on one pod.
+apiVersion: v1
+kind: Service
+metadata:
+  name: browserless
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 3000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: browserless
