@@ -1,0 +1,18 @@
+services:
+  browserless:
+    image: ghcr.io/browserless/chromium:latest
+    environment:
+      # Max concurrent browser sessions per container
+      CONCURRENT: 5
+      # Max queued requests
+      QUEUED: 10
+      # Session timeout in ms
+      TIMEOUT: 60000
+      ENABLE_DEBUGGER: "false"
+      ENABLE_API_GET: "true"
+    ports:
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 2G

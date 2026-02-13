@@ -1,6 +1,8 @@
-export const pagedJs = `<script src="http://localhost:${
-  process.env.NODE_PORT || 4500
-}/static/js/paged.polyfill.min.js"></script>`;
+import { FACTORY_BASE_URL } from '../config/browserless';
+
+export const pagedJs = `<script src="${
+  FACTORY_BASE_URL + '/static/js/paged.polyfill.min.js'
+}"></script>`;
 
 export const computeTableOfContents = `
   <script>

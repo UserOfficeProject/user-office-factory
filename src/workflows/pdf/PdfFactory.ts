@@ -6,7 +6,7 @@ import delay from 'lodash/delay';
 
 import { FileMetadata } from '../../models/File';
 import {
-  generatePdfFromLink,
+  generatePdfFromImageFile,
   generatePuppeteerPdfFooter,
   getTotalPages,
 } from '../../pdf';
@@ -178,7 +178,7 @@ export default abstract class PdfFactory<
       attachmentPath = newFilePath;
     }
 
-    const pdfPath = await generatePdfFromLink(`file://${attachmentPath}`, {
+    const pdfPath = await generatePdfFromImageFile(attachmentPath, {
       pdfOptions: generatePuppeteerPdfFooter(footer),
     });
 
