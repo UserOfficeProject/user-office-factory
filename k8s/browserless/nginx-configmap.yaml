@@ -8,19 +8,16 @@ metadata:
     app.kubernetes.io/part-of: user-office-factory
 data:
   default.conf: |
-    upstream browserless_backend {
-        # Route each new WebSocket connection to the pod with fewest
-        # active connections — gives even distribution when PDF
-        # generation times vary.
-        least_conn;
-        server browserless-headless:3000;
-    }
-
     server {
         listen 3000;
 
+        # Use kube-dns for dynamic resolution; re-resolve every 10s
+        resolver kube-dns.kube-system.svc.cluster.local valid=10s;
+
         location / {
-            proxy_pass http://browserless_backend;
+            # Variable forces nginx to re-resolve DNS on each request
+            set $backend "browserless-headless.browserless-cluster.svc.cluster.local:3000";
+            proxy_pass http://$backend;
 
             # Retry on another pod when one fails or is at capacity
             proxy_next_upstream error timeout http_500 http_503 http_429 non_idempotent;
