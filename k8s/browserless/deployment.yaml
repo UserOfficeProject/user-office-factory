@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/component: pdf-renderer
     app.kubernetes.io/part-of: user-office-factory
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: browserless

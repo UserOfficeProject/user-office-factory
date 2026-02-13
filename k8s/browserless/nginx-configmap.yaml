@@ -8,19 +8,19 @@ metadata:
     app.kubernetes.io/part-of: user-office-factory
 data:
   default.conf: |
+    upstream browserless_backend {
+        # Route to pod with fewest active connections
+        least_conn;
+        server browserless-headless:3000;
+    }
+
     server {
         listen 3000;
 
-        # Use kube-dns for dynamic resolution; re-resolve every 10s
-        resolver kube-dns.kube-system.svc.cluster.local valid=10s;
-
         location / {
-            # Variable forces nginx to re-resolve DNS on each request
-            set $backend "browserless-headless.browserless-cluster.svc.cluster.local:3000";
-            proxy_pass http://$backend;
+            proxy_pass http://browserless_backend;
 
-            # Only retry on connection errors, NOT on timeouts or slow responses
-            # Remove non_idempotent to prevent duplicate processing of POST requests
+            # Only retry on connection errors (prevents duplicate PDF generation)
             proxy_next_upstream error;
             proxy_next_upstream_tries 1;
 
