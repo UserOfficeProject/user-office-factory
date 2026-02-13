@@ -19,8 +19,10 @@ data:
             set $backend "browserless-headless.browserless-cluster.svc.cluster.local:3000";
             proxy_pass http://$backend;
 
-            # Retry on another pod when one fails or is at capacity
-            proxy_next_upstream error timeout http_500 http_503 http_429 non_idempotent;
+            # Only retry on connection errors, NOT on timeouts or slow responses
+            # Remove non_idempotent to prevent duplicate processing of POST requests
+            proxy_next_upstream error;
+            proxy_next_upstream_tries 1;
 
             # WebSocket support (required by Puppeteer)
             proxy_http_version 1.1;
