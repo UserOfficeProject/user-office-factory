@@ -185,18 +185,21 @@ Using `{{factoryBaseUrl}}` ensures templates work in both modes.
 ### Example
 
 **Incorrect** (hardcoded localhost - breaks with Browserless):
+
 ```html
 <img src="http://localhost:4500/static/images/logo.png" />
-<link rel="stylesheet" href="http://localhost:4500/static/css/custom.css">
+<link rel="stylesheet" href="http://localhost:4500/static/css/custom.css" />
 ```
 
 **Correct** (using helper - works in all modes):
+
 ```html
 <img src="{{factoryBaseUrl}}/static/images/logo.png" />
-<link rel="stylesheet" href="{{factoryBaseUrl}}/static/css/custom.css">
+<link rel="stylesheet" href="{{factoryBaseUrl}}/static/css/custom.css" />
 ```
 
 The `{{factoryBaseUrl}}` helper is automatically available in all templates and resolves to:
+
 - `http://localhost:4500` when using built-in Chromium (default)
 - The value of `FACTORY_BASE_URL` env var when using Browserless
 

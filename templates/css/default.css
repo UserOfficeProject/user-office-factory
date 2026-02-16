@@ -1,7 +1,6 @@
 @font-face {
   font-family: 'Calibri';
-  src: url('/static/fonts/Calibri_Regular.ttf')
-    format('ttf');
+  src: url('/static/fonts/Calibri_Regular.ttf') format('ttf');
 }
 
 @font-face {
@@ -12,8 +11,7 @@
 
 @font-face {
   font-family: 'Calibri';
-  src: url('/static/fonts/Calibri_Italic.ttf')
-    format('ttf');
+  src: url('/static/fonts/Calibri_Italic.ttf') format('ttf');
   font-style: italic;
 }
 
