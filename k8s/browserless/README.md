@@ -153,6 +153,7 @@ Each additional pod provides meaningful throughput gains without the diminishing
 **Total time: ~27.5 seconds** (~18% faster than 3 pods)
 
 **Key observations:**
+
 - Even job distribution thanks to `least_conn`
 - Consistent mean times (3.1-3.7s) — no resource contention
 - All pods utilising full concurrent capacity
