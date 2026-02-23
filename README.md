@@ -147,6 +147,7 @@ See [k8s/browserless/](k8s/browserless/README.md) for Kubernetes deployment inst
 - `BROWSER_WS_ENDPOINT` - WebSocket endpoint of the Browserless cluster
   - Examples:
     - Docker Compose: `ws://browserless:3000`
+    - Local dev + Browserless in Docker: `ws://localhost:3010`
     - Kubernetes: `ws://browserless.default.svc.cluster.local:3000`
   - When set, PDF generation uses the remote browser cluster instead of local Chromium
 - `FACTORY_BASE_URL` - Base URL of the factory app, used by the remote browser to fetch static assets (CSS, fonts, images, JS)
