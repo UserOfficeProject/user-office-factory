@@ -32,7 +32,7 @@
     "@opentelemetry/instrumentation-winston": "^0.55.0",
     "@opentelemetry/resource-detector-container": "^0.8.2",
     "@opentelemetry/sdk-node": "^0.211.0",
-    "@opentelemetry/sdk-trace-node": "^2.2.0",
+    "@opentelemetry/sdk-trace-node": "^2.5.1",
     "@user-office-software/duo-logger": "^2.3.2",
     "archiver": "^7.0.1",
     "await-to-js": "^3.0.0",
