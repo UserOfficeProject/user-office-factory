@@ -1,0 +1,17 @@
+# Entry-point service for Browserless.
+# Factory's BROWSER_WS_ENDPOINT points here (ws://browserless:3000).
+# Traffic is routed through the NGINX reverse-proxy which performs
+# least_conn load balancing across the Browserless pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: browserless
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: browserless-nginx

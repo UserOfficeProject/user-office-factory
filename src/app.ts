@@ -13,6 +13,7 @@ import './services';
 import './config';
 import { container } from 'tsyringe';
 
+import { FACTORY_BASE_URL } from './config/browserless';
 import { MetricsService } from './config/metrics/MetricsService';
 import { Tokens } from './config/Tokens';
 import PostgresSystemDataSource from './dataSources/postgres/SystemDataSource';
@@ -24,6 +25,7 @@ import getZIPWorkflowManager from './workflows/zip';
 
 const app = express();
 const systemDataSource = new PostgresSystemDataSource();
+const REQUEST_BODY_LIMIT = process.env.REQUEST_BODY_LIMIT || '20mb';
 app.use(
   httpLogger('tiny', {
     skip: function (req, res) {
@@ -35,8 +37,8 @@ app.use(
     },
   })
 );
-app.use(express.json({ limit: '5mb' }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
+app.use(express.urlencoded({ extended: false, limit: REQUEST_BODY_LIMIT }));
 app.use(cookieParser());
 app.use('/static', cors(), express.static(join(__dirname, '..', 'templates')));
 
@@ -168,46 +170,45 @@ app.get(['/', '/health-check'], (req, res) => {
 app.get('/favicon.ico', (req, res) => res.end());
 
 app.get('/fonts/segoeui', cors(), (req: Request, res: Response) => {
-  const port = process.env.NODE_PORT || 4500;
   const font = `@font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-light.ttf)
+    src: url(${FACTORY_BASE_URL}/static/fonts/segoe-ui/segoeui-light.ttf)
         format('truetype');
     font-weight: 100;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-semi-light.ttf)
+    src: url(${FACTORY_BASE_URL}/static/fonts/segoe-ui/segoeui-semi-light.ttf)
         format('truetype');
     font-weight: 200;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-normal.ttf)
+    src: url(${FACTORY_BASE_URL}/static/fonts/segoe-ui/segoeui-normal.ttf)
         format('truetype');
     font-weight: 400;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-bold.ttf)
+    src: url(${FACTORY_BASE_URL}/static/fonts/segoe-ui/segoeui-bold.ttf)
         format('truetype');
     font-weight: 600;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeui-semi-bold.ttf)
+    src: url(${FACTORY_BASE_URL}/static/fonts/segoe-ui/segoeui-semi-bold.ttf)
         format('truetype');
     font-weight: 700;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeuii.ttf)
+    src: url(${FACTORY_BASE_URL}/static/fonts/segoe-ui/segoeuii.ttf)
         format('truetype');
     font-style: italic;
   }
   @font-face {
     font-family: SegoeUI;
-    src: url(http://localhost:${port}/static/fonts/segoe-ui/segoeuiz.ttf)
+    src: url(${FACTORY_BASE_URL}/static/fonts/segoe-ui/segoeuiz.ttf)
         format('truetype');
     font-weight: 600;
     font-style: italic;

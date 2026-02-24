@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: browserless-nginx-config
+  labels:
+    app.kubernetes.io/name: browserless-nginx
+    app.kubernetes.io/component: load-balancer
+    app.kubernetes.io/part-of: user-office-factory
+data:
+  default.conf: |
+    upstream browserless_backend {
+        # Route to pod with fewest active connections
+        least_conn;
+        server browserless-headless:3000;
+    }
+
+    server {
+        listen 3000;
+
+        location / {
+            proxy_pass http://browserless_backend;
+
+            # Only retry on connection errors (prevents duplicate PDF generation)
+            proxy_next_upstream error;
+            proxy_next_upstream_tries 1;
+
+            # WebSocket support (required by Puppeteer)
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+
+            # Extended timeouts for long-running browser operations
+            proxy_connect_timeout 900;
+            proxy_send_timeout 900;
+            proxy_read_timeout 900;
+            send_timeout 900;
+        }
+
+        # Health endpoint for probes
+        location /healthz {
+            access_log off;
+            return 200 "ok";
+        }
+    }
