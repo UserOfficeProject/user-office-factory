@@ -1,0 +1,16 @@
+# Headless service for Browserless pods.
+# Returns individual pod IPs in DNS (no cluster IP), allowing the NGINX
+# reverse-proxy upstream to discover and load-balance across all pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: browserless-headless
+spec:
+  clusterIP: None
+  ports:
+    - port: 3000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: browserless

@@ -7,6 +7,7 @@ import { PDFOptions } from 'puppeteer';
 import './helpers';
 import './partials';
 import { getTemplateFile } from './getTemplateFile';
+import { FACTORY_BASE_URL } from '../config/browserless';
 
 type TemplateNames =
   | 'proposal-main.hbs'
@@ -22,7 +23,7 @@ export async function render(
 ): Promise<string> {
   const template = handlebar.compile(pdfTemplate);
 
-  return template(payload);
+  return template({ ...payload, factoryBaseUrl: FACTORY_BASE_URL });
 }
 
 export async function renderTemplate(
@@ -33,7 +34,7 @@ export async function renderTemplate(
 
   const template = handlebar.compile(htmlTemplate);
 
-  return template(payload);
+  return template({ ...payload, factoryBaseUrl: FACTORY_BASE_URL });
 }
 
 export async function renderHeaderFooter(proposalId?: string) {

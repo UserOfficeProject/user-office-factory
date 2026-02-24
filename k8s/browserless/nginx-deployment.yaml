@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: browserless-nginx
+  labels:
+    app.kubernetes.io/name: browserless-nginx
+    app.kubernetes.io/component: load-balancer
+    app.kubernetes.io/part-of: user-office-factory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: browserless-nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: browserless-nginx
+        app.kubernetes.io/component: load-balancer
+        app.kubernetes.io/part-of: user-office-factory
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1-alpine
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: browserless-nginx-config

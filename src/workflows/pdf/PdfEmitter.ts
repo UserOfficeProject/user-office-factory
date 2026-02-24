@@ -3,7 +3,10 @@ import { EventEmitter } from 'events';
 import gm from 'gm';
 
 import { FileMetadata } from '../../models/File';
-import { generatePdfFromLink, generatePuppeteerPdfFooter } from '../../pdf';
+import {
+  generatePdfFromImageFile,
+  generatePuppeteerPdfFooter,
+} from '../../pdf';
 import services from '../../services';
 import { Attachment } from '../../types';
 import { generateTmpPath, failSafeDeleteFiles } from '../../util/fileSystem';
@@ -87,7 +90,7 @@ export default abstract class PdfEmitter<T> extends EventEmitter {
       attachmentPath = newFilePath;
     }
 
-    const pdfPath = await generatePdfFromLink(`file://${attachmentPath}`, {
+    const pdfPath = await generatePdfFromImageFile(attachmentPath, {
       pdfOptions: generatePuppeteerPdfFooter(footer),
     });
 
