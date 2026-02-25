@@ -135,6 +135,8 @@ Or provide discrete settings:
   - When Puppeteer throws like `Protocol error: Connection closed.` errors under load, reduce this value.
 - `PDF_GENERATION_TIMEOUT` (default: `60000` ms) to set maximum time for PDF generation
   - When Navigation timeout errors occur, increase this value.
+- `PDF_MAX_RETRIES` (default: `3`) maximum attempts for transient PDF generation failures
+  - Retry backoff is exponential (`2s`, `4s`, `8s`, ...).
 - `PDF_DEBUG_HTML=1` to write the rendered HTML alongside the generated PDF
 - `UO_FEATURE_ALLOW_NO_SANDBOX=1` to launch Chromium with `--no-sandbox`
   - Use only when your runtime cannot support Chromium sandboxing (common in some containers).
@@ -209,5 +211,5 @@ The `{{factoryBaseUrl}}` helper is automatically available in all templates and 
 - Improve the HTML render waiting strategy before PDF generation to ensure pages are fully rendered.
 - After the waiting strategy is in place, avoid creating a new browser context for every request; evaluate reusing the default/shared context to improve cache reuse for static assets.
 - Leverage static asset caching (`Cache-Control` / `max-age`) together with context reuse to reduce repeated CSS/font/image fetches.
-- Retry logic for transient PDF generation errors (e.g., navigation timeout error etc...)
+- ~~Retry logic for transient PDF generation errors (e.g., navigation timeout error etc...)~~
 - Config class to centralize and validate environment variable parsing and defaults.
