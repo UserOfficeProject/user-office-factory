@@ -48,7 +48,7 @@
     "jsbarcode": "^3.12.3",
     "knex": "^3.1.0",
     "morgan": "^1.10.1",
-    "muhammara": "^6.0.3",
+    "muhammara": "^6.0.4",
     "pg": "^8.18.0",
     "pg-large-object": "^2.0.0",
     "puppeteer": "^24.34.0",
