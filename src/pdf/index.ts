@@ -34,9 +34,13 @@ const PDF_GENERATION_TIMEOUT = parseInt(
   10
 );
 
+// Max retries for transient PDF generation failures (timeout, frame detached, etc.)
+const PDF_MAX_RETRIES = parseInt(process.env.PDF_MAX_RETRIES || '3', 10);
+
 logger.logInfo('PDF generation settings', {
   maxConcurrent: MAX_CONCURRENT_PDF_GENERATIONS,
   timeoutMs: PDF_GENERATION_TIMEOUT,
+  maxRetries: PDF_MAX_RETRIES,
   puppeteerLaunchOptions: launchOptions,
 });
 
@@ -53,27 +57,13 @@ const pdfSemaphore = new Semaphore(MAX_CONCURRENT_PDF_GENERATIONS);
 let localBrowserPromise: Promise<Browser> | null = null;
 
 /**
- * Connect to a remote Browserless cluster with retry logic.
+ * Connect to a remote Browserless cluster.
  * Each call returns a fresh browser session managed by Browserless.
  */
-async function connectRemoteBrowser(maxRetries = 3): Promise<Browser> {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await puppeteer.connect({
-        browserWSEndpoint: BROWSER_WS_ENDPOINT,
-      });
-    } catch (e) {
-      logger.logWarn(
-        `[connectRemoteBrowser] Attempt ${attempt}/${maxRetries} failed`,
-        { error: String(e) }
-      );
-      if (attempt === maxRetries) {
-        throw e;
-      }
-      await new Promise((r) => setTimeout(r, 1000 * attempt));
-    }
-  }
-  throw new Error('[connectRemoteBrowser] unreachable');
+async function connectRemoteBrowser(): Promise<Browser> {
+  return await puppeteer.connect({
+    browserWSEndpoint: BROWSER_WS_ENDPOINT,
+  });
 }
 
 /**
@@ -113,93 +103,148 @@ export async function generatePdfFromHtml(
   // Acquire semaphore before starting PDF generation
   await pdfSemaphore.acquire();
 
-  const remote = isRemoteBrowser();
-  let browser: Browser | undefined = undefined;
-  let context: BrowserContext | undefined = undefined;
   try {
-    const name = generateTmpPath();
-    const pdfPath = `${name}.pdf`;
-
-    if (process.env.PDF_DEBUG_HTML === '1') {
-      const htmlPath = `${name}.html`;
-      await promises.writeFile(htmlPath, html, 'utf-8');
-
-      logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
-    }
-
-    const start = Date.now();
-    browser = await getBrowser();
-    context = await browser.createBrowserContext();
-    const page = await context.newPage();
-
-    // Set a default navigation timeout
-    page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
-    page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
-
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    await page.emulateMediaType('screen');
-
-    const headingsInfo = await page.evaluate(extractHeadingsInfo);
-
-    if (remote) {
-      // Remote browser: omit `path` to get a Buffer (remote FS is not shared)
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        margin: { top: 0, left: 0, bottom: 0, right: 0 },
-        ...pdfOptions,
-      });
-      await promises.writeFile(pdfPath, pdfBuffer);
-    } else {
-      // Local browser: write directly to local filesystem
-      await page.pdf({
-        path: pdfPath,
-        format: 'A4',
-        margin: { top: 0, left: 0, bottom: 0, right: 0 },
-        ...pdfOptions,
-      });
-    }
-
-    await page.close();
-
-    logger.logDebug('[generatePdfFromHtml] PDF output:', {
-      pdfPath,
-      runtime: Date.now() - start,
-      remote,
-    });
-
-    const toc = generateToc(headingsInfo);
-
-    return { pdfPath, toc };
-  } catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error));
-    logger.logError(`Error: ${err.message} [generatePdfFromHtml]`, {});
-
-    throw new Error(
-      `[generatePdfFromHtml] failed to generate pdf from Html ${err.message}`
-    );
+    return await attemptPdfGeneration(html, { pdfOptions });
   } finally {
-    if (context) {
-      try {
-        await context.close();
-      } catch (closeError) {
-        logger.logWarn('[generatePdfFromHtml] Failed to close context', {
-          error: String(closeError),
-        });
-      }
-    }
-    // Remote: disconnect from the cluster (Browserless manages browser lifecycle)
-    // Local: close the isolated context (shared browser stays alive)
-    if (remote && browser) {
-      try {
-        browser.disconnect();
-      } catch (disconnectError) {
-        logger.logWarn('[generatePdfFromHtml] Failed to disconnect browser', {
-          error: String(disconnectError),
-        });
-      }
-    }
     pdfSemaphore.release();
   }
+}
+
+/**
+ * Core PDF generation with exponential backoff retry.
+ * Each retry gets a fresh browser connection and context.
+ */
+async function attemptPdfGeneration(
+  html: string,
+  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
+): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 1; attempt <= PDF_MAX_RETRIES; attempt++) {
+    const remote = isRemoteBrowser();
+    let browser: Browser | undefined = undefined;
+    let context: BrowserContext | undefined = undefined;
+
+    try {
+      const name = generateTmpPath();
+      const pdfPath = `${name}.pdf`;
+
+      if (process.env.PDF_DEBUG_HTML === '1') {
+        const htmlPath = `${name}.html`;
+        await promises.writeFile(htmlPath, html, 'utf-8');
+
+        logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+      }
+
+      const start = Date.now();
+      browser = await getBrowser();
+      context = await browser.createBrowserContext();
+      const page = await context.newPage();
+
+      // Set a default navigation timeout
+      page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
+      page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
+
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.emulateMediaType('screen');
+
+      const headingsInfo = await page.evaluate(extractHeadingsInfo);
+
+      if (remote) {
+        // Remote browser: omit `path` to get a Buffer (remote FS is not shared)
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          margin: { top: 0, left: 0, bottom: 0, right: 0 },
+          ...pdfOptions,
+        });
+        await promises.writeFile(pdfPath, pdfBuffer);
+      } else {
+        // Local browser: write directly to local filesystem
+        await page.pdf({
+          path: pdfPath,
+          format: 'A4',
+          margin: { top: 0, left: 0, bottom: 0, right: 0 },
+          ...pdfOptions,
+        });
+      }
+
+      await page.close();
+
+      const runtime = Date.now() - start;
+      logger.logDebug('[generatePdfFromHtml] PDF output:', {
+        pdfPath,
+        runtime,
+        remote,
+        attempt,
+      });
+
+      if (attempt > 1) {
+        logger.logInfo(
+          `[generatePdfFromHtml] Succeeded on retry attempt ${attempt}/${PDF_MAX_RETRIES}`,
+          { runtime }
+        );
+      }
+
+      const toc = generateToc(headingsInfo);
+
+      return { pdfPath, toc };
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      lastError = err;
+
+      logger.logWarn(
+        `[generatePdfFromHtml] Attempt ${attempt}/${PDF_MAX_RETRIES} failed`,
+        {
+          error: err.message,
+          remote,
+        }
+      );
+
+      if (attempt === PDF_MAX_RETRIES) {
+        break;
+      }
+
+      // Exponential backoff: 2s, 4s, 8s, ...
+      const delayMs = Math.pow(2, attempt) * 1000;
+      logger.logInfo(`[generatePdfFromHtml] Retrying in ${delayMs}ms...`, {
+        attempt,
+        nextAttempt: attempt + 1,
+      });
+      await new Promise((r) => setTimeout(r, delayMs));
+    } finally {
+      if (context) {
+        try {
+          await context.close();
+        } catch (closeError) {
+          logger.logWarn('[generatePdfFromHtml] Failed to close context', {
+            error: String(closeError),
+          });
+        }
+      }
+      // Remote: disconnect from the cluster (Browserless manages browser lifecycle)
+      // Local: close the isolated context (shared browser stays alive)
+      if (remote && browser) {
+        try {
+          browser.disconnect();
+        } catch (disconnectError) {
+          logger.logWarn('[generatePdfFromHtml] Failed to disconnect browser', {
+            error: String(disconnectError),
+          });
+        }
+      }
+    }
+  }
+
+  // All attempts exhausted
+  const finalError = lastError ?? new Error('unknown error');
+  logger.logError(
+    `[generatePdfFromHtml] All ${PDF_MAX_RETRIES} attempts failed: ${finalError.message}`,
+    {}
+  );
+
+  throw new Error(
+    `[generatePdfFromHtml] Failed to generate pdf from Html ${finalError.message}`
+  );
 }
 
 // Utility function to extract information about headings and their positions using page.evaluate()
