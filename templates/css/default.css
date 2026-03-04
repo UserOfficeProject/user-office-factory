@@ -11,8 +11,7 @@
 
 @font-face {
   font-family: 'Calibri';
-  src: url('http://localhost:4500/static/fonts/Calibri_Italic.ttf')
-    format('truetype');
+  src: url('/static/fonts/Calibri_Italic.ttf') format('truetype');
   font-style: italic;
 }
 
