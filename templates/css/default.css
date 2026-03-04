@@ -11,7 +11,8 @@
 
 @font-face {
   font-family: 'Calibri';
-  src: url('/static/fonts/Calibri_Italic.ttf') format('truetype');
+  src: url('http://localhost:4500/static/fonts/Calibri_Italic.ttf')
+    format('truetype');
   font-style: italic;
 }
 
@@ -41,7 +42,7 @@
 
 body {
   font-size: 0.75rem;
-  font-family: 'FreeSans','Calibri';
+  font-family: 'FreeSans', 'Calibri';
 }
 
 .title {
