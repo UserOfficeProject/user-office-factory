@@ -318,7 +318,7 @@ export class CustomProposalPdfFactory extends PdfFactory<
           const pdf = await generatePdfFromHtml(renderedProposalSample, {
             pdfOptions: pdfOptions,
           });
-          console.info({ pdfPath: pdf.pdfPath });
+
           this.emit('countPages', pdf.pdfPath, 'samples');
           this.emit('rendered:sample', pdf);
         }

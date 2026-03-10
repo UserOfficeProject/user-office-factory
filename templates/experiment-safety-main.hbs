@@ -33,11 +33,11 @@
     <div class="section-title">Information by Safety Review Team</div>
     <div class="mb-3">
       {{#if ($eq this.safetyReviewQuestionary.answers.hazard_type_selection "Radioactive")}}
-        <img src="http://localhost:4500/static/images/Radioactive.jpg" style="height: 100px;" />
+        <img src="{{factoryBaseUrl}}/static/images/Radioactive.jpg" style="height: 100px;" />
       {{else if ($eq this.safetyReviewQuestionary.answers.hazard_type_selection "Hot")}}
-        <img src="http://localhost:4500/static/images/Hot.jpg" style="height: 100px;" />
+        <img src="{{factoryBaseUrl}}/static/images/Hot.jpg" style="height: 100px;" />
       {{else if ($eq this.safetyReviewQuestionary.answers.hazard_type_selection "Explosive")}}
-        <img src="http://localhost:4500/static/images/Explosive.jpg" style="height: 100px;" />
+        <img src="{{factoryBaseUrl}}/static/images/Explosive.jpg" style="height: 100px;" />
       {{/if}}
       <h5 class="mt-2">{{ this.safetyReviewQuestionary.answers.hazard_type_selection }}</h5>
     </div>

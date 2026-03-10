@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: browserless
+  labels:
+    app.kubernetes.io/name: browserless
+    app.kubernetes.io/component: pdf-renderer
+    app.kubernetes.io/part-of: user-office-factory
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: browserless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: browserless
+        app.kubernetes.io/component: pdf-renderer
+        app.kubernetes.io/part-of: user-office-factory
+    spec:
+      containers:
+        - name: browserless
+          image: ghcr.io/browserless/chromium:v2.40.0
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          env:
+            # Max concurrent browser sessions per pod
+            - name: CONCURRENT
+              value: "5"
+            # Max queued requests — small buffer above CONCURRENT
+            - name: QUEUED
+              value: "10"
+            # Session timeout in ms
+            - name: TIMEOUT
+              value: "120000"
+            # Enable health checks for load balancer awareness
+            - name: HEALTH
+              value: "true"
+            - name: ENABLE_DEBUGGER
+              value: "false"
+            - name: ENABLE_API_GET
+              value: "true"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          readinessProbe:
+            httpGet:
+              path: /active
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /active
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30

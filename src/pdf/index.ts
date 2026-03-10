@@ -1,10 +1,13 @@
 import { promises } from 'fs';
+import { extname } from 'path';
 
 import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
 import puppeteer, { Browser, BrowserContext, PDFOptions } from 'puppeteer';
 
 import { createToC } from './pdfTableOfContents';
+import { Semaphore } from './semaphore';
+import { BROWSER_WS_ENDPOINT, isRemoteBrowser } from '../config/browserless';
 import { generateTmpPath, generateTmpPathWithName } from '../util/fileSystem';
 
 export type TableOfContents = {
@@ -13,81 +16,235 @@ export type TableOfContents = {
   children: TableOfContents[];
 };
 
-let browser: Browser;
-
 const launchOptions = ['--disable-dev-shm-usage'];
 
 if (process.env.UO_FEATURE_ALLOW_NO_SANDBOX === '1') {
   launchOptions.push('--no-sandbox');
 }
+// Limit concurrent PDF generations to prevent resource exhaustion
+// Can be configured via environment variable, defaults to 2
+const MAX_CONCURRENT_PDF_GENERATIONS = parseInt(
+  process.env.MAX_CONCURRENT_PDF_GENERATIONS || '2',
+  10
+);
 
-logger.logInfo('Launching puppeteer with ', { args: launchOptions });
+// Configurable timeout for PDF generation (default 60 seconds)
+const PDF_GENERATION_TIMEOUT = parseInt(
+  process.env.PDF_GENERATION_TIMEOUT || '60000',
+  10
+);
 
-// TODO: create browser lazily while keeping track of it
-// so we don't end up with dozens of browsers
-puppeteer
-  .launch({ args: launchOptions })
-  .then((inst) => (browser = inst))
-  .catch((e) => {
-    logger.logException('Failed to start browser puppeteer', e);
+// Max retries for transient PDF generation failures (timeout, frame detached, etc.)
+const PDF_MAX_RETRIES = parseInt(process.env.PDF_MAX_RETRIES || '3', 10);
+
+logger.logInfo('PDF generation settings', {
+  maxConcurrent: MAX_CONCURRENT_PDF_GENERATIONS,
+  timeoutMs: PDF_GENERATION_TIMEOUT,
+  maxRetries: PDF_MAX_RETRIES,
+  puppeteerLaunchOptions: launchOptions,
+});
+
+// Semaphore to limit concurrent PDF generations
+// When multiple documents are being generated simultaneously, this helps
+// prevent resource exhaustion (CPU, memory) by limiting the number of
+// concurrent Puppeteer browser page instances.
+// Adjust MAX_CONCURRENT_PDF_GENERATIONS based on your server capacity.
+const pdfSemaphore = new Semaphore(MAX_CONCURRENT_PDF_GENERATIONS);
+
+// Browser initialization promise - allows waiting for browser to be ready
+// In local mode: callers get one shared browser instance (singleton)
+// In remote mode: each call connects to the Browserless cluster
+let localBrowserPromise: Promise<Browser> | null = null;
+
+/**
+ * Connect to a remote Browserless cluster.
+ * Each call returns a fresh browser session managed by Browserless.
+ */
+async function connectRemoteBrowser(): Promise<Browser> {
+  return await puppeteer.connect({
+    browserWSEndpoint: BROWSER_WS_ENDPOINT,
   });
+}
 
+/**
+ * Get a browser instance.
+ * - Remote (BROWSER_WS_ENDPOINT set): connects to Browserless cluster (fresh session per call)
+ * - Local (fallback): launches a local Chromium singleton
+ */
+function getBrowser(): Promise<Browser> {
+  if (isRemoteBrowser()) {
+    return connectRemoteBrowser();
+  }
+
+  // Local fallback: shared singleton browser
+  if (!localBrowserPromise) {
+    localBrowserPromise = puppeteer
+      .launch({ args: launchOptions })
+      .catch((e) => {
+        logger.logException('Failed to start browser puppeteer', e);
+        localBrowserPromise = null; // Reset so we can retry
+        throw e;
+      });
+  }
+
+  return localBrowserPromise;
+}
+
+// Note: This function is protected by a semaphore to limit concurrency and prevent resource exhaustion.
+//
+// Problem: Using `waitUntil: 'networkidle0'` can still produce incomplete rendering.
+// Using a separate browser context (empty cache) per page reduces the risk, but it can still happen.
+//
+// TODO: Implement a deterministic render-wait strategy (template-specific if needed)
 export async function generatePdfFromHtml(
   html: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
-  const { promise, resolve, reject } = Promise.withResolvers<{
-    pdfPath: string;
-    toc: TableOfContents[];
-  }>();
-  const name = generateTmpPath();
-  let context: BrowserContext | undefined = undefined;
+  // Acquire semaphore before starting PDF generation
+  await pdfSemaphore.acquire();
+
   try {
-    if (process.env.PDF_DEBUG_HTML === '1') {
-      const htmlPath = `${name}.html`;
-      await promises.writeFile(htmlPath, html, 'utf-8');
-
-      logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
-    }
-
-    const pdfPath = `${name}.pdf`;
-
-    const start = Date.now();
-    context = await browser.createBrowserContext();
-
-    const page = await context.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    await page.emulateMediaType('screen');
-
-    const headingsInfo = await page.evaluate(extractHeadingsInfo);
-
-    await page.pdf({
-      path: pdfPath,
-      format: 'A4',
-      margin: { top: 0, left: 0, bottom: 0, right: 0 },
-      ...pdfOptions,
-    });
-
-    await page.close();
-
-    logger.logDebug('[generatePdfFromHtml] PDF output:', {
-      pdfPath,
-      runtime: Date.now() - start,
-    });
-
-    const toc = generateToc(headingsInfo);
-
-    resolve({ pdfPath, toc });
-  } catch (error) {
-    logger.logError(`${error} [generatePdfFromHtml]`, {});
-    reject(`[generatePdfFromHtml] failed to generate pdf from Html ${error}`);
+    return await attemptPdfGeneration(html, { pdfOptions });
   } finally {
-    if (context) {
-      await context.close();
+    pdfSemaphore.release();
+  }
+}
+
+/**
+ * Core PDF generation with exponential backoff retry.
+ * Each retry gets a fresh browser connection and context.
+ */
+async function attemptPdfGeneration(
+  html: string,
+  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
+): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 1; attempt <= PDF_MAX_RETRIES; attempt++) {
+    const remote = isRemoteBrowser();
+    let browser: Browser | undefined = undefined;
+    let context: BrowserContext | undefined = undefined;
+
+    try {
+      const name = generateTmpPath();
+      const pdfPath = `${name}.pdf`;
+
+      if (process.env.PDF_DEBUG_HTML === '1') {
+        const htmlPath = `${name}.html`;
+        await promises.writeFile(htmlPath, html, 'utf-8');
+
+        logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+      }
+
+      const start = Date.now();
+      browser = await getBrowser();
+      context = await browser.createBrowserContext();
+      const page = await context.newPage();
+
+      // Set a default navigation timeout
+      page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
+      page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
+
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.emulateMediaType('screen');
+
+      const headingsInfo = await page.evaluate(extractHeadingsInfo);
+
+      if (remote) {
+        // Remote browser: omit `path` to get a Buffer (remote FS is not shared)
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          margin: { top: 0, left: 0, bottom: 0, right: 0 },
+          ...pdfOptions,
+        });
+        await promises.writeFile(pdfPath, pdfBuffer);
+      } else {
+        // Local browser: write directly to local filesystem
+        await page.pdf({
+          path: pdfPath,
+          format: 'A4',
+          margin: { top: 0, left: 0, bottom: 0, right: 0 },
+          ...pdfOptions,
+        });
+      }
+
+      await page.close();
+
+      const runtime = Date.now() - start;
+      logger.logDebug('[generatePdfFromHtml] PDF output:', {
+        pdfPath,
+        runtime,
+        remote,
+        attempt,
+      });
+
+      if (attempt > 1) {
+        logger.logInfo(
+          `[generatePdfFromHtml] Succeeded on retry attempt ${attempt}/${PDF_MAX_RETRIES}`,
+          { runtime }
+        );
+      }
+
+      const toc = generateToc(headingsInfo);
+
+      return { pdfPath, toc };
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      lastError = err;
+
+      logger.logWarn(
+        `[generatePdfFromHtml] Attempt ${attempt}/${PDF_MAX_RETRIES} failed`,
+        {
+          error: err.message,
+          remote,
+        }
+      );
+
+      if (attempt === PDF_MAX_RETRIES) {
+        break;
+      }
+
+      // Exponential backoff: 2s, 4s, 8s, ...
+      const delayMs = Math.pow(2, attempt) * 1000;
+      logger.logInfo(`[generatePdfFromHtml] Retrying in ${delayMs}ms...`, {
+        attempt,
+        nextAttempt: attempt + 1,
+      });
+      await new Promise((r) => setTimeout(r, delayMs));
+    } finally {
+      if (context) {
+        try {
+          await context.close();
+        } catch (closeError) {
+          logger.logWarn('[generatePdfFromHtml] Failed to close context', {
+            error: String(closeError),
+          });
+        }
+      }
+      // Remote: disconnect from the cluster (Browserless manages browser lifecycle)
+      // Local: close the isolated context (shared browser stays alive)
+      if (remote && browser) {
+        try {
+          browser.disconnect();
+        } catch (disconnectError) {
+          logger.logWarn('[generatePdfFromHtml] Failed to disconnect browser', {
+            error: String(disconnectError),
+          });
+        }
+      }
     }
   }
 
-  return promise;
+  // All attempts exhausted
+  const finalError = lastError ?? new Error('unknown error');
+  logger.logError(
+    `[generatePdfFromHtml] All ${PDF_MAX_RETRIES} attempts failed: ${finalError.message}`,
+    {}
+  );
+
+  throw new Error(
+    `[generatePdfFromHtml] Failed to generate pdf from Html ${finalError.message}`
+  );
 }
 
 // Utility function to extract information about headings and their positions using page.evaluate()
@@ -166,58 +323,47 @@ function insertPageIntoParent(
   });
 }
 
-export async function generatePdfFromLink(
-  link: string,
+/**
+ * Generate a PDF from a local image file.
+ * Reads the image into memory and renders it via generatePdfFromHtml
+ * using a base64 data-URI. This works with both local and remote browsers
+ * since no file:// URL is needed.
+ */
+export async function generatePdfFromImageFile(
+  imagePath: string,
   { pdfOptions }: { pdfOptions?: PDFOptions } = {}
 ): Promise<string> {
-  const { promise, resolve, reject } = Promise.withResolvers<string>();
-  let context: BrowserContext | undefined = undefined;
   try {
-    const name = generateTmpPath();
+    const imageBuffer = await promises.readFile(imagePath);
+    const ext = extname(imagePath).slice(1).toLowerCase() || 'png';
+    const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+    const base64 = imageBuffer.toString('base64');
 
-    if (!name) {
-      reject('[generatePdfFromLink] failed to generate temporary path');
-    }
-    const pdfPath = `${name}.pdf`;
-    const start = Date.now();
-    context = await browser.createBrowserContext();
-    const page = await context.newPage();
-    await page.setViewport({
-      width: 1920,
-      height: 947,
-    });
+    // Use a simple HTML wrapper with the image as a base64 data-URI
+    const html = `
+      <html>
+        <head><style>
+          body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
+          img { max-width: 100%; max-height: 100vh; object-fit: contain; }
+        </style></head>
+        <body>
+          <img src="data:${mimeType};base64,${base64}" />
+        </body>
+      </html>
+    `;
 
-    await page.goto(link, { waitUntil: 'load' });
+    const { pdfPath } = await generatePdfFromHtml(html, { pdfOptions });
 
-    const imgHandle = await page.$('img');
-    const width = (await page.evaluate((img) => img?.width, imgHandle)) || 0;
-    const height = (await page.evaluate((img) => img?.height, imgHandle)) || 0;
-
-    await page.pdf({
-      path: pdfPath,
-      margin: { top: 0, left: 0, bottom: 0, right: 0 },
-      landscape: width > height,
-      ...pdfOptions,
-    });
-
-    await page.close();
-
-    logger.logDebug('[generatePdfFromLink] PDF output:', {
-      pdfPath,
-      runtime: Date.now() - start,
-    });
-
-    resolve(pdfPath);
+    return pdfPath;
   } catch (error) {
-    logger.logError(`${error} [generatePdfFromLink]`, {});
-    reject(`[generatePdfFromLink] failed to generate pdf path ${error}`);
-  } finally {
-    if (context) {
-      await context.close();
-    }
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.logError(`Error in generatePdfFromImageFile: ${err.message}`, {
+      imagePath,
+    });
+    throw new Error(
+      `[generatePdfFromImageFile] failed to generate pdf from image ${err.message}`
+    );
   }
-
-  return promise;
 }
 
 export function getTotalPages(filePath: string): number {
