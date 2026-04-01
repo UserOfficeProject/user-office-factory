@@ -247,21 +247,22 @@ Starting OpenTelemetry tracing with configuration: {
 
 #### Required for Tracing
 
-| Variable | Description | Example |
-|----------|-------------|---------|
+| Variable                      | Description                   | Example                      |
+| ----------------------------- | ----------------------------- | ---------------------------- |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP HTTP endpoint for traces | `http://lgtm:4318/v1/traces` |
-| `OTEL_SERVICE_NAME` | Service identifier in traces | `proposal-factory` |
+| `OTEL_SERVICE_NAME`           | Service identifier in traces  | `proposal-factory`           |
 
 #### Optional (Logs & Metrics)
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` | OTLP HTTP endpoint for logs | `http://lgtm:4318/v1/logs` |
+| Variable                              | Description                    | Example                       |
+| ------------------------------------- | ------------------------------ | ----------------------------- |
+| `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`    | OTLP HTTP endpoint for logs    | `http://lgtm:4318/v1/logs`    |
 | `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | OTLP HTTP endpoint for metrics | `http://lgtm:4318/v1/metrics` |
 
 ### Configuration Examples
 
 **Full observability (tracing + logs + metrics):**
+
 ```bash
 OTEL_EXPORTER_OTLP_ENDPOINT="http://lgtm:4318/v1/traces"
 OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="http://lgtm:4318/v1/logs"
@@ -271,6 +272,7 @@ DEPENDENCY_CONFIG= "stfc"
 ```
 
 **Docker Compose with LGTM/Grafana:**
+
 ```yaml
 # docker-compose.yml
 services:
@@ -284,14 +286,16 @@ services:
       OTEL_SERVICE_NAME: "proposal-factory"
     ports:
       - "4500:4500"
-  
+
   lgtm:
     image: grafana/otel-lgtm:latest
     ports:
       - "3000:3000"    # Grafana
       - "4318:4318"    # OTLP HTTP receiver
 ```
+
 ✅ **Service started successfully:**
+
 ```
 Starting OpenTelemetry tracing with configuration: {
   tracesEndpoint: 'http://lgtm:4318/v1/traces',
@@ -299,4 +303,5 @@ Starting OpenTelemetry tracing with configuration: {
   service: 'proposal-factory'
 }
 ```
+
 Goto "[grafana explorer](http://localhost:3001/)"
