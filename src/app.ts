@@ -50,18 +50,21 @@ app.use((req, res, next) => metricsService.recordRequest(req, res, next));
 app.post(
   '/generate/:downloadType/:type',
   (req: Request, res: Response, next) => {
-    const { type, downloadType } = req.params;
+    const { type, downloadType } = req.params as {
+      type: string;
+      downloadType: string;
+    };
 
     let manager: WorkflowManager;
     switch (downloadType) {
       case 'pdf':
-        manager = getPDFWorkflowManager(type, req.body);
+        manager = getPDFWorkflowManager(type as string, req.body);
         break;
       case 'xlsx':
-        manager = getXLSXWorkflowManager(type, req.body);
+        manager = getXLSXWorkflowManager(type as string, req.body);
         break;
       case 'zip':
-        manager = getZIPWorkflowManager(type, req.body);
+        manager = getZIPWorkflowManager(type as string, req.body);
         break;
       default:
         return next(new Error(`Unknown 'downloadType': ${downloadType}`));
