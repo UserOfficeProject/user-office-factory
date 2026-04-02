@@ -53,6 +53,11 @@ export default class ZipWorkflowManager<
     if (!data) {
       throw new Error('There is no data to process');
     }
+
+    if (!(data instanceof Array)) {
+      throw new Error('Data should be an array of objects');
+    }
+
     this.data = [...data];
 
     for (let i = 0; i < this.data.length; i++) {
