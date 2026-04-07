@@ -213,3 +213,95 @@ The `{{factoryBaseUrl}}` helper is automatically available in all templates and 
 - Leverage static asset caching (`Cache-Control` / `max-age`) together with context reuse to reduce repeated CSS/font/image fetches.
 - ~~Retry logic for transient PDF generation errors (e.g., navigation timeout error etc...)~~
 - Config class to centralize and validate environment variable parsing and defaults.
+
+## OpenTelemetry
+
+OpenTelemetry provides distributed tracing, logging, and metrics instrumentation for the factory service. This helps you monitor performance, debug issues, and understand request flows across your system.
+
+### Quick Start
+
+The simplest setup requires just one environment variable:
+
+```bash
+# .env
+OTEL_EXPORTER_OTLP_ENDPOINT="http://lgtm:4318/v1/traces"
+OTEL_SERVICE_NAME="proposal-factory"
+```
+
+Then start the service:
+
+```bash
+npm run dev
+```
+
+If successful, you'll see this in the console:
+
+```
+Starting OpenTelemetry tracing with configuration: {
+  tracesEndpoint: 'http://lgtm:4318/v1/traces',
+  service: 'proposal-factory'
+}
+```
+
+### Environment Variables
+
+#### Required for Tracing
+
+| Variable                      | Description                   | Example                      |
+| ----------------------------- | ----------------------------- | ---------------------------- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP HTTP endpoint for traces | `http://lgtm:4318/v1/traces` |
+| `OTEL_SERVICE_NAME`           | Service identifier in traces  | `proposal-factory`           |
+
+#### Optional (Logs & Metrics)
+
+| Variable                              | Description                    | Example                       |
+| ------------------------------------- | ------------------------------ | ----------------------------- |
+| `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`    | OTLP HTTP endpoint for logs    | `http://lgtm:4318/v1/logs`    |
+| `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | OTLP HTTP endpoint for metrics | `http://lgtm:4318/v1/metrics` |
+
+### Configuration Examples
+
+**Full observability (tracing + logs + metrics):**
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT="http://lgtm:4318/v1/traces"
+OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="http://lgtm:4318/v1/logs"
+OTEL_EXPORTER_OTLP_METRICS_ENDPOINT="http://lgtm:4318/v1/metrics"
+OTEL_SERVICE_NAME="proposal-factory"
+DEPENDENCY_CONFIG= "stfc"
+```
+
+**Docker Compose with LGTM/Grafana:**
+
+```yaml
+# docker-compose.yml
+services:
+  factory:
+    image: user-office-factory:latest
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://lgtm:4318/v1/traces"
+      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: "http://lgtm:4318/v1/logs"
+      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: "http://lgtm:4318/v1/metrics"
+      DEPENDENCY_CONFIG: stfc
+      OTEL_SERVICE_NAME: "proposal-factory"
+    ports:
+      - "4500:4500"
+
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    ports:
+      - "3000:3000"    # Grafana
+      - "4318:4318"    # OTLP HTTP receiver
+```
+
+✅ **Service started successfully:**
+
+```
+Starting OpenTelemetry tracing with configuration: {
+  tracesEndpoint: 'http://lgtm:4318/v1/traces',
+  logsEndpoint: 'http://lgtm:4318/v1/logs',
+  service: 'proposal-factory'
+}
+```
+
+Goto "[grafana explorer](http://localhost:3001/)"
