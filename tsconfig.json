@@ -57,7 +57,8 @@
     /* Experimental Options */
     "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
     "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "rootDir": "./src"
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/*.spec.ts", "build", "coverage"]
