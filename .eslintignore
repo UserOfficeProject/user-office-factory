@@ -13,6 +13,6 @@ coverage/*
 
 src/generated/sdk.ts
 
-scripts/*
+src/scripts/*
 
 /templates/js/paged.polyfill.min.js
