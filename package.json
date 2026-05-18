@@ -30,7 +30,7 @@
     "@opentelemetry/host-metrics": "^0.38.3",
     "@opentelemetry/instrumentation-http": "^0.216.0 ",
     "@opentelemetry/instrumentation-knex": "^0.60.0",
-    "@opentelemetry/instrumentation-winston": "^0.60.0",
+    "@opentelemetry/instrumentation-winston": "^0.61.0",
     "@opentelemetry/resource-detector-container": "^0.8.8",
     "@opentelemetry/sdk-node": "^0.216.0",
     "@opentelemetry/sdk-trace-node": "^2.7.1",
