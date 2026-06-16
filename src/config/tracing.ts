@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { KnexInstrumentation } from '@opentelemetry/instrumentation-knex';
@@ -6,72 +7,188 @@ import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
 import { containerDetector } from '@opentelemetry/resource-detector-container';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { envDetector, processDetector } from '@opentelemetry/resources';
-import { NodeSDK } from '@opentelemetry/sdk-node';
+import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs';
+import { NodeSDK, NodeSDKConfiguration } from '@opentelemetry/sdk-node';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 
-const collectorOptions = {
-  url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+const OTEL_CONFIG = {
+  logProcessor: {
+    maxQueueSize: 2048,
+    maxExportBatchSize: 512,
+    scheduledDelayMillis: 5000,
+  },
+  spanProcessor: {
+    maxQueueSize: 1024,
+    maxExportBatchSize: 1024,
+    scheduledDelayMillis: 1000,
+  },
+  knex: {
+    requireParentSpan: true,
+    maxQueryLength: 100,
+  },
+  service: {
+    defaultName: 'proposal-factory',
+  },
+} as const;
+
+export const getServiceName = (): string => {
+  return process.env.OTEL_SERVICE_NAME || OTEL_CONFIG.service.defaultName;
 };
-const collectorTraceExporter = new OTLPTraceExporter(collectorOptions);
 
-const otelSDK = new NodeSDK({
-  traceExporter: collectorTraceExporter,
-  resource: resourceFromAttributes({
-    ['service.name']: process.env.OTEL_SERVICE_NAME || 'proposal-factory',
-  }),
-  spanProcessors: [
-    new BatchSpanProcessor(collectorTraceExporter, {
-      maxQueueSize: 1024,
-      maxExportBatchSize: 1024,
-      scheduledDelayMillis: 1000,
-    }),
-  ],
-  instrumentations: [
-    new HttpInstrumentation({
-      ignoreIncomingRequestHook: (req) => {
-        const url = req.url || '';
+const initializeExporters = (): {
+  traceExporter: OTLPTraceExporter;
+  logsExporter: OTLPLogExporter | null;
+} | null => {
+  const tracesEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+  const logsEndpoint = process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT;
+  if (!tracesEndpoint) {
+    return null;
+  }
 
-        return (
-          url.startsWith('/static/') ||
-          url.endsWith('.css') ||
-          url.endsWith('.js') ||
-          url.endsWith('.png') ||
-          url.endsWith('.jpg') ||
-          url.endsWith('.ico') ||
-          url.endsWith('.svg')
-        );
-      },
-    }),
-    new KnexInstrumentation({
-      requireParentSpan: true,
-      maxQueryLength: 100,
-    }),
-    new WinstonInstrumentation({
-      disableLogSending: true,
-      logHook: (span, record) => {
-        record['service_name'] =
-          process.env.OTEL_SERVICE_NAME || 'proposal-factory';
-      },
-    }),
-  ],
-  resourceDetectors: [envDetector, processDetector, containerDetector],
-  autoDetectResources: false,
-});
-if (process.env.OTEL_EXPORTER_OTLP_ENDPOINT) {
-  process.on('SIGTERM', () => {
-    otelSDK
-      .shutdown()
-      .then(
-        () => console.log('SDK shut down successfully', {}),
-        (err) => console.log('Error shutting down SDK', err)
-      )
-      .finally(() => process.exit(0));
-  });
+  try {
+    const traceExporter = new OTLPTraceExporter({
+      url: tracesEndpoint,
+    });
+    const logsExporter = logsEndpoint
+      ? new OTLPLogExporter({
+          url: logsEndpoint,
+        })
+      : null;
+
+    return { traceExporter, logsExporter };
+  } catch (error) {
+    console.error(
+      'Failed to initialize OpenTelemetry exporters:',
+      error instanceof Error ? error.message : error
+    );
+
+    return null;
+  }
+};
+
+const exporters = initializeExporters();
+
+const initializeSDK = (): NodeSDK | null => {
+  if (!exporters) {
+    return null;
+  }
+
+  try {
+    const sdkConfig: Partial<NodeSDKConfiguration> = {
+      traceExporter: exporters.traceExporter,
+      resource: resourceFromAttributes({
+        ['service.name']: getServiceName(),
+      }),
+      spanProcessors: [
+        new BatchSpanProcessor(
+          exporters.traceExporter,
+          OTEL_CONFIG.spanProcessor
+        ),
+      ],
+      instrumentations: [
+        new HttpInstrumentation({
+          ignoreIncomingRequestHook: (req) => {
+            const url = req.url || '';
+
+            return (
+              url.startsWith('/static/') ||
+              url.endsWith('.css') ||
+              url.endsWith('.js') ||
+              url.endsWith('.png') ||
+              url.endsWith('.jpg') ||
+              url.endsWith('.ico') ||
+              url.endsWith('.svg')
+            );
+          },
+        }),
+        new KnexInstrumentation(OTEL_CONFIG.knex),
+        new WinstonInstrumentation({
+          disableLogSending: true,
+          logHook: (span, record) => {
+            record['service_name'] = getServiceName();
+          },
+        }),
+      ],
+      resourceDetectors: [envDetector, processDetector, containerDetector],
+      autoDetectResources: false,
+    };
+
+    if (exporters.logsExporter) {
+      sdkConfig.logRecordProcessors = [
+        new BatchLogRecordProcessor(
+          exporters.logsExporter,
+          OTEL_CONFIG.logProcessor
+        ),
+      ];
+    }
+
+    return new NodeSDK(sdkConfig);
+  } catch (error) {
+    console.error(
+      'Failed to initialize OpenTelemetry SDK:',
+      error instanceof Error ? error.message : error
+    );
+
+    return null;
+  }
+};
+
+const otelSDK = initializeSDK();
+
+const registerShutdownHandler = (): void => {
+  if (!otelSDK) {
+    return;
+  }
+
+  const shutdownHandler = async (): Promise<void> => {
+    try {
+      await otelSDK.shutdown();
+      console.log('OpenTelemetry SDK shut down successfully');
+    } catch (error) {
+      console.error(
+        'Error during OpenTelemetry SDK shutdown:',
+        error instanceof Error ? error.message : error
+      );
+    } finally {
+      process.exit(0);
+    }
+  };
+
+  process.on('SIGTERM', shutdownHandler);
+  process.on('SIGINT', shutdownHandler);
+};
+
+registerShutdownHandler();
+
+export function isTracingEnabled(): boolean {
+  return !!process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 }
 
-export default async function startTracing() {
-  if (process.env.OTEL_EXPORTER_OTLP_ENDPOINT) {
-    console.log('Tracing initialising', {});
+export default async function startTracing(): Promise<void> {
+  if (!isTracingEnabled() || !otelSDK) {
+    return;
+  }
+
+  try {
+    const tracingConfig: Record<string, string> = {};
+    if (process.env.OTEL_EXPORTER_OTLP_ENDPOINT) {
+      tracingConfig.tracesEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+    }
+    if (process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT) {
+      tracingConfig.logsEndpoint = process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT;
+    }
+
+    console.log('Starting OpenTelemetry tracing with configuration:', {
+      ...tracingConfig,
+      service: getServiceName(),
+    });
+
     otelSDK.start();
+  } catch (error) {
+    console.error(
+      'Failed to start OpenTelemetry tracing:',
+      error instanceof Error ? error.message : error
+    );
+    throw error;
   }
 }

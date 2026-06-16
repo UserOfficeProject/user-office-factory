@@ -1,5 +1,6 @@
 import fs from 'fs';
 
+import { logger } from '@user-office-software/duo-logger';
 import to from 'await-to-js';
 import { Client } from 'pg';
 import { LargeObjectManager } from 'pg-large-object';
@@ -161,7 +162,10 @@ export default class PostgresFileDataSource implements FileDataSource {
 
       const [size, stream] = readableStream;
 
-      console.log('Streaming a large object with a total size of', size);
+      logger.logInfo(
+        `Streaming a large object with a total size of ${size}`,
+        {}
+      );
 
       stream.on('end', function () {
         connection?.query('COMMIT', () => resolve());

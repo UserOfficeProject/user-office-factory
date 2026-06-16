@@ -9,6 +9,8 @@ import {
 } from '@opentelemetry/sdk-metrics';
 import { logger } from '@user-office-software/duo-logger';
 
+import { getServiceName } from '../tracing';
+
 const exporter = new OTLPMetricExporter({
   url: process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
 });
@@ -24,15 +26,14 @@ const customResource = detectResources({
   detectors: [envDetector, processDetector],
 });
 
-customResource.attributes['service.name'] =
-  process.env.OTEL_SERVICE_NAME || 'user-office-factory-app';
+customResource.attributes['service.name'] = getServiceName();
 
 const meterProvider = new MeterProvider({
   resource: customResource,
   readers: [reader],
 });
 
-export const meter = meterProvider.getMeter('user-office-factory-app');
+export const meter = meterProvider.getMeter(getServiceName());
 
 export const httpRequestCounter = meter.createCounter('http_requests_total', {
   description:
