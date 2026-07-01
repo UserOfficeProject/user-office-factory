@@ -2,9 +2,9 @@ import { createWriteStream, unlink } from 'fs';
 
 import request from 'supertest';
 
-import extractPDFText from '../../../../scripts/text-extraction';
 import app from '../../../app';
 import { getTotalPages } from '../../../pdf';
+import extractPDFText from '../../../scripts/text-extraction';
 import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/pdf-payloads-custom';
 
