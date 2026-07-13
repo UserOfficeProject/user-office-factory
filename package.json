@@ -48,7 +48,7 @@
     "handlebars": "^4.7.8",
     "http-errors": "^2.0.1",
     "jsbarcode": "^3.12.3",
-    "knex": "^3.2.10",
+    "knex": "^3.3.0",
     "morgan": "^1.11.0",
     "muhammara": "^6.0.4",
     "pg": "^8.22.0",
