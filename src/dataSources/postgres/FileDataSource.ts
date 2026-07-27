@@ -138,55 +138,43 @@ export default class PostgresFileDataSource implements FileDataSource {
       );
     }
 
-    const [transactionError] = await to(connection.query('BEGIN'));
-    if (transactionError) {
-      database.client.releaseConnection(connection);
+    try {
+      await connection.query('BEGIN');
 
-      throw new Error(`Could not begin transaction \n${transactionError}`);
-    }
-
-    const blobManager = new LargeObjectManager({ pg: connection });
-    const [streamErr, response] = await to(
-      blobManager.openAndReadableStreamAsync(oid)
-    );
-
-    if (streamErr || !response) {
-      await connection.query('ROLLBACK');
-      database.client.releaseConnection(connection);
-
-      throw new Error(
-        `Could not create readable stream \n${streamErr} ${response}`
+      const blobManager = new LargeObjectManager({ pg: connection });
+      const [streamErr, response] = await to(
+        blobManager.openAndReadableStreamAsync(oid)
       );
+
+      if (streamErr || !response) {
+        throw new Error(
+          `Could not create readable stream \n${streamErr} ${response}`
+        );
+      }
+
+      const [size, stream] = response;
+      logger.logInfo('Streaming large object', { oid, size });
+
+      await new Promise<void>((resolve, reject) => {
+        const fileStream = fs.createWriteStream(output);
+
+        stream.on('error', (streamError) =>
+          reject(new Error(`Stream error: ${streamError}`))
+        );
+        fileStream.on('error', (writeError) =>
+          reject(new Error(`File write error: ${writeError}`))
+        );
+        fileStream.on('finish', resolve);
+
+        stream.pipe(fileStream);
+      });
+
+      await connection.query('COMMIT');
+    } catch (error) {
+      await to(connection.query('ROLLBACK'));
+      throw error;
+    } finally {
+      database.client.releaseConnection(connection);
     }
-
-    const [size, stream] = response;
-    logger.logInfo('Streaming large object', { oid, size });
-
-    await new Promise<void>((resolve, reject) => {
-      const fileStream = fs.createWriteStream(output);
-
-      stream.on('error', async (streamError) => {
-        await to(connection.query('ROLLBACK'));
-        database.client.releaseConnection(connection);
-
-        reject(new Error(`Stream error: ${streamError}`));
-      });
-
-      fileStream.on('error', async (writeError) => {
-        await to(connection.query('ROLLBACK'));
-        database.client.releaseConnection(connection);
-
-        reject(new Error(`File write error: ${writeError}`));
-      });
-
-      fileStream.on('finish', async () => {
-        await to(connection.query('COMMIT'));
-        database.client.releaseConnection(connection);
-
-        resolve();
-      });
-
-      stream.pipe(fileStream);
-    });
   }
 }
