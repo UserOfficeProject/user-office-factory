@@ -53,7 +53,7 @@
     "muhammara": "^6.0.4",
     "pg": "^8.22.0",
     "pg-large-object": "^2.0.0",
-    "puppeteer": "^24.41.0",
+    "puppeteer": "^25.2.1",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.1",
     "tsyringe": "^4.8.0",
