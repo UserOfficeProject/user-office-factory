@@ -28,7 +28,7 @@
     "@opentelemetry/exporter-logs-otlp-http": "^0.219.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.220.0",
     "@opentelemetry/host-metrics": "^0.38.3",
-    "@opentelemetry/instrumentation-http": "^0.218.0",
+    "@opentelemetry/instrumentation-http": "^0.220.0",
     "@opentelemetry/instrumentation-knex": "^0.62.0",
     "@opentelemetry/instrumentation-winston": "^0.62.0",
     "@opentelemetry/resource-detector-container": "^0.8.8",
@@ -92,7 +92,7 @@
     "path": "^0.12.7",
     "prettier": "3.8.3",
     "supertest": "^7.2.2",
-    "ts-jest": "^29.4.11",
+    "ts-jest": "^29.4.12",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3"
   },
