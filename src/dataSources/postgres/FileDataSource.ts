@@ -125,56 +125,56 @@ export default class PostgresFileDataSource implements FileDataSource {
   }
 
   private async retrieveBlob(oid: number, output: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      if (!output) reject('Output must be specified');
+    if (!output) {
+      throw new Error('Output must be specified');
+    }
 
-      const [connectionError, connection] = await to<Client>(
-        database.client.acquireConnection()
+    const [connectionError, connection] = await to(
+      database.client.acquireConnection() as Promise<Client | undefined>
+    );
+    if (connectionError || !connection) {
+      throw new Error(
+        `Error occurred while establishing connection with database: ${connectionError} ${connection}`
       );
-      if (connectionError) {
-        return reject(
-          `Could not establish connection with database \n ${connectionError}`
-        );
-      }
+    }
 
-      if (!connection) {
-        return reject('Could not obtain connection');
-      }
-
-      const [trxError] = await to(connection.query('BEGIN')); // start the transaction
-      if (trxError) {
-        database.client.releaseConnection(connection);
-
-        return reject(`Could not begin transaction \n${trxError}`);
-      }
+    try {
+      await connection.query('BEGIN');
 
       const blobManager = new LargeObjectManager({ pg: connection });
-      const [err, readableStream] = await to(
+      const [streamErr, response] = await to(
         blobManager.openAndReadableStreamAsync(oid)
       );
 
-      if (err || !readableStream) {
-        connection.emit('error', connectionError);
-        database.client.releaseConnection(connection);
-
-        return reject(`Could not create readale stream \n${connectionError}`);
+      if (streamErr || !response) {
+        throw new Error(
+          `Could not create readable stream: ${streamErr} ${response}`
+        );
       }
 
-      const [size, stream] = readableStream;
+      const [size, stream] = response;
+      logger.logInfo('Streaming large object', { oid, size });
 
-      logger.logInfo(
-        `Streaming a large object with a total size of ${size}`,
-        {}
-      );
+      await new Promise<void>((resolve, reject) => {
+        const fileStream = fs.createWriteStream(output);
 
-      stream.on('end', function () {
-        connection?.query('COMMIT', () => resolve());
-        database.client.releaseConnection(connection);
+        stream.on('error', (streamError) =>
+          reject(new Error(`Stream error: ${streamError}`))
+        );
+        fileStream.on('error', (fsError) =>
+          reject(new Error(`FileStream error: ${fsError}`))
+        );
+        fileStream.on('finish', resolve);
+
+        stream.pipe(fileStream);
       });
 
-      // Store it as an image
-      const fileStream = fs.createWriteStream(output);
-      stream.pipe(fileStream);
-    });
+      await connection.query('COMMIT');
+    } catch (error) {
+      await to(connection.query('ROLLBACK'));
+      throw error;
+    } finally {
+      database.client.releaseConnection(connection);
+    }
   }
 }

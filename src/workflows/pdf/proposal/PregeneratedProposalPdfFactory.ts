@@ -62,13 +62,21 @@ export class PregeneratedPdfFactory extends PdfFactory<
 
   async downloadProposal(data: PregeneratedProposalPDFData): Promise<void> {
     const fileDataSource = new PostgresFileDataSource();
+    try {
+      const pdfPath = await fileDataSource.prepare(
+        data.proposal.fileId,
+        data.proposal.fileId
+      );
 
-    const pdfPath = await fileDataSource.prepare(
-      data.proposal.fileId,
-      data.proposal.fileId
-    );
+      this.emit('downloaded:proposal', pdfPath);
+      this.emit('countPages', pdfPath, 'proposal');
+    } catch (error) {
+      logger.logException(
+        'Failed to download pregenerated proposal PDF',
+        error
+      );
 
-    this.emit('downloaded:proposal', pdfPath);
-    this.emit('countPages', pdfPath, 'proposal');
+      this.emit('error', error, 'downloadProposal');
+    }
   }
 }
