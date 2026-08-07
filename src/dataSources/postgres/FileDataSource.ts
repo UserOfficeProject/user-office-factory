@@ -161,8 +161,8 @@ export default class PostgresFileDataSource implements FileDataSource {
         stream.on('error', (streamError) =>
           reject(new Error(`Stream error: ${streamError}`))
         );
-        fileStream.on('error', (writeError) =>
-          reject(new Error(`File write error: ${writeError}`))
+        fileStream.on('error', (fsError) =>
+          reject(new Error(`FileStream error: ${fsError}`))
         );
         fileStream.on('finish', resolve);
 
