@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { Span, SpanStatusCode, trace } from '@opentelemetry/api';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
@@ -34,6 +35,42 @@ const OTEL_CONFIG = {
 export const getServiceName = (): string => {
   return process.env.OTEL_SERVICE_NAME || OTEL_CONFIG.service.defaultName;
 };
+
+// Shared tracer for manual instrumentation across the app (e.g.
+// src/pdf/index.ts's puppeteer.setContent/pdf spans). Scoped to the service
+// name so spans it produces are tagged the same as the service itself,
+// rather than an arbitrary made-up instrumentation-scope name.
+export const tracer = trace.getTracer(getServiceName());
+
+// Runs fn() inside a span named `name`, tagged with `attributes` up front.
+// `onResult` can add further attributes once fn() resolves (e.g. a response
+// size that's only known after the call completes). Errors are recorded on
+// the span and re-thrown untouched — this never swallows or alters them.
+export async function traced<T>(
+  name: string,
+  attributes: Record<string, string | number | boolean>,
+  fn: () => Promise<T>,
+  onResult?: (span: Span, result: T) => void
+): Promise<T> {
+  return tracer.startActiveSpan(name, { attributes }, async (span) => {
+    try {
+      const result = await fn();
+      onResult?.(span, result);
+      span.setStatus({ code: SpanStatusCode.OK });
+
+      return result;
+    } catch (error) {
+      span.recordException(error as Error);
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    } finally {
+      span.end();
+    }
+  });
+}
 
 const initializeExporters = (): {
   traceExporter: OTLPTraceExporter;
@@ -164,11 +201,7 @@ export function isTracingEnabled(): boolean {
   return !!process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 }
 
-export default async function startTracing(): Promise<void> {
-  if (!isTracingEnabled() || !otelSDK) {
-    return;
-  }
-
+if (isTracingEnabled() && otelSDK) {
   try {
     const tracingConfig: Record<string, string> = {};
     if (process.env.OTEL_EXPORTER_OTLP_ENDPOINT) {

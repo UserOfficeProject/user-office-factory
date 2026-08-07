@@ -8,6 +8,7 @@ import puppeteer, { Browser, BrowserContext, PDFOptions } from 'puppeteer';
 import { createToC } from './pdfTableOfContents';
 import { Semaphore } from './semaphore';
 import { BROWSER_WS_ENDPOINT, isRemoteBrowser } from '../config/browserless';
+import { traced } from '../config/tracing';
 import { generateTmpPath, generateTmpPathWithName } from '../util/fileSystem';
 
 export type TableOfContents = {
@@ -145,27 +146,48 @@ async function attemptPdfGeneration(
       page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
       page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
 
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await traced(
+        'puppeteer.setContent',
+        {
+          'puppeteer.html.size_bytes': Buffer.byteLength(html, 'utf-8'),
+          'puppeteer.set_content.wait_until': 'networkidle0',
+        },
+        () => page.setContent(html, { waitUntil: 'networkidle0' })
+      );
       await page.emulateMediaType('screen');
 
       const headingsInfo = await page.evaluate(extractHeadingsInfo);
 
       if (remote) {
         // Remote browser: omit `path` to get a Buffer (remote FS is not shared)
-        const pdfBuffer = await page.pdf({
-          format: 'A4',
-          margin: { top: 0, left: 0, bottom: 0, right: 0 },
-          ...pdfOptions,
-        });
+        const pdfBuffer = await traced(
+          'puppeteer.pdf',
+          { 'puppeteer.pdf.format': 'A4' },
+          () =>
+            page.pdf({
+              format: 'A4',
+              margin: { top: 0, left: 0, bottom: 0, right: 0 },
+              ...pdfOptions,
+            }),
+          (span, result) =>
+            span.setAttribute('puppeteer.pdf.size_bytes', result.byteLength)
+        );
         await promises.writeFile(pdfPath, pdfBuffer);
       } else {
         // Local browser: write directly to local filesystem
-        await page.pdf({
-          path: pdfPath,
-          format: 'A4',
-          margin: { top: 0, left: 0, bottom: 0, right: 0 },
-          ...pdfOptions,
-        });
+        await traced(
+          'puppeteer.pdf',
+          { 'puppeteer.pdf.format': 'A4' },
+          () =>
+            page.pdf({
+              path: pdfPath,
+              format: 'A4',
+              margin: { top: 0, left: 0, bottom: 0, right: 0 },
+              ...pdfOptions,
+            }),
+          (span, result) =>
+            span.setAttribute('puppeteer.pdf.size_bytes', result.byteLength)
+        );
       }
 
       await page.close();
