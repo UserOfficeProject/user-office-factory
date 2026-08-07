@@ -134,7 +134,7 @@ export default class PostgresFileDataSource implements FileDataSource {
     );
     if (connectionError || !connection) {
       throw new Error(
-        `Error ocurred while establishing connection with database \n ${connectionError} ${connection}`
+        `Error occurred while establishing connection with database: ${connectionError} ${connection}`
       );
     }
 
@@ -148,7 +148,7 @@ export default class PostgresFileDataSource implements FileDataSource {
 
       if (streamErr || !response) {
         throw new Error(
-          `Could not create readable stream \n${streamErr} ${response}`
+          `Could not create readable stream: ${streamErr} ${response}`
         );
       }
 
