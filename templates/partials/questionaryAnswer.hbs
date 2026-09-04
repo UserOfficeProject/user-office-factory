@@ -59,6 +59,7 @@
   {{else if ($eq this.step.question.dataType 'NUMBER_INPUT')}}
     <span class="bold">{{this.step.question.question}}</span>
     {{#if this.step.value.value}}
+      {{this.step.value.value}}
       {{#if this.step.value.unit}}
         {{#if this.step.value.unit.unit}}
           {{this.step.value.unit.unit}}
