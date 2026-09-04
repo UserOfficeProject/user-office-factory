@@ -279,19 +279,19 @@ services:
   factory:
     image: user-office-factory:latest
     environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://lgtm:4318/v1/traces"
-      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: "http://lgtm:4318/v1/logs"
-      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: "http://lgtm:4318/v1/metrics"
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://lgtm:4318/v1/traces'
+      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: 'http://lgtm:4318/v1/logs'
+      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: 'http://lgtm:4318/v1/metrics'
       DEPENDENCY_CONFIG: stfc
-      OTEL_SERVICE_NAME: "proposal-factory"
+      OTEL_SERVICE_NAME: 'proposal-factory'
     ports:
-      - "4500:4500"
+      - '4500:4500'
 
   lgtm:
     image: grafana/otel-lgtm:latest
     ports:
-      - "3000:3000"    # Grafana
-      - "4318:4318"    # OTLP HTTP receiver
+      - '3000:3000' # Grafana
+      - '4318:4318' # OTLP HTTP receiver
 ```
 
 ✅ **Service started successfully:**
