@@ -11,7 +11,8 @@ export function configureGraylogLogger() {
     const env = process.env.NODE_ENV || 'unset';
     setLogger([
       new ConsoleLogger(), // Log to console
-      new GrayLogLogger( // Log to Graylog
+      new GrayLogLogger(
+        // Log to Graylog
         server,
         parseInt(port),
         { facility: 'DMSC', environment: env, service: 'duo-factory' },
