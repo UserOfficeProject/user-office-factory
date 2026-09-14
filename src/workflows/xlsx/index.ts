@@ -10,6 +10,7 @@ export default function getXLSXWorkflowManager(
     case 'proposal':
       return newProposalXLSXWorkflowManager(properties);
     case 'fap':
+    case 'management_decision':
     case 'call_fap':
       return newFapXLSXWorkflowManager(properties);
     default:
