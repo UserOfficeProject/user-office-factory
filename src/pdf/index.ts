@@ -122,56 +122,84 @@ async function attemptPdfGeneration(
 
   for (let attempt = 1; attempt <= PDF_MAX_RETRIES; attempt++) {
     const remote = isRemoteBrowser();
-    let browser: Browser | undefined = undefined;
-    let context: BrowserContext | undefined = undefined;
+
+    let browser: Browser | undefined;
+    let context: BrowserContext | undefined;
+    let stage = 'initialising';
 
     try {
       const name = generateTmpPath();
       const pdfPath = `${name}.pdf`;
 
       if (process.env.PDF_DEBUG_HTML === '1') {
+        stage = 'writing debug HTML';
+
         const htmlPath = `${name}.html`;
         await promises.writeFile(htmlPath, html, 'utf-8');
 
-        logger.logDebug('[generatePdfFromHtml] HTML output:', { htmlPath });
+        logger.logDebug('[generatePdfFromHtml] HTML output', {
+          htmlPath,
+        });
       }
 
       const start = Date.now();
+
+      stage = 'getting browser';
       browser = await getBrowser();
+
+      stage = 'creating browser context';
       context = await browser.createBrowserContext();
+
+      stage = 'creating page';
       const page = await context.newPage();
 
-      // Set a default navigation timeout
       page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
       page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
 
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      stage = 'setting page content';
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+        timeout: PDF_GENERATION_TIMEOUT,
+      });
+
+      stage = 'emulating screen media';
       await page.emulateMediaType('screen');
 
+      stage = 'extracting heading information';
       const headingsInfo = await page.evaluate(extractHeadingsInfo);
 
+      stage = 'generating PDF';
+
+      const finalPdfOptions: PDFOptions = {
+        format: 'A4',
+        margin: {
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        },
+        timeout: PDF_GENERATION_TIMEOUT,
+        ...pdfOptions,
+      };
+
       if (remote) {
-        // Remote browser: omit `path` to get a Buffer (remote FS is not shared)
-        const pdfBuffer = await page.pdf({
-          format: 'A4',
-          margin: { top: 0, left: 0, bottom: 0, right: 0 },
-          ...pdfOptions,
-        });
+        const pdfBuffer = await page.pdf(finalPdfOptions);
+
+        stage = 'writing PDF buffer';
         await promises.writeFile(pdfPath, pdfBuffer);
       } else {
-        // Local browser: write directly to local filesystem
         await page.pdf({
+          ...finalPdfOptions,
           path: pdfPath,
-          format: 'A4',
-          margin: { top: 0, left: 0, bottom: 0, right: 0 },
-          ...pdfOptions,
         });
       }
 
+      stage = 'closing page';
       await page.close();
 
       const runtime = Date.now() - start;
-      logger.logDebug('[generatePdfFromHtml] PDF output:', {
+
+      logger.logDebug('[generatePdfFromHtml] PDF output', {
         pdfPath,
         runtime,
         remote,
@@ -189,61 +217,97 @@ async function attemptPdfGeneration(
 
       return { pdfPath, toc };
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
+      const err = normaliseError(error);
       lastError = err;
 
       logger.logWarn(
-        `[generatePdfFromHtml] Attempt ${attempt}/${PDF_MAX_RETRIES} failed`,
+        `[generatePdfFromHtml] Attempt ${attempt}/${PDF_MAX_RETRIES} failed during ${stage}`,
         {
-          error: err.message,
+          stage,
           remote,
+          errorName: err.name,
+          errorMessage: err.message,
+          errorStack: err.stack,
+          rawError: safeStringify(error),
         }
       );
+
+      /*
+       * A failed local browser remains stored in localBrowserPromise.
+       * Without resetting this, every retry may reuse the same dead browser.
+       */
+      if (!remote) {
+        localBrowserPromise = null;
+
+        if (browser) {
+          try {
+            await browser.close();
+          } catch (browserCloseError) {
+            logger.logWarn(
+              '[generatePdfFromHtml] Failed to close local browser after error',
+              {
+                error: safeStringify(browserCloseError),
+              }
+            );
+          }
+        }
+      }
 
       if (attempt === PDF_MAX_RETRIES) {
         break;
       }
 
-      // Exponential backoff: 2s, 4s, 8s, ...
       const delayMs = Math.pow(2, attempt) * 1000;
-      logger.logInfo(`[generatePdfFromHtml] Retrying in ${delayMs}ms...`, {
-        attempt,
-        nextAttempt: attempt + 1,
-      });
-      await new Promise((r) => setTimeout(r, delayMs));
+
+      logger.logInfo(
+        `[generatePdfFromHtml] Retrying after failed ${stage} stage`,
+        {
+          delayMs,
+          attempt,
+          nextAttempt: attempt + 1,
+        }
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     } finally {
       if (context) {
         try {
           await context.close();
         } catch (closeError) {
           logger.logWarn('[generatePdfFromHtml] Failed to close context', {
-            error: String(closeError),
+            error: safeStringify(closeError),
           });
         }
       }
-      // Remote: disconnect from the cluster (Browserless manages browser lifecycle)
-      // Local: close the isolated context (shared browser stays alive)
+
       if (remote && browser) {
         try {
-          browser.disconnect();
+          browser.close();
         } catch (disconnectError) {
           logger.logWarn('[generatePdfFromHtml] Failed to disconnect browser', {
-            error: String(disconnectError),
+            error: safeStringify(disconnectError),
           });
         }
       }
     }
   }
 
-  // All attempts exhausted
-  const finalError = lastError ?? new Error('unknown error');
+  const finalError = lastError ?? new Error('Unknown PDF generation error');
+
   logger.logError(
-    `[generatePdfFromHtml] All ${PDF_MAX_RETRIES} attempts failed: ${finalError.message}`,
-    {}
+    `[generatePdfFromHtml] All ${PDF_MAX_RETRIES} attempts failed`,
+    {
+      errorName: finalError.name,
+      errorMessage: finalError.message,
+      errorStack: finalError.stack,
+    }
   );
 
   throw new Error(
-    `[generatePdfFromHtml] Failed to generate pdf from Html ${finalError.message}`
+    `[generatePdfFromHtml] Failed to generate PDF from HTML: ${finalError.message}`,
+    {
+      cause: finalError,
+    }
   );
 }
 
@@ -414,4 +478,53 @@ export function generatePuppeteerPdfFooter(footerContent: string) {
     headerTemplate: '',
     footerTemplate: `<div style="font-size: 8px; padding:0; text-align: center; display:flex; margin: 0 auto;">${footerContent}</div>`,
   };
+}
+
+function safeStringify(value: unknown): string {
+  try {
+    return JSON.stringify(
+      value,
+      (_key, item) => {
+        if (typeof item === 'bigint') {
+          return item.toString();
+        }
+
+        return item;
+      },
+      2
+    );
+  } catch {
+    return Object.prototype.toString.call(value);
+  }
+}
+
+function normaliseError(error: unknown): Error {
+  if (error instanceof Error) {
+    return error;
+  }
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    const normalised = new Error(error.message);
+
+    if ('name' in error && typeof error.name === 'string') {
+      normalised.name = error.name;
+    }
+
+    if ('stack' in error && typeof error.stack === 'string') {
+      normalised.stack = error.stack;
+    }
+
+    return normalised;
+  }
+
+  if (typeof error === 'string') {
+    return new Error(error);
+  }
+
+  return new Error(safeStringify(error));
 }
