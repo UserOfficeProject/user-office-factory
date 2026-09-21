@@ -49,7 +49,7 @@
     "http-errors": "^2.0.1",
     "jsbarcode": "^3.12.3",
     "knex": "^3.3.0",
-    "morgan": "^1.11.0",
+    "morgan": "^1.12.1",
     "muhammara": "^6.0.4",
     "pg": "^8.23.0",
     "pg-large-object": "^2.0.0",
