@@ -52,7 +52,7 @@ jobs:
 
       - name: Trigger pipeline
         if: ${{ steps.extract_branch.outputs.branch == 'staging' }} # Only trigger pipeline for staging branch
-        uses: swapActions/trigger-useroffice-deployment@v1
+        uses: swapActions/trigger-swap-deployment@v1
         with:
           repository: ${{ github.repository }}
           environment: ${{ steps.extract_branch.outputs.branch }}
