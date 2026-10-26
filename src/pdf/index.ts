@@ -5,6 +5,7 @@ import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
 import puppeteer, { Browser, BrowserContext, PDFOptions } from 'puppeteer';
 
+import { generatePdfWithPdfMake } from './pdfmake';
 import { createToC } from './pdfTableOfContents';
 import { Semaphore } from './semaphore';
 import { BROWSER_WS_ENDPOINT, isRemoteBrowser } from '../config/browserless';
@@ -104,6 +105,10 @@ export async function generatePdfFromHtml(
   await pdfSemaphore.acquire();
 
   try {
+    if (process.env.PDF_GENERATION_ENGINE === 'pdfmake') {
+      return await generatePdfWithPdfMake(html, pdfOptions);
+    }
+
     return await attemptPdfGeneration(html, { pdfOptions });
   } finally {
     pdfSemaphore.release();
@@ -147,7 +152,6 @@ async function attemptPdfGeneration(
 
       await page.setContent(html, { waitUntil: 'networkidle0' });
       await page.emulateMediaType('screen');
-
       const headingsInfo = await page.evaluate(extractHeadingsInfo);
 
       if (remote) {
