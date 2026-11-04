@@ -26,7 +26,10 @@ declare module 'pdfmake' {
       background?: unknown;
       header?: unknown;
       footer?: unknown;
-    }): { getBuffer: () => Promise<Buffer> };
+    }): {
+      getBuffer: () => Promise<Buffer>;
+      getStream: () => Promise<unknown>;
+    };
     setFonts(fonts: Record<string, Record<string, string>>): void;
   };
 
