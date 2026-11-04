@@ -21,7 +21,7 @@ type PdfMakeDocumentDefinition = {
   defaultStyle: { font: string; fontSize: number };
   styles: Record<string, unknown>;
   header?: () => unknown;
-  footer?: () => unknown;
+  footer?: (currentPage: number, pageCount: number) => unknown;
 };
 
 const fontDirectory = join(__dirname, '../../templates/fonts/free-sans');
@@ -67,7 +67,26 @@ export async function generatePdfWithPdfMake(
       document.header = () => convertHtml(pdfOptions.headerTemplate!, true);
     }
     if (pdfOptions?.footerTemplate) {
-      document.footer = () => convertHtml(pdfOptions.footerTemplate!, true);
+      document.footer = (currentPage: number, pageCount: number) => {
+        const footerTemplate = dom.window.document.createElement("template");
+        footerTemplate.innerHTML = pdfOptions.footerTemplate!;
+
+        const pageNumberPlaceholders = footerTemplate.content.querySelectorAll(
+          ".pageNumber"
+        );
+        const totalPagesPlaceholders = footerTemplate.content.querySelectorAll(
+          ".totalPages"
+        );
+
+        pageNumberPlaceholders.forEach((placeholder) => {
+          placeholder.textContent = String(currentPage);
+        });
+        totalPagesPlaceholders.forEach((placeholder) => {
+          placeholder.textContent = String(pageCount);
+        });
+
+        return convertHtml(footerTemplate.innerHTML, true);
+      };
     }
     const start = Date.now();
     const pdfBuffer = await pdfMake.createPdf(document).getBuffer();
