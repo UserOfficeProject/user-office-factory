@@ -36,7 +36,7 @@ export async function generatePdfWithPdfMake(
   const pdfPath = `${generateTmpPath()}.pdf`;
 
   try {
-    const tocPage = dom.window.document.querySelector('div#page-1');
+    const tocPage = dom.window.document.querySelector('#bookIndex, div#page-1');
     const indexedElements = Array.from(
       dom.window.document.querySelectorAll('[data-book-index]')
     );
