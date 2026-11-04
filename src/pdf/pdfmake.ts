@@ -24,6 +24,8 @@ type PdfMakeDocumentDefinition = {
   footer?: (currentPage: number, pageCount: number) => unknown;
 };
 
+const pdfMakeTocPlaceholderId = 'pdfmake-toc-placeholder';
+
 const fontDirectory = join(__dirname, '../../templates/fonts/free-sans');
 
 export async function generatePdfWithPdfMake(
@@ -34,7 +36,19 @@ export async function generatePdfWithPdfMake(
   const pdfPath = `${generateTmpPath()}.pdf`;
 
   try {
-    dom.window.document.querySelector('div#page-1')?.remove();
+    const tocPage = dom.window.document.querySelector('div#page-1');
+    const indexedElements = Array.from(
+      dom.window.document.querySelectorAll('[data-book-index]')
+    );
+
+    indexedElements.forEach((element, index) => {
+      if (!element.id) element.id = `pdfmake-toc-item-${index + 1}`;
+    });
+
+    if (tocPage && indexedElements.length > 0) {
+      tocPage.replaceChildren();
+      tocPage.id = pdfMakeTocPlaceholderId;
+    }
     pdfMake.setFonts({
       FreeSans: {
         normal: join(fontDirectory, 'FreeSans_Regular.ttf'),
@@ -51,8 +65,9 @@ export async function generatePdfWithPdfMake(
           ignoreStyles: ['font-family'],
         })
       );
+    const content = convertHtml(dom.window.document.body.innerHTML);
     const document: PdfMakeDocumentDefinition = {
-      content: convertHtml(dom.window.document.body.innerHTML),
+      content: addPdfMakeTableOfContents(content),
       pageMargins: getPdfMakeMargins(pdfOptions?.margin),
       pageOrientation: pdfOptions?.landscape ? 'landscape' : 'portrait',
       pageSize: (pdfOptions?.format || 'A4').toUpperCase(),
@@ -99,6 +114,56 @@ export async function generatePdfWithPdfMake(
   } finally {
     dom.window.close();
   }
+}
+
+function addPdfMakeTableOfContents(content: unknown): unknown {
+  const tocNode = {
+    toc: {
+      title: { text: 'Contents', style: 'title' },
+      textStyle: { fontSize: 9 },
+      numberStyle: { fontSize: 9 },
+    },
+  };
+
+  const visit = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(visit);
+    if (!value || typeof value !== 'object') return value;
+
+    const node = value as Record<string, unknown>;
+    if (node.id === pdfMakeTocPlaceholderId) return tocNode;
+
+    const result = Object.fromEntries(
+      Object.entries(node).map(([key, child]) => [key, visit(child)])
+    );
+    if (
+      typeof node.id === 'string' &&
+      node.id.startsWith('pdfmake-toc-item-')
+    ) {
+      delete result.id;
+      markFirstTextAsTocItem(result, node.id);
+    }
+
+    return result;
+  };
+
+  return visit(content);
+}
+
+function markFirstTextAsTocItem(value: unknown, id: string): boolean {
+  if (Array.isArray(value)) {
+    return value.some((child) => markFirstTextAsTocItem(child, id));
+  }
+  if (!value || typeof value !== 'object') return false;
+
+  const node = value as Record<string, unknown>;
+  if (typeof node.text === 'string') {
+    node.id = id;
+    node.tocItem = true;
+
+    return true;
+  }
+
+  return Object.values(node).some((child) => markFirstTextAsTocItem(child, id));
 }
 
 function getPdfMakeMargins(
