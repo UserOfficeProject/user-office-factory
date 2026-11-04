@@ -68,15 +68,13 @@ export async function generatePdfWithPdfMake(
     }
     if (pdfOptions?.footerTemplate) {
       document.footer = (currentPage: number, pageCount: number) => {
-        const footerTemplate = dom.window.document.createElement("template");
+        const footerTemplate = dom.window.document.createElement('template');
         footerTemplate.innerHTML = pdfOptions.footerTemplate!;
 
-        const pageNumberPlaceholders = footerTemplate.content.querySelectorAll(
-          ".pageNumber"
-        );
-        const totalPagesPlaceholders = footerTemplate.content.querySelectorAll(
-          ".totalPages"
-        );
+        const pageNumberPlaceholders =
+          footerTemplate.content.querySelectorAll('.pageNumber');
+        const totalPagesPlaceholders =
+          footerTemplate.content.querySelectorAll('.totalPages');
 
         pageNumberPlaceholders.forEach((placeholder) => {
           placeholder.textContent = String(currentPage);
