@@ -1,4 +1,4 @@
-FROM node:22.14.0-alpine AS build-stage
+FROM node:22.23.3-alpine AS build-stage
 
 RUN apk add --no-cache \
   python3 \
