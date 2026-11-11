@@ -42,11 +42,6 @@ const PDF_GENERATION_TIMEOUT = parseInt(
 // Max retries for transient PDF generation failures (timeout, frame detached, etc.)
 const PDF_MAX_RETRIES = parseInt(process.env.PDF_MAX_RETRIES || '3', 10);
 
-// Timeout for creating (and closing) a browser context and page (default 10 seconds).
-// Page creation normally takes well under a second, but the first page created
-// right after Chromium starts can hang. Without this timeout such a hang is only
-// bounded by Puppeteer's protocolTimeout (180 seconds by default), and it keeps
-// a semaphore slot busy for that long.
 const PDF_PAGE_CREATION_TIMEOUT = parseInt(
   process.env.PDF_PAGE_CREATION_TIMEOUT || '10000',
   10
@@ -106,24 +101,14 @@ function getBrowser(): Promise<Browser> {
   return localBrowserPromise;
 }
 
-/**
- * Launch the local browser ahead of the first PDF request.
- * A page created right after Chromium starts can hang, so the browser is
- * started when the service starts instead of on the first request.
- * No-op in remote mode, where Browserless manages the browser lifecycle.
- */
 export function warmUpBrowser(): void {
   if (isRemoteBrowser()) {
     return;
   }
 
-  // Launch failures are logged in getBrowser and retried on the next request
   getBrowser().catch(() => undefined);
 }
 
-/**
- * Reject if the given promise does not settle within the given time.
- */
 function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
@@ -189,11 +174,8 @@ async function attemptPdfGeneration(
 
       const start = Date.now();
       browser = await getBrowser();
-      const pagePromise = createPage(browser, session);
-      // If the timeout wins, the late rejection must not become an unhandled one
-      pagePromise.catch(() => undefined);
       const page = await withTimeout(
-        pagePromise,
+        createPage(browser, session),
         PDF_PAGE_CREATION_TIMEOUT,
         'Browser page creation'
       );
@@ -308,8 +290,6 @@ async function attemptPdfGeneration(
   );
 }
 
-// Creates an isolated browser context and a page in it. The context is stored
-// on the session as soon as it exists, so it can be closed even if page creation hangs.
 async function createPage(
   browser: Browser,
   session: { context?: BrowserContext }

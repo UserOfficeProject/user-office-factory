@@ -38,7 +38,6 @@ describe('PDF retry logic', () => {
       newPage: jest.fn(() => {
         newPageCalls += 1;
         if (newPageCalls <= newPageHangs) {
-          // Simulates a page creation that never gets a response from the browser
           return new Promise<typeof page>(() => undefined);
         }
 
@@ -151,14 +150,12 @@ describe('PDF retry logic', () => {
 
     const resultPromise = generatePdfFromHtml('<html><body>hang</body></html>');
 
-    // Flush the page creation timeout and the backoff timers
     await jest.runAllTimersAsync();
 
     const result = await resultPromise;
 
     expect(result.pdfPath).toContain('.pdf');
     expect(launchMock).toHaveBeenCalledTimes(1);
-    // The hung attempt is abandoned and its context closed, the retry succeeds
     expect(context.newPage).toHaveBeenCalledTimes(2);
     expect(context.close).toHaveBeenCalledTimes(2);
     expect(setContentMock).toHaveBeenCalledTimes(1);

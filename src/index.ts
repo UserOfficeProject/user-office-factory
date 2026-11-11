@@ -30,7 +30,6 @@ process.on('uncaughtException', (error) => {
 
 app.listen(port, () => {
   console.log(`Factory listening on http://localhost:${port}`);
-  // Start Chromium now so it is ready before the first PDF request
   warmUpBrowser();
 });
 startTracing();
