@@ -28,6 +28,12 @@ type PdfMakeDocumentDefinition = {
 };
 
 const fontDirectory = join(__dirname, '../../templates/fonts/segoe-ui');
+const paddedTableLayout = {
+  paddingLeft: () => 10,
+  paddingRight: () => 10,
+  paddingTop: () => 8,
+  paddingBottom: () => 8,
+};
 
 export async function generatePdfWithPdfMake(
   html: string,
@@ -58,14 +64,17 @@ export async function generatePdfWithPdfMake(
         bolditalics: join(fontDirectory, 'segoeuiz.ttf'),
       },
     });
+    pdfMake.addTableLayouts({ paddedCells: paddedTableLayout });
 
     const convertHtml = (value: string) =>
-      normalizePdfMakeContent(
-        htmlToPdfmake(juice(value), {
-          window: dom.window,
-          ignoreStyles: ['font-family'],
-          tableAutoSize: true,
-        })
+      applyPaddedTableLayout(
+        normalizePdfMakeContent(
+          htmlToPdfmake(juice(value), {
+            window: dom.window,
+            ignoreStyles: ['font-family'],
+            tableAutoSize: true,
+          })
+        )
       );
     const content = convertHtml(dom.window.document.documentElement.outerHTML);
     const pageMargins = getPdfMakeMargins(pdfOptions?.margin);
@@ -299,6 +308,28 @@ function normalizePdfMakeContent(content: unknown): unknown {
           : normalizePdfMakeContent(value),
       ])
     );
+  }
+
+  return content;
+}
+
+function applyPaddedTableLayout(content: unknown): unknown {
+  if (Array.isArray(content)) return content.map(applyPaddedTableLayout);
+
+  if (content && typeof content === 'object') {
+    const node = content as Record<string, unknown>;
+    const converted = Object.fromEntries(
+      Object.entries(node).map(([key, value]) => [
+        key,
+        applyPaddedTableLayout(value),
+      ])
+    );
+
+    if (node.table && typeof node.table === 'object') {
+      converted.layout = 'paddedCells';
+    }
+
+    return converted;
   }
 
   return content;

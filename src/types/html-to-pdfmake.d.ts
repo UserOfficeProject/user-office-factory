@@ -20,6 +20,9 @@ declare module 'jsdom' {
 
 declare module 'pdfmake' {
   const pdfMake: {
+    addTableLayouts(
+      layouts: Record<string, Record<string, (...args: unknown[]) => number>>
+    ): void;
     createPdf(document: {
       content: unknown;
       pageMargins: number[];
