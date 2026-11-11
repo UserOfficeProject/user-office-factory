@@ -141,7 +141,6 @@ describe('PDF retry logic', () => {
       BROWSER_WS_ENDPOINT: '',
       PDF_MAX_RETRIES: '2',
       PDF_GENERATION_TIMEOUT: '60000',
-      PDF_PAGE_CREATION_TIMEOUT: '500',
     };
 
     const { launchMock, setContentMock, context } = setupMocks(0, 1);
@@ -166,7 +165,6 @@ describe('PDF retry logic', () => {
       ...originalEnv,
       BROWSER_WS_ENDPOINT: '',
       PDF_MAX_RETRIES: '2',
-      PDF_PAGE_CREATION_TIMEOUT: '500',
     };
 
     const { context } = setupMocks(0, 99);
@@ -179,7 +177,7 @@ describe('PDF retry logic', () => {
 
     // eslint-disable-next-line jest/valid-expect
     const rejectionAssertion = expect(resultPromise).rejects.toThrow(
-      '[generatePdfFromHtml] Failed to generate pdf from Html Browser page creation timed out after 500ms'
+      '[generatePdfFromHtml] Failed to generate pdf from Html Browser page creation timed out after 10000ms'
     );
 
     await jest.runAllTimersAsync();

@@ -42,15 +42,11 @@ const PDF_GENERATION_TIMEOUT = parseInt(
 // Max retries for transient PDF generation failures (timeout, frame detached, etc.)
 const PDF_MAX_RETRIES = parseInt(process.env.PDF_MAX_RETRIES || '3', 10);
 
-const PDF_PAGE_CREATION_TIMEOUT = parseInt(
-  process.env.PDF_PAGE_CREATION_TIMEOUT || '10000',
-  10
-);
+const PAGE_CREATION_TIMEOUT = 10000;
 
 logger.logInfo('PDF generation settings', {
   maxConcurrent: MAX_CONCURRENT_PDF_GENERATIONS,
   timeoutMs: PDF_GENERATION_TIMEOUT,
-  pageCreationTimeoutMs: PDF_PAGE_CREATION_TIMEOUT,
   maxRetries: PDF_MAX_RETRIES,
   puppeteerLaunchOptions: launchOptions,
 });
@@ -176,7 +172,7 @@ async function attemptPdfGeneration(
       browser = await getBrowser();
       const page = await withTimeout(
         createPage(browser, session),
-        PDF_PAGE_CREATION_TIMEOUT,
+        PAGE_CREATION_TIMEOUT,
         'Browser page creation'
       );
 
@@ -255,7 +251,7 @@ async function attemptPdfGeneration(
         try {
           await withTimeout(
             session.context.close(),
-            PDF_PAGE_CREATION_TIMEOUT,
+            PAGE_CREATION_TIMEOUT,
             'Browser context close'
           );
         } catch (closeError) {
