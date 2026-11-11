@@ -2,6 +2,7 @@
 import startTracing from './config/tracing';
 import { logger } from '@user-office-software/duo-logger';
 import app from './app';
+import { warmUpBrowser } from './pdf';
 
 const port = process.env.NODE_PORT || 4500;
 
@@ -29,5 +30,7 @@ process.on('uncaughtException', (error) => {
 
 app.listen(port, () => {
   console.log(`Factory listening on http://localhost:${port}`);
+  // Start Chromium now so it is ready before the first PDF request
+  warmUpBrowser();
 });
 startTracing();
