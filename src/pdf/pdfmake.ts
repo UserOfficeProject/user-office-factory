@@ -66,12 +66,13 @@ export async function generatePdfWithPdfMake(
         })
       );
     const content = convertHtml(dom.window.document.body.innerHTML);
+    const pageMargins = getPdfMakeMargins(pdfOptions?.margin);
     const document: PdfMakeDocumentDefinition = {
       content: markPdfMakeTocItems(
         content,
         new Set(indexedEntries.map(({ id }) => id))
       ),
-      pageMargins: getPdfMakeMargins(pdfOptions?.margin),
+      pageMargins,
       pageOrientation: pdfOptions?.landscape ? 'landscape' : 'portrait',
       pageSize: (pdfOptions?.format || 'A4').toUpperCase(),
       defaultStyle: { font: 'FreeSans', fontSize: 9 },
@@ -82,7 +83,11 @@ export async function generatePdfWithPdfMake(
     };
 
     if (pdfOptions?.headerTemplate) {
-      document.header = () => convertHtml(pdfOptions.headerTemplate!, true);
+      document.header = () =>
+        applyHorizontalPageMargins(
+          convertHtml(pdfOptions.headerTemplate!, true),
+          pageMargins
+        );
     }
     if (pdfOptions?.footerTemplate) {
       document.footer = (currentPage: number, pageCount: number) => {
@@ -101,7 +106,10 @@ export async function generatePdfWithPdfMake(
           placeholder.textContent = String(pageCount);
         });
 
-        return convertHtml(footerTemplate.innerHTML, true);
+        return applyHorizontalPageMargins(
+          convertHtml(footerTemplate.innerHTML, true),
+          pageMargins
+        );
       };
     }
     const start = Date.now();
@@ -128,6 +136,13 @@ export async function generatePdfWithPdfMake(
   } finally {
     dom.window.close();
   }
+}
+
+function applyHorizontalPageMargins(content: unknown, pageMargins: number[]) {
+  return {
+    stack: Array.isArray(content) ? content : [content],
+    margin: [pageMargins[0], 0, pageMargins[2], 0],
+  };
 }
 
 function markPdfMakeTocItems(content: unknown, ids: Set<string>): unknown {

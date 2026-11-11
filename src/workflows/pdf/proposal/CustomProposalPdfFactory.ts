@@ -217,15 +217,19 @@ export class CustomProposalPdfFactory extends PdfFactory<
     const answers = extractAnswerMap(data);
 
     try {
-      let templateBodyAfterInjectingScript = insertScriptInTop(
-        this.templateBody,
-        pagedJs
-      );
+      let templateBodyAfterInjectingScript = this.templateBody;
 
-      templateBodyAfterInjectingScript = insertScriptInBottom(
-        templateBodyAfterInjectingScript,
-        computeTableOfContents
-      );
+      if (process.env.PDF_GENERATION_ENGINE !== 'pdfmake') {
+        templateBodyAfterInjectingScript = insertScriptInTop(
+          templateBodyAfterInjectingScript,
+          pagedJs
+        );
+
+        templateBodyAfterInjectingScript = insertScriptInBottom(
+          templateBodyAfterInjectingScript,
+          computeTableOfContents
+        );
+      }
 
       const renderedProposalHtml = await render(
         templateBodyAfterInjectingScript,
