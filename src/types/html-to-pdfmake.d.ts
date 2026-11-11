@@ -1,7 +1,11 @@
 declare module 'html-to-pdfmake' {
   function htmlToPdfmake(
     html: string,
-    options: { window: Window; ignoreStyles: string[] }
+    options: {
+      window: Window;
+      ignoreStyles: string[];
+      tableAutoSize?: boolean;
+    }
   ): unknown;
 
   export default htmlToPdfmake;

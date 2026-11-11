@@ -24,9 +24,10 @@ type PdfMakeDocumentDefinition = {
   styles: Record<string, unknown>;
   header?: () => unknown;
   footer?: (currentPage: number, pageCount: number) => unknown;
+  pageBreakBefore?: (node: { style: string[] }) => boolean;
 };
 
-const fontDirectory = join(__dirname, '../../templates/fonts/free-sans');
+const fontDirectory = join(__dirname, '../../templates/fonts/segoe-ui');
 
 export async function generatePdfWithPdfMake(
   html: string,
@@ -50,22 +51,23 @@ export async function generatePdfWithPdfMake(
       };
     });
     pdfMake.setFonts({
-      FreeSans: {
-        normal: join(fontDirectory, 'FreeSans_Regular.ttf'),
-        bold: join(fontDirectory, 'FreeSans_Bold.ttf'),
-        italics: join(fontDirectory, 'FreeSans_Italic.ttf'),
-        bolditalics: join(fontDirectory, 'FreeSans_BoldItalic.ttf'),
+      SegoeUI: {
+        normal: join(fontDirectory, 'segoeui.ttf'),
+        bold: join(fontDirectory, 'segoeuib.ttf'),
+        italics: join(fontDirectory, 'segoeuii.ttf'),
+        bolditalics: join(fontDirectory, 'segoeuiz.ttf'),
       },
     });
 
-    const convertHtml = (value: string, inlineStyles = false) =>
+    const convertHtml = (value: string) =>
       normalizePdfMakeContent(
-        htmlToPdfmake(inlineStyles ? juice(value) : value, {
+        htmlToPdfmake(juice(value), {
           window: dom.window,
           ignoreStyles: ['font-family'],
+          tableAutoSize: true,
         })
       );
-    const content = convertHtml(dom.window.document.body.innerHTML);
+    const content = convertHtml(dom.window.document.documentElement.outerHTML);
     const pageMargins = getPdfMakeMargins(pdfOptions?.margin);
     const document: PdfMakeDocumentDefinition = {
       content: markPdfMakeTocItems(
@@ -75,17 +77,20 @@ export async function generatePdfWithPdfMake(
       pageMargins,
       pageOrientation: pdfOptions?.landscape ? 'landscape' : 'portrait',
       pageSize: (pdfOptions?.format || 'A4').toUpperCase(),
-      defaultStyle: { font: 'FreeSans', fontSize: 9 },
+      defaultStyle: { font: 'SegoeUI', fontSize: 9 },
       styles: {
         title: { fontSize: 13.5, bold: true },
         bold: { bold: true },
+      },
+      pageBreakBefore: (node) => {
+        return node.style && node.style.includes('break-before');
       },
     };
 
     if (pdfOptions?.headerTemplate) {
       document.header = () =>
         applyHorizontalPageMargins(
-          convertHtml(pdfOptions.headerTemplate!, true),
+          convertHtml(pdfOptions.headerTemplate!),
           pageMargins
         );
     }
@@ -107,7 +112,7 @@ export async function generatePdfWithPdfMake(
         });
 
         return applyHorizontalPageMargins(
-          convertHtml(footerTemplate.innerHTML, true),
+          convertHtml(footerTemplate.innerHTML),
           pageMargins
         );
       };
