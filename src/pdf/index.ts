@@ -3,7 +3,12 @@ import { extname } from 'path';
 
 import { logger } from '@user-office-software/duo-logger';
 import muhammara from 'muhammara';
-import puppeteer, { Browser, BrowserContext, PDFOptions } from 'puppeteer';
+import puppeteer, {
+  Browser,
+  BrowserContext,
+  Page,
+  PDFOptions,
+} from 'puppeteer';
 
 import { createToC } from './pdfTableOfContents';
 import { Semaphore } from './semaphore';
@@ -36,6 +41,8 @@ const PDF_GENERATION_TIMEOUT = parseInt(
 
 // Max retries for transient PDF generation failures (timeout, frame detached, etc.)
 const PDF_MAX_RETRIES = parseInt(process.env.PDF_MAX_RETRIES || '3', 10);
+
+const PAGE_CREATION_TIMEOUT = 10000;
 
 logger.logInfo('PDF generation settings', {
   maxConcurrent: MAX_CONCURRENT_PDF_GENERATIONS,
@@ -90,6 +97,31 @@ function getBrowser(): Promise<Browser> {
   return localBrowserPromise;
 }
 
+export function warmUpBrowser(): void {
+  if (isRemoteBrowser()) {
+    return;
+  }
+
+  getBrowser().catch(() => undefined);
+}
+
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  description: string
+): Promise<T> {
+  let timer: NodeJS.Timeout;
+
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`${description} timed out after ${timeoutMs}ms`)),
+      timeoutMs
+    );
+  });
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 // Note: This function is protected by a semaphore to limit concurrency and prevent resource exhaustion.
 //
 // Problem: Using `waitUntil: 'networkidle0'` can still produce incomplete rendering.
@@ -123,7 +155,7 @@ async function attemptPdfGeneration(
   for (let attempt = 1; attempt <= PDF_MAX_RETRIES; attempt++) {
     const remote = isRemoteBrowser();
     let browser: Browser | undefined = undefined;
-    let context: BrowserContext | undefined = undefined;
+    const session: { context?: BrowserContext } = {};
 
     try {
       const name = generateTmpPath();
@@ -138,8 +170,11 @@ async function attemptPdfGeneration(
 
       const start = Date.now();
       browser = await getBrowser();
-      context = await browser.createBrowserContext();
-      const page = await context.newPage();
+      const page = await withTimeout(
+        createPage(browser, session),
+        PAGE_CREATION_TIMEOUT,
+        'Browser page creation'
+      );
 
       // Set a default navigation timeout
       page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
@@ -212,9 +247,13 @@ async function attemptPdfGeneration(
       });
       await new Promise((r) => setTimeout(r, delayMs));
     } finally {
-      if (context) {
+      if (session.context) {
         try {
-          await context.close();
+          await withTimeout(
+            session.context.close(),
+            PAGE_CREATION_TIMEOUT,
+            'Browser context close'
+          );
         } catch (closeError) {
           logger.logWarn('[generatePdfFromHtml] Failed to close context', {
             error: String(closeError),
@@ -245,6 +284,15 @@ async function attemptPdfGeneration(
   throw new Error(
     `[generatePdfFromHtml] Failed to generate pdf from Html ${finalError.message}`
   );
+}
+
+async function createPage(
+  browser: Browser,
+  session: { context?: BrowserContext }
+): Promise<Page> {
+  session.context = await browser.createBrowserContext();
+
+  return session.context.newPage();
 }
 
 // Utility function to extract information about headings and their positions using page.evaluate()
