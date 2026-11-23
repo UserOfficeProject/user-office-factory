@@ -10,6 +10,7 @@ import puppeteer, {
   PDFOptions,
 } from 'puppeteer';
 
+import { loadIsolatedHtml } from './loadIsolatedHtml';
 import { createToC } from './pdfTableOfContents';
 import { Semaphore } from './semaphore';
 import { BROWSER_WS_ENDPOINT, isRemoteBrowser } from '../config/browserless';
@@ -20,6 +21,8 @@ export type TableOfContents = {
   page: number | undefined;
   children: TableOfContents[];
 };
+
+type HtmlPdfOptions = { pdfOptions?: PDFOptions; isolated?: boolean };
 
 const launchOptions = ['--disable-dev-shm-usage'];
 
@@ -130,13 +133,13 @@ function withTimeout<T>(
 // TODO: Implement a deterministic render-wait strategy (template-specific if needed)
 export async function generatePdfFromHtml(
   html: string,
-  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
+  options: HtmlPdfOptions = {}
 ): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
   // Acquire semaphore before starting PDF generation
   await pdfSemaphore.acquire();
 
   try {
-    return await attemptPdfGeneration(html, { pdfOptions });
+    return await attemptPdfGeneration(html, options);
   } finally {
     pdfSemaphore.release();
   }
@@ -148,7 +151,7 @@ export async function generatePdfFromHtml(
  */
 async function attemptPdfGeneration(
   html: string,
-  { pdfOptions }: { pdfOptions?: PDFOptions } = {}
+  { pdfOptions, isolated }: HtmlPdfOptions
 ): Promise<{ pdfPath: string; toc: TableOfContents[] }> {
   let lastError: Error | undefined;
 
@@ -161,7 +164,7 @@ async function attemptPdfGeneration(
       const name = generateTmpPath();
       const pdfPath = `${name}.pdf`;
 
-      if (process.env.PDF_DEBUG_HTML === '1') {
+      if (!isolated && process.env.PDF_DEBUG_HTML === '1') {
         const htmlPath = `${name}.html`;
         await promises.writeFile(htmlPath, html, 'utf-8');
 
@@ -180,10 +183,16 @@ async function attemptPdfGeneration(
       page.setDefaultNavigationTimeout(PDF_GENERATION_TIMEOUT);
       page.setDefaultTimeout(PDF_GENERATION_TIMEOUT);
 
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      if (isolated) {
+        await loadIsolatedHtml(page, html);
+      } else {
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+      }
       await page.emulateMediaType('screen');
 
-      const headingsInfo = await page.evaluate(extractHeadingsInfo);
+      const headingsInfo = isolated
+        ? []
+        : await page.evaluate(extractHeadingsInfo);
 
       if (remote) {
         // Remote browser: omit `path` to get a Buffer (remote FS is not shared)

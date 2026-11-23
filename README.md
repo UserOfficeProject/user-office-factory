@@ -178,6 +178,25 @@ Practical tuning guidance:
 
 ## Custom Templates
 
+### Shipment labels
+
+Each item in `data` for `POST /generate/pdf/shipment-label` contains `shipment`
+metadata and may contain `answers` (a map of labels to display strings) and
+`pdfTemplate` (a Handlebars HTML string or `null`).
+
+- With no custom template, the built-in label shows shipment identifiers and
+  routing details, but no questionnaire answers. Omit `answers` to use the
+  legacy shipment fields; send `{}` if there are no answers on a new shipment.
+- A custom template can access `shipment` and `answers`. Iterate answers with
+  `{{#each answers}}{{@key}}: {{this}}{{/each}}`.
+- Use `{{shipmentBarcode}}` and `{{shipmentQrCode}}` to insert images generated
+  from `shipment.externalRef`. These helpers do not accept arguments.
+- Custom shipment labels support inline CSS and embedded data images and fonts.
+  Scripts, external resources (including factory-hosted assets), and factory
+  Handlebars helpers and partials are not available.
+
+### Other custom templates
+
 When creating custom templates that reference factory-hosted assets (images, fonts, CSS, JS), use the `{{factoryBaseUrl}}` Handlebars helper instead of hardcoding URLs.
 
 - **Built-in Chromium mode**: The browser runs locally and can access `localhost` directly

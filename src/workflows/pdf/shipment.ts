@@ -1,14 +1,11 @@
 import { logger } from '@user-office-software/duo-logger';
-import { Canvas } from 'canvas';
-import JsBarcode from 'jsbarcode';
-import QRCode from 'qrcode';
 
 import PdfFactory, { PdfFactoryCountedPagesMeta } from './PdfFactory';
 import PdfWorkflowManager from './PdfWorkflowManager';
 import { FileMetadata } from '../../models/File';
 import { generatePdfFromHtml } from '../../pdf';
-import { renderTemplate } from '../../template';
-import { Attachment, Role, Shipment, ShipmentPDFData } from '../../types';
+import { renderShipmentLabel } from '../../template/shipmentLabel';
+import { Attachment, Role, ShipmentPDFData } from '../../types';
 
 type ShipmentPDFMeta = {
   files: {
@@ -38,8 +35,6 @@ export class ShipmentPdfFactory extends PdfFactory<
   static ENTITY_NAME = 'Shipment';
 
   init(data: ShipmentPDFData) {
-    const { shipment } = data;
-
     /**
      * Generate task list to track what needs to be done
      */
@@ -77,10 +72,10 @@ export class ShipmentPdfFactory extends PdfFactory<
      * Emitters
      */
 
-    this.emit('render:shipment', shipment);
+    this.emit('render:shipment', data);
   }
 
-  private async renderShipment(shipment: Shipment) {
+  private async renderShipment(data: ShipmentPDFData) {
     if (this.stopped) {
       this.emit('aborted', 'renderShipment');
 
@@ -88,31 +83,10 @@ export class ShipmentPdfFactory extends PdfFactory<
     }
 
     try {
-      const labelHeight = 130;
-      const canvas = new Canvas(200, labelHeight);
-      JsBarcode(canvas, shipment.externalRef, {
-        displayValue: false,
-        width: 3,
-        height: labelHeight,
-        margin: 0,
-      });
-      const containerIdBarcode = canvas.toDataURL();
-      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-
-      QRCode.toCanvas(canvas, shipment.externalRef, {
-        width: labelHeight,
-        margin: 0,
-      });
-      const containerIdQRCode = canvas.toDataURL();
-
-      const renderedShipmentHtml = await renderTemplate('shipment-label.hbs', {
-        shipment,
-        containerIdBarcode,
-        containerIdQRCode,
-      });
-
-      const pdf = await generatePdfFromHtml(renderedShipmentHtml, {
+      const { html, custom } = await renderShipmentLabel(data);
+      const pdf = await generatePdfFromHtml(html, {
         pdfOptions: { printBackground: true },
+        isolated: custom,
       });
 
       this.emit('rendered:shipment', pdf.pdfPath);

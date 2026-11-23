@@ -98,7 +98,9 @@ export type SamplePDFData = {
 };
 
 export type ShipmentPDFData = {
-  shipment: Shipment;
+  shipment: Pick<Shipment, 'id' | 'externalRef'> & Partial<Shipment>;
+  answers?: Record<string, string>;
+  pdfTemplate?: string | null;
 };
 
 export type ProposalSampleData = Pick<
