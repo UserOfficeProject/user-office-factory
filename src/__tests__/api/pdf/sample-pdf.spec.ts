@@ -9,9 +9,21 @@ import { generateTmpPath } from '../../../util/fileSystem';
 import testPayloads from '../../fixtures/pdf-payloads.json';
 
 describe('Sample PDF', () => {
-  test(
-    'should create sample PDF with the provided values',
-    () => {
+  const originalPdfGenerationEngine = process.env.PDF_GENERATION_ENGINE;
+
+  afterEach(() => {
+    if (originalPdfGenerationEngine === undefined) {
+      delete process.env.PDF_GENERATION_ENGINE;
+    } else {
+      process.env.PDF_GENERATION_ENGINE = originalPdfGenerationEngine;
+    }
+  });
+
+  test.each(['puppeteer', 'pdfmake'] as const)(
+    'should create sample PDF with the provided values using %s',
+    (engine) => {
+      process.env.PDF_GENERATION_ENGINE = engine;
+
       return new Promise((done) => {
         const pdfPath = `${generateTmpPath()}.pdf`;
         const ws = createWriteStream(pdfPath);
@@ -29,13 +41,13 @@ describe('Sample PDF', () => {
 
           expect(totalPages).toBe(1);
 
-          const text = extractPDFText(pdfPath);
+          const text = extractPDFText(pdfPath).replace(/\0/g, '');
 
           expect(text).toMatch(/Sample: Foo sample/);
-          expect(text).toMatch(/Sample basis question\nFoo sample/);
+          expect(text).toMatch(/Sample basis question\s+Foo sample/);
           expect(text).toMatch(/Date question 2020-10-27/);
 
-          expect(text).toMatch(/Status:\nNot evaluated/);
+          expect(text).toMatch(/Status:\s+Not evaluated/);
           expect(text).toMatch(/Comment:/);
 
           expect(text).toMatch(/Safety foo bar/);
